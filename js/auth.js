@@ -1,27 +1,29 @@
 // ============================================================
 //  FeeFlow — js/auth.js
-//  Handles all authentication flows:
-//  sign in, sign up, sign out, and offline (local-only) mode.
+//  Handles Google Sign-In, Email Sign-In, Sign-Up,
+//  Sign-Out, and Offline mode.
 // ============================================================
 
 /* Called by firebase-init.js whenever auth state changes */
 window._onAuthChange = async function(user) {
   if (user) {
-    // Signed-in user
     window._currentUser = user;
+
+    // Show user chip in nav
     document.getElementById("user-chip").style.display = "flex";
-    document.getElementById("user-email-label").textContent = user.email;
-    await loadCloud();          // pull latest data from Firestore
+    document.getElementById("user-email-label").textContent =
+      user.displayName || user.email;
+
+    // Pull latest data from Firestore then show app
+    await loadCloud();
     showApp();
-  } else if (!window._firebaseReady) {
-    // Firebase not configured — show offline option prominently
-    document.getElementById("firebase-missing-msg").style.display = "block";
-    document.getElementById("auth-tabs-wrap").style.display = "none";
+  } else {
+    // Not signed in — stay on auth screen
+    // (firebase-init already fired, so this is safe)
   }
-  // If Firebase IS ready but user is null, just stay on the auth screen
 };
 
-/* ── TAB SWITCHER ───────────────────────────────────────── */
+/* ── TAB SWITCHER ─────────────────────────────────────── */
 
 function switchAuthTab(tab, btn) {
   document.querySelectorAll(".auth-tab").forEach(b => b.classList.remove("active"));
@@ -30,49 +32,51 @@ function switchAuthTab(tab, btn) {
   document.getElementById("auth-signup").style.display = tab === "signup" ? "block" : "none";
 }
 
-/* ── SIGN IN ────────────────────────────────────────────── */
+/* ── GOOGLE SIGN-IN ───────────────────────────────────── */
+
+async function doGoogleLogin() {
+  try {
+    const provider = new window._fb.GoogleAuthProvider();
+    await window._fb.signInWithPopup(window._fb.auth, provider);
+    // _onAuthChange fires automatically
+  } catch (err) {
+    if (err.code !== "auth/popup-closed-by-user") {
+      toast("Google sign-in failed: " + _authMsg(err.code), "red");
+    }
+  }
+}
+
+/* ── EMAIL SIGN-IN ────────────────────────────────────── */
 
 async function doLogin() {
-  if (!window._firebaseReady) {
-    toast("Firebase not configured yet. Use offline mode.", "yellow");
-    return;
-  }
   const email = document.getElementById("login-email").value.trim();
   const pass  = document.getElementById("login-pass").value;
   if (!email || !pass) { toast("Enter email and password", "yellow"); return; }
   try {
     await window._fb.signInWithEmailAndPassword(window._fb.auth, email, pass);
-    // _onAuthChange fires automatically after this
   } catch (err) {
     toast("Sign in failed: " + _authMsg(err.code), "red");
   }
 }
 
-/* ── SIGN UP ────────────────────────────────────────────── */
+/* ── EMAIL SIGN-UP ────────────────────────────────────── */
 
 async function doSignup() {
-  if (!window._firebaseReady) {
-    toast("Firebase not configured yet. Use offline mode.", "yellow");
-    return;
-  }
   const email = document.getElementById("signup-email").value.trim();
   const pass  = document.getElementById("signup-pass").value;
   if (!email || !pass)  { toast("Enter email and password", "yellow"); return; }
   if (pass.length < 6)  { toast("Password must be at least 6 characters", "yellow"); return; }
   try {
     await window._fb.createUserWithEmailAndPassword(window._fb.auth, email, pass);
-    // _onAuthChange fires automatically after this
   } catch (err) {
     toast("Sign up failed: " + _authMsg(err.code), "red");
   }
 }
 
-/* ── SIGN OUT ───────────────────────────────────────────── */
+/* ── SIGN OUT ─────────────────────────────────────────── */
 
 async function doLogout() {
-  if (window._firebaseReady && window._fbUser) {
-    try { await window._fb.signOut(window._fb.auth); } catch (_) {}
-  }
+  try { await window._fb.signOut(window._fb.auth); } catch (_) {}
   window._currentUser = null;
   window._fbUser      = null;
   window.students     = [];
@@ -83,7 +87,7 @@ async function doLogout() {
   setSyncStatus("offline");
 }
 
-/* ── OFFLINE MODE ───────────────────────────────────────── */
+/* ── OFFLINE MODE ─────────────────────────────────────── */
 
 function goOffline() {
   window._currentUser = null;
@@ -91,31 +95,30 @@ function goOffline() {
   showApp();
 }
 
-/* ── SHOW APP ───────────────────────────────────────────── */
+/* ── SHOW APP ─────────────────────────────────────────── */
 
 function showApp() {
   document.getElementById("auth-screen").style.display = "none";
   document.getElementById("app-screen").style.display  = "block";
 
-  // Set default date in enrol form
   const dateInput = document.getElementById("f-date");
   if (dateInput) dateInput.valueAsDate = new Date();
 
   setSyncStatus(navigator.onLine && window._fbUser ? "online" : "offline");
-
   render();
   updateSummary();
 }
 
-/* ── FRIENDLY ERROR MESSAGES ────────────────────────────── */
+/* ── FRIENDLY ERROR MESSAGES ──────────────────────────── */
 
 function _authMsg(code) {
   const map = {
-    "auth/user-not-found":    "No account found with that email.",
-    "auth/wrong-password":    "Incorrect password.",
+    "auth/user-not-found":       "No account found with that email.",
+    "auth/wrong-password":       "Incorrect password.",
     "auth/email-already-in-use": "Email already registered. Try signing in.",
-    "auth/invalid-email":     "Invalid email address.",
+    "auth/invalid-email":        "Invalid email address.",
     "auth/network-request-failed": "Network error — check your connection.",
+    "auth/invalid-credential":   "Incorrect email or password.",
   };
   return map[code] || code;
 }

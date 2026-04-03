@@ -1,10 +1,12 @@
 // ============================================================
 //  FeeFlow — js/render.js
-//  Renders the student list, expanded card detail,
-//  and updates the summary strip.
+//  Renders student list, card detail, summary strip.
 // ============================================================
 
-/* ── FILTER STATE ─────────────────────────────────────── */
+const MONTHS = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December"
+];
 
 window.activeFilter = "all";
 
@@ -22,15 +24,13 @@ function render() {
   const list   = document.getElementById("students-list");
   if (!list) return;
 
-  // Filter by search text
   let filtered = window.students.filter(s =>
-    s.name.toLowerCase().includes(search)  ||
+    s.name.toLowerCase().includes(search) ||
     (s.cls   || "").toLowerCase().includes(search) ||
     (s.board || "").toLowerCase().includes(search) ||
     (s.course|| "").toLowerCase().includes(search)
   );
 
-  // Filter by tab
   if (window.activeFilter === "green") filtered = filtered.filter(s => sliderColor(s) === "green");
   if (window.activeFilter === "blue")  filtered = filtered.filter(s => sliderColor(s) === "blue");
   if (window.activeFilter === "red")   filtered = filtered.filter(s => sliderColor(s) === "red");
@@ -51,31 +51,17 @@ function render() {
   list.innerHTML = filtered.map((s, i) => _buildCard(s, i)).join("");
 }
 
-/* ── BUILD A SINGLE CARD ──────────────────────────────── */
-
 function _buildCard(s, i) {
-  const total  = totalMonthsDue(s);
-  const paid   = monthsPaid(s);
-  const owed   = monthsOwed(s);
-  const sfO    = sfOwed(s);
-  const color  = sliderColor(s);
-  const tOwed  = totalOwed(s);
-
+  const total = totalMonthsDue(s), paid = monthsPaid(s), owed = monthsOwed(s);
+  const sfO = sfOwed(s), color = sliderColor(s), tOwed = totalOwed(s);
   const badgeTxt = color === "green" ? "All Paid" : color === "blue" ? "1 Month Due" : "Overdue";
-  const sfBadge  = sfO > 0
-    ? `<span class="badge badge-yellow" style="margin-left:5px">Special fee due</span>`
-    : "";
-  const sliderTxt = (owed === 0 && sfO === 0)
-    ? "All clear ✓"
-    : `${paid}/${total} months paid`;
+  const sfBadge  = sfO > 0 ? `<span class="badge badge-yellow" style="margin-left:5px">Special fee due</span>` : "";
+  const sliderTxt = (owed === 0 && sfO === 0) ? "All clear ✓" : `${paid}/${total} months paid`;
 
   return `
   <div class="sc s-${color}" id="sc-${s.id}" style="animation-delay:${i * 0.03}s">
-
-    <!-- TOP ROW -->
     <div class="sc-main" onclick="toggleDetail(${s.id})">
       <div class="sc-avatar ${avColor(i)}">${initials(s.name)}</div>
-
       <div class="sc-info">
         <div class="sc-name">${s.name}</div>
         <div class="sc-meta">
@@ -85,60 +71,49 @@ function _buildCard(s, i) {
           ${s.phone  ? `<span>📞 ${s.phone}</span>`  : ""}
         </div>
         <div style="margin-top:5px">
-          <span class="badge badge-${color}" id="badge-${s.id}">${badgeTxt}</span>
-          ${sfBadge}
+          <span class="badge badge-${color}" id="badge-${s.id}">${badgeTxt}</span>${sfBadge}
         </div>
       </div>
-
       <div class="sc-right">
         <div class="sc-total ${color}" id="sct-${s.id}">${fmt(tOwed)}</div>
         <div class="sc-total-lbl">${tOwed > 0 ? "outstanding" : "all clear"}</div>
       </div>
-
       <div class="sc-actions">
-        <button class="ic-btn del"
-          onclick="event.stopPropagation(); deleteStudent(${s.id})"
-          title="Remove student">🗑</button>
+        <button class="ic-btn del" onclick="event.stopPropagation();deleteStudent(${s.id})" title="Remove">🗑</button>
       </div>
     </div>
 
-    <!-- SLIDER ROW -->
     <div class="slider-wrap">
       <span class="slider-label">Months paid</span>
       <div class="slider-track">
-        <input type="range"
-          class="month-slider c-${color}"
-          id="sl-${s.id}"
+        <input type="range" class="month-slider c-${color}" id="sl-${s.id}"
           min="0" max="${total}" value="${paid}" step="1"
-          oninput="onSliderChange(${s.id}, this.value)"
+          oninput="onSliderChange(${s.id},this.value)"
           onclick="event.stopPropagation()">
       </div>
       <span class="slider-val" id="slv-${s.id}">${sliderTxt}</span>
     </div>
 
-    <!-- EXPANDABLE DETAIL -->
     <div class="sc-detail" id="detail-${s.id}">
       <div class="sc-detail-inner"></div>
     </div>
   </div>`;
 }
 
-/* ── TOGGLE EXPANDED DETAIL ───────────────────────────── */
+/* ── TOGGLE DETAIL ────────────────────────────────────── */
 
 function toggleDetail(id) {
   const el = document.getElementById(`detail-${id}`);
   if (!el) return;
   el.classList.toggle("open");
-  if (!el.classList.contains("open")) return;   // collapsed — nothing to build
+  if (!el.classList.contains("open")) return;
 
   const s = window.students.find(x => x.id === id);
   if (!s) return;
 
-  // ── Build month history ──────────────────────────────
-  const total     = totalMonthsDue(s);
-  const startDate = new Date(s.joinDate);
-  const sy = startDate.getFullYear();
-  const sm = startDate.getMonth();
+  const total = totalMonthsDue(s);
+  const sy = new Date(s.joinDate).getFullYear();
+  const sm = new Date(s.joinDate).getMonth();
   let histHTML = "";
 
   for (let i = 0; i < total; i++) {
@@ -154,9 +129,8 @@ function toggleDetail(id) {
 
   if (!histHTML) histHTML = `<p style="font-size:12px;color:var(--muted)">No months recorded yet.</p>`;
 
-  // ── Build special fees list ──────────────────────────
   const sfs = s.specialFees || [];
-  let sfHTML = sfs.length === 0
+  const sfHTML = sfs.length === 0
     ? `<p style="font-size:12px;color:var(--muted);margin-bottom:8px">No special fees added.</p>`
     : sfs.map(sf => `
         <div class="sf-card-item">
@@ -167,50 +141,31 @@ function toggleDetail(id) {
             : `<span class="sf-card-status-unpaid" onclick="paySpecialFee(${s.id},${sf.id})">Mark Paid</span>`}
         </div>`).join("");
 
-  // ── Inject HTML ──────────────────────────────────────
   el.querySelector(".sc-detail-inner").innerHTML = `
     <div class="detail-grid">
       <div class="dg-item"><div class="dg-label">Board</div><div class="dg-val">${s.board || "—"}</div></div>
       <div class="dg-item"><div class="dg-label">Class</div><div class="dg-val">${s.cls   || "—"}</div></div>
       <div class="dg-item"><div class="dg-label">Joined</div><div class="dg-val">${fmtDate(s.joinDate)}</div></div>
       <div class="dg-item"><div class="dg-label">Phone</div><div class="dg-val">${s.phone || "—"}</div></div>
-      <div class="dg-item"><div class="dg-label">Monthly Fee</div>
-        <div class="dg-val" style="color:var(--accent)">${fmt(s.fee)}</div></div>
-      <div class="dg-item"><div class="dg-label">Total Collected</div>
-        <div class="dg-val green">${fmt(totalCollected(s))}</div></div>
+      <div class="dg-item"><div class="dg-label">Monthly Fee</div><div class="dg-val" style="color:var(--accent)">${fmt(s.fee)}</div></div>
+      <div class="dg-item"><div class="dg-label">Total Collected</div><div class="dg-val green">${fmt(totalCollected(s))}</div></div>
     </div>
-
     <div class="history-section-title">Special Fees</div>
     <div class="sf-card-list">${sfHTML}</div>
     <div class="add-sf-existing">
-      <input id="asf-name-${s.id}" type="text"   placeholder="Label (e.g. Books)">
+      <input id="asf-name-${s.id}" type="text" placeholder="Label (e.g. Books)">
       <input id="asf-amt-${s.id}"  type="number" placeholder="₹ Amt" min="0" style="max-width:100px">
       <button onclick="addSpecialFeeToStudent(${s.id})">+ Add</button>
     </div>
-
-    <div class="history-section-title">
-      Monthly Payment History (${total} month${total !== 1 ? "s" : ""})
-    </div>
-    <div class="history-rows">${histHTML}</div>
-  `;
+    <div class="history-section-title">Monthly Payment History (${total} month${total !== 1 ? "s" : ""})</div>
+    <div class="history-rows">${histHTML}</div>`;
 }
 
-/* ── SUMMARY STRIP ────────────────────────────────────── */
+/* ── SUMMARY ──────────────────────────────────────────── */
 
 function updateSummary() {
-  const total     = window.students.length;
-  const collected = window.students.reduce((s, x) => s + totalCollected(x), 0);
-  const pending   = window.students.reduce((s, x) => s + totalOwed(x), 0);
-  const overdue   = window.students.filter(x => monthsOwed(x) >= 2 || sfOwed(x) > 0).length;
-
-  document.getElementById("s-total").textContent     = total;
-  document.getElementById("s-collected").textContent = fmt(collected);
-  document.getElementById("s-pending").textContent   = fmt(pending);
-  document.getElementById("s-overdue").textContent   = overdue;
+  document.getElementById("s-total").textContent     = window.students.length;
+  document.getElementById("s-collected").textContent = fmt(window.students.reduce((s,x) => s + totalCollected(x), 0));
+  document.getElementById("s-pending").textContent   = fmt(window.students.reduce((s,x) => s + totalOwed(x), 0));
+  document.getElementById("s-overdue").textContent   = window.students.filter(x => monthsOwed(x) >= 2 || sfOwed(x) > 0).length;
 }
-
-// Expose MONTHS for render.js (utils.js defines it but doesn't use const so it's global)
-const MONTHS = [
-  "January","February","March","April","May","June",
-  "July","August","September","October","November","December"
-];

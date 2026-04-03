@@ -15,10 +15,35 @@
   <link rel="stylesheet" href="css/auth.css">
   <link rel="stylesheet" href="css/app.css">
   <link rel="stylesheet" href="css/components.css">
+
+  <style>
+    /* Google button */
+    .btn-google {
+      width: 100%;
+      padding: 13px;
+      background: #fff;
+      border: none;
+      border-radius: var(--rad-sm);
+      color: #1f1f1f;
+      font-family: var(--font-b);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: opacity .2s, transform .15s;
+      margin-bottom: 12px;
+    }
+    .btn-google:hover  { opacity: .92; transform: translateY(-1px); }
+    .btn-google:active { transform: translateY(0); }
+    .btn-google img    { width: 18px; height: 18px; }
+  </style>
 </head>
 <body>
 
-  <!-- ═══════════════════ AUTH SCREEN ═══════════════════ -->
+  <!-- ═══ AUTH SCREEN ═══ -->
   <div id="auth-screen">
     <div class="auth-card">
       <div class="auth-logo">
@@ -29,57 +54,53 @@
         </div>
       </div>
 
-      <div id="firebase-missing-msg" class="firebase-warning" style="display:none">
-        ⚠️ Firebase not configured yet. You can still use FeeFlow offline — all data saves to this browser.
-        To enable cloud sync, paste your Firebase config into <code>js/firebase-config.js</code>.
+      <!-- Google Sign-In (primary) -->
+      <button class="btn-google" onclick="doGoogleLogin()">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+        Continue with Google
+      </button>
+
+      <div class="auth-divider"><span>or use email</span></div>
+
+      <!-- Email tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchAuthTab('login',this)">Sign In</button>
+        <button class="auth-tab" onclick="switchAuthTab('signup',this)">Create Account</button>
       </div>
 
-      <div id="auth-tabs-wrap">
-        <div class="auth-tabs">
-          <button class="auth-tab active" onclick="switchAuthTab('login',this)">Sign In</button>
-          <button class="auth-tab" onclick="switchAuthTab('signup',this)">Create Account</button>
+      <div id="auth-login">
+        <div class="fg">
+          <label>Email</label>
+          <input class="fi" type="email" id="login-email" placeholder="you@example.com">
         </div>
-
-        <div id="auth-login">
-          <div class="fg">
-            <label>Email</label>
-            <input class="fi" type="email" id="login-email" placeholder="you@example.com">
-          </div>
-          <div class="fg">
-            <label>Password</label>
-            <input class="fi" type="password" id="login-pass" placeholder="••••••••">
-          </div>
-          <button class="btn-primary" onclick="doLogin()">Sign In</button>
+        <div class="fg">
+          <label>Password</label>
+          <input class="fi" type="password" id="login-pass" placeholder="••••••••">
         </div>
-
-        <div id="auth-signup" style="display:none">
-          <div class="fg">
-            <label>Your Name</label>
-            <input class="fi" type="text" id="signup-name" placeholder="e.g. Ravi Kumar">
-          </div>
-          <div class="fg">
-            <label>Email</label>
-            <input class="fi" type="email" id="signup-email" placeholder="you@example.com">
-          </div>
-          <div class="fg">
-            <label>Password</label>
-            <input class="fi" type="password" id="signup-pass" placeholder="min 6 characters">
-          </div>
-          <button class="btn-primary" onclick="doSignup()">Create Account</button>
-        </div>
-
-        <div class="auth-divider"><span>or</span></div>
+        <button class="btn-primary" onclick="doLogin()">Sign In</button>
       </div>
 
+      <div id="auth-signup" style="display:none">
+        <div class="fg">
+          <label>Email</label>
+          <input class="fi" type="email" id="signup-email" placeholder="you@example.com">
+        </div>
+        <div class="fg">
+          <label>Password</label>
+          <input class="fi" type="password" id="signup-pass" placeholder="min 6 characters">
+        </div>
+        <button class="btn-primary" onclick="doSignup()">Create Account</button>
+      </div>
+
+      <div class="auth-divider"><span>or</span></div>
       <button class="btn-offline" onclick="goOffline()">Continue Offline (local storage only)</button>
-      <p class="auth-note">Offline mode stores data only on this device.<br>Sign in to sync across all your devices via cloud.</p>
+      <p class="auth-note">Offline mode stores data only on this device.<br>Sign in to sync across all your devices.</p>
     </div>
   </div>
 
-  <!-- ═══════════════════ APP SCREEN ═══════════════════ -->
+  <!-- ═══ APP SCREEN ═══ -->
   <div id="app-screen" style="display:none">
 
-    <!-- NAV -->
     <nav id="main-nav">
       <div class="nav-logo">
         <div class="nav-logo-icon">💸</div>
@@ -97,10 +118,9 @@
       </div>
     </nav>
 
-    <!-- PAGE -->
     <div class="page">
 
-      <!-- SUMMARY STRIP -->
+      <!-- SUMMARY -->
       <div class="summary-strip">
         <div class="sum-card" style="animation-delay:.05s">
           <div class="sum-label">Total Students</div>
@@ -127,7 +147,7 @@
       <!-- MAIN GRID -->
       <div class="main-grid">
 
-        <!-- LEFT: STUDENTS LIST -->
+        <!-- Students List -->
         <div>
           <div class="panel">
             <div class="panel-head">
@@ -135,8 +155,6 @@
               <span id="list-count" class="list-count">0 students</span>
             </div>
             <div class="panel-body">
-
-              <!-- Controls -->
               <div class="controls">
                 <div class="search-wrap">
                   <span class="search-icon">🔍</span>
@@ -149,8 +167,6 @@
                   <button class="ftab" onclick="setFilter('green',this)">Paid</button>
                 </div>
               </div>
-
-              <!-- Student Cards -->
               <div class="students-list" id="students-list">
                 <div class="empty-state">
                   <div class="empty-icon">📋</div>
@@ -158,12 +174,11 @@
                   <small>Add your first student using the form →</small>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
 
-        <!-- RIGHT: ADD FORM -->
+        <!-- Enrol Form -->
         <div>
           <div class="panel form-sticky">
             <div class="panel-head">
@@ -227,7 +242,6 @@
                 </div>
               </div>
 
-              <!-- Special Fees -->
               <div class="section-sep">One-Time Special Fees <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
               <div class="special-fees-list" id="form-sf-list"></div>
               <div class="sf-add-row">
@@ -242,9 +256,9 @@
           </div>
         </div>
 
-      </div><!-- /main-grid -->
-    </div><!-- /page -->
-  </div><!-- /app-screen -->
+      </div>
+    </div>
+  </div>
 
   <!-- TOAST -->
   <div class="toast" id="toast">
@@ -252,7 +266,7 @@
     <span id="toast-msg"></span>
   </div>
 
-  <!-- Scripts -->
+  <!-- Scripts (firebase-init must be type=module) -->
   <script type="module" src="js/firebase-init.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/storage.js"></script>
