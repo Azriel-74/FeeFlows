@@ -1,0 +1,183 @@
+/* ============================================================
+   FeeFlow — components.css
+   Form fields, badges, buttons, toast notification
+   ============================================================ */
+
+/* ── FORM INPUT BASE ── */
+.fi {
+  display: block;
+  width: 100%;
+  background: var(--surf2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--rad-sm);
+  padding: 11px 13px;
+  color: var(--text);
+  font-family: var(--font-b);
+  font-size: 13px;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+
+.fi:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59,130,246,.12);
+}
+
+.fi::placeholder { color: var(--muted); }
+.fi option { background: var(--surf2); }
+
+/* Prefix wrapper (for ₹ symbol) */
+.pfx-wrap { position: relative; }
+.pfx {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 13px;
+  pointer-events: none;
+}
+.pfx-input { padding-left: 26px; }
+
+/* ── FORM GROUP ── */
+.fg { margin-bottom: 14px; }
+
+.fg label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+/* ── FORM ROW (2 cols) ── */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
+
+/* ── SECTION SEPARATOR ── */
+.section-sep {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  margin: 18px 0 12px;
+}
+
+/* ── SPECIAL FEES IN FORM ── */
+.special-fees-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+
+.sfl-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surf3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+.sfl-name { flex: 1; font-weight: 500; }
+.sfl-amt  { color: var(--yellow); font-family: var(--font-d); }
+
+.sfl-del {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 15px;
+  padding: 0 2px;
+  line-height: 1;
+  transition: color .2s;
+}
+.sfl-del:hover { color: var(--red); }
+
+/* Special fee add row (inside form) */
+.sf-add-row { display: flex; gap: 8px; }
+.sf-fi { font-size: 12px !important; padding: 8px 10px !important; }
+.sf-amt { max-width: 110px; }
+
+.btn-add-sf {
+  background: var(--surf3);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--rad-sm);
+  padding: 0 14px;
+  color: var(--muted2);
+  font-family: var(--font-b);
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .2s;
+}
+.btn-add-sf:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── BUTTONS ── */
+.btn-primary {
+  display: block;
+  width: 100%;
+  padding: 13px;
+  background: var(--accent-g);
+  border: none;
+  border-radius: var(--rad-sm);
+  color: #fff;
+  font-family: var(--font-d);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: .3px;
+  transition: opacity .2s, transform .15s;
+}
+
+.btn-primary:hover  { opacity: .88; transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.badge-green  { background: var(--green-d);  color: var(--green); }
+.badge-blue   { background: var(--blue-d);   color: var(--blue); }
+.badge-red    { background: var(--red-d);    color: var(--red); }
+.badge-grey   { background: var(--surf3);    color: var(--muted2); }
+.badge-yellow { background: var(--yellow-d); color: var(--yellow); }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 999;
+  background: var(--surf2);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 13px 18px;
+  font-size: 13px;
+  max-width: 300px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all .35s cubic-bezier(.34,1.56,.64,1);
+  pointer-events: none;
+}
+
+.toast.show { transform: translateY(0); opacity: 1; }
+
+.toast.t-green  { border-color: rgba(34,197,94,.4); }
+.toast.t-red    { border-color: rgba(239,68,68,.4); }
+.toast.t-yellow { border-color: rgba(245,158,11,.4); }

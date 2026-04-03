@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FeeFlow — Student Fee Manager</title>
+  <meta name="description" content="FeeFlow — Smart student fee management for tutors and coaching centres.">
+  <meta name="theme-color" content="#0a0c10">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+  <!-- ═══════════════════ AUTH SCREEN ═══════════════════ -->
+  <div id="auth-screen">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="auth-logo-icon">💸</div>
+        <div>
+          <div class="auth-logo-name">FeeFlow</div>
+          <div class="auth-logo-sub">Student Fee Manager</div>
+        </div>
+      </div>
+
+      <div id="firebase-missing-msg" class="firebase-warning" style="display:none">
+        ⚠️ Firebase not configured yet. You can still use FeeFlow offline — all data saves to this browser.
+        To enable cloud sync, paste your Firebase config into <code>js/firebase-config.js</code>.
+      </div>
+
+      <div id="auth-tabs-wrap">
+        <div class="auth-tabs">
+          <button class="auth-tab active" onclick="switchAuthTab('login',this)">Sign In</button>
+          <button class="auth-tab" onclick="switchAuthTab('signup',this)">Create Account</button>
+        </div>
+
+        <div id="auth-login">
+          <div class="fg">
+            <label>Email</label>
+            <input class="fi" type="email" id="login-email" placeholder="you@example.com">
+          </div>
+          <div class="fg">
+            <label>Password</label>
+            <input class="fi" type="password" id="login-pass" placeholder="••••••••">
+          </div>
+          <button class="btn-primary" onclick="doLogin()">Sign In</button>
+        </div>
+
+        <div id="auth-signup" style="display:none">
+          <div class="fg">
+            <label>Your Name</label>
+            <input class="fi" type="text" id="signup-name" placeholder="e.g. Ravi Kumar">
+          </div>
+          <div class="fg">
+            <label>Email</label>
+            <input class="fi" type="email" id="signup-email" placeholder="you@example.com">
+          </div>
+          <div class="fg">
+            <label>Password</label>
+            <input class="fi" type="password" id="signup-pass" placeholder="min 6 characters">
+          </div>
+          <button class="btn-primary" onclick="doSignup()">Create Account</button>
+        </div>
+
+        <div class="auth-divider"><span>or</span></div>
+      </div>
+
+      <button class="btn-offline" onclick="goOffline()">Continue Offline (local storage only)</button>
+      <p class="auth-note">Offline mode stores data only on this device.<br>Sign in to sync across all your devices via cloud.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ APP SCREEN ═══════════════════ -->
+  <div id="app-screen" style="display:none">
+
+    <!-- NAV -->
+    <nav id="main-nav">
+      <div class="nav-logo">
+        <div class="nav-logo-icon">💸</div>
+        <div class="nav-logo-name">FeeFlow</div>
+      </div>
+      <div class="nav-right">
+        <div class="sync-status">
+          <div class="sync-dot" id="sync-dot"></div>
+          <span id="sync-label">Offline</span>
+        </div>
+        <div class="user-chip" id="user-chip" style="display:none">
+          <span>👤</span><span id="user-email-label"></span>
+        </div>
+        <button class="btn-logout" onclick="doLogout()">Sign Out</button>
+      </div>
+    </nav>
+
+    <!-- PAGE -->
+    <div class="page">
+
+      <!-- SUMMARY STRIP -->
+      <div class="summary-strip">
+        <div class="sum-card" style="animation-delay:.05s">
+          <div class="sum-label">Total Students</div>
+          <div class="sum-val" id="s-total">0</div>
+          <div class="sum-sub">enrolled</div>
+        </div>
+        <div class="sum-card" style="animation-delay:.1s">
+          <div class="sum-label">Collected (All Time)</div>
+          <div class="sum-val green" id="s-collected">₹0</div>
+          <div class="sum-sub">all payments received</div>
+        </div>
+        <div class="sum-card" style="animation-delay:.15s">
+          <div class="sum-label">Total Outstanding</div>
+          <div class="sum-val red" id="s-pending">₹0</div>
+          <div class="sum-sub">fees + special fees due</div>
+        </div>
+        <div class="sum-card" style="animation-delay:.2s">
+          <div class="sum-label">Overdue (2+ months)</div>
+          <div class="sum-val yellow" id="s-overdue">0</div>
+          <div class="sum-sub">students</div>
+        </div>
+      </div>
+
+      <!-- MAIN GRID -->
+      <div class="main-grid">
+
+        <!-- LEFT: STUDENTS LIST -->
+        <div>
+          <div class="panel">
+            <div class="panel-head">
+              <div class="panel-title">All Students</div>
+              <span id="list-count" class="list-count">0 students</span>
+            </div>
+            <div class="panel-body">
+
+              <!-- Controls -->
+              <div class="controls">
+                <div class="search-wrap">
+                  <span class="search-icon">🔍</span>
+                  <input type="text" id="search-inp" placeholder="Search by name, class, board…" oninput="render()">
+                </div>
+                <div class="filter-tabs">
+                  <button class="ftab active" onclick="setFilter('all',this)">All</button>
+                  <button class="ftab" onclick="setFilter('red',this)">Overdue</button>
+                  <button class="ftab" onclick="setFilter('blue',this)">Due</button>
+                  <button class="ftab" onclick="setFilter('green',this)">Paid</button>
+                </div>
+              </div>
+
+              <!-- Student Cards -->
+              <div class="students-list" id="students-list">
+                <div class="empty-state">
+                  <div class="empty-icon">📋</div>
+                  <p>No students yet</p>
+                  <small>Add your first student using the form →</small>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: ADD FORM -->
+        <div>
+          <div class="panel form-sticky">
+            <div class="panel-head">
+              <div class="panel-title">Enroll New Student</div>
+            </div>
+            <div class="panel-body">
+
+              <div class="form-row">
+                <div class="fg">
+                  <label>Full Name *</label>
+                  <input class="fi" type="text" id="f-name" placeholder="e.g. Rahul Sharma">
+                </div>
+                <div class="fg">
+                  <label>Phone / Parent</label>
+                  <input class="fi" type="text" id="f-phone" placeholder="+91 98765 43210">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="fg">
+                  <label>Class / Grade *</label>
+                  <select class="fi" id="f-class">
+                    <option value="">Select class</option>
+                    <option>Class 1</option><option>Class 2</option><option>Class 3</option>
+                    <option>Class 4</option><option>Class 5</option><option>Class 6</option>
+                    <option>Class 7</option><option>Class 8</option><option>Class 9</option>
+                    <option>Class 10</option><option>Class 11</option><option>Class 12</option>
+                    <option>College / Other</option>
+                  </select>
+                </div>
+                <div class="fg">
+                  <label>Board *</label>
+                  <select class="fi" id="f-board">
+                    <option value="">Select board</option>
+                    <option>CBSE</option>
+                    <option>ICSE</option>
+                    <option>State Board</option>
+                    <option>IB</option>
+                    <option>IGCSE</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="fg">
+                  <label>Subject / Course *</label>
+                  <input class="fi" type="text" id="f-course" placeholder="e.g. Physics, Maths">
+                </div>
+                <div class="fg">
+                  <label>Joining Date *</label>
+                  <input class="fi" type="date" id="f-date">
+                </div>
+              </div>
+
+              <div class="fg">
+                <label>Monthly Fee (₹) *</label>
+                <div class="pfx-wrap">
+                  <span class="pfx">₹</span>
+                  <input class="fi pfx-input" type="number" id="f-fee" placeholder="e.g. 2500" min="0">
+                </div>
+              </div>
+
+              <!-- Special Fees -->
+              <div class="section-sep">One-Time Special Fees <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
+              <div class="special-fees-list" id="form-sf-list"></div>
+              <div class="sf-add-row">
+                <input class="fi sf-fi" type="text" id="sf-name-inp" placeholder="Label (e.g. Books, Kit)">
+                <input class="fi sf-fi sf-amt" type="number" id="sf-amt-inp" placeholder="₹ Amt" min="0">
+                <button class="btn-add-sf" onclick="addFormSF()">+ Add</button>
+              </div>
+
+              <button class="btn-primary" style="margin-top:20px" onclick="addStudent()">+ Enroll Student</button>
+
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /main-grid -->
+    </div><!-- /page -->
+  </div><!-- /app-screen -->
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">
+    <span id="toast-icon"></span>
+    <span id="toast-msg"></span>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="js/firebase-init.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/students.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
