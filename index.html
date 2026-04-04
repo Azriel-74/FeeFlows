@@ -1,112 +1,103 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FeeFlow — Student Fee Manager</title>
-  <meta name="description" content="FeeFlow — Smart student fee management for tutors and coaching centres.">
+  <title>FeeStacks — Student Fee Manager</title>
+  <meta name="description" content="FeeStacks — Smart student fee management for tutors and coaching centres.">
   <meta name="theme-color" content="#0a0c10">
-
-  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
-
-  <!-- Styles -->
   <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/sidebar.css">
   <link rel="stylesheet" href="css/app.css">
   <link rel="stylesheet" href="css/components.css">
-
-  <style>
-    /* Google button */
-    .btn-google {
-      width: 100%;
-      padding: 13px;
-      background: #fff;
-      border: none;
-      border-radius: var(--rad-sm);
-      color: #1f1f1f;
-      font-family: var(--font-b);
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      transition: opacity .2s, transform .15s;
-      margin-bottom: 12px;
-    }
-    .btn-google:hover  { opacity: .92; transform: translateY(-1px); }
-    .btn-google:active { transform: translateY(0); }
-    .btn-google img    { width: 18px; height: 18px; }
-  </style>
 </head>
 <body>
 
-  <!-- ═══ AUTH SCREEN ═══ -->
-  <div id="auth-screen">
-    <div class="auth-card">
-      <div class="auth-logo">
-        <div class="auth-logo-icon">💸</div>
-        <div>
-          <div class="auth-logo-name">FeeFlow</div>
-          <div class="auth-logo-sub">Student Fee Manager</div>
-        </div>
+<!-- ═══════════════ AUTH SCREEN ═══════════════ -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">💸</div>
+      <div>
+        <div class="auth-logo-name">FeeStacks</div>
+        <div class="auth-logo-sub">Student Fee Manager</div>
       </div>
+    </div>
 
-      <!-- Google Sign-In (primary) -->
-      <button class="btn-google" onclick="doGoogleLogin()">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
-        Continue with Google
+    <button class="btn-google" onclick="doGoogleLogin()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
+      Continue with Google
+    </button>
+
+    <div class="auth-divider"><span>or use email</span></div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login',this)">Sign In</button>
+      <button class="auth-tab" onclick="switchAuthTab('signup',this)">Create Account</button>
+    </div>
+
+    <div id="auth-login">
+      <div class="fg"><label>Email</label><input class="fi" type="email" id="login-email" placeholder="you@example.com"></div>
+      <div class="fg"><label>Password</label><input class="fi" type="password" id="login-pass" placeholder="••••••••"></div>
+      <button class="btn-primary" onclick="doLogin()">Sign In</button>
+    </div>
+    <div id="auth-signup" style="display:none">
+      <div class="fg"><label>Email</label><input class="fi" type="email" id="signup-email" placeholder="you@example.com"></div>
+      <div class="fg"><label>Password</label><input class="fi" type="password" id="signup-pass" placeholder="min 6 characters"></div>
+      <button class="btn-primary" onclick="doSignup()">Create Account</button>
+    </div>
+
+    <div class="auth-divider"><span>or</span></div>
+    <button class="btn-offline" onclick="goOffline()">Continue Offline</button>
+    <p class="auth-note">Offline mode stores data only on this device.<br>Sign in to sync across devices.</p>
+  </div>
+</div>
+
+<!-- ═══════════════ APP SCREEN ═══════════════ -->
+<div id="app-screen">
+<div id="app-layout">
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">💸</div>
+      <div class="sidebar-logo-name">FeeStacks</div>
+    </div>
+    <div class="sidebar-nav">
+      <button class="nav-item active" data-page="students" onclick="navigateTo('students')">
+        <span class="nav-icon">👨‍🎓</span><span class="nav-label">Students</span>
       </button>
-
-      <div class="auth-divider"><span>or use email</span></div>
-
-      <!-- Email tabs -->
-      <div class="auth-tabs">
-        <button class="auth-tab active" onclick="switchAuthTab('login',this)">Sign In</button>
-        <button class="auth-tab" onclick="switchAuthTab('signup',this)">Create Account</button>
-      </div>
-
-      <div id="auth-login">
-        <div class="fg">
-          <label>Email</label>
-          <input class="fi" type="email" id="login-email" placeholder="you@example.com">
-        </div>
-        <div class="fg">
-          <label>Password</label>
-          <input class="fi" type="password" id="login-pass" placeholder="••••••••">
-        </div>
-        <button class="btn-primary" onclick="doLogin()">Sign In</button>
-      </div>
-
-      <div id="auth-signup" style="display:none">
-        <div class="fg">
-          <label>Email</label>
-          <input class="fi" type="email" id="signup-email" placeholder="you@example.com">
-        </div>
-        <div class="fg">
-          <label>Password</label>
-          <input class="fi" type="password" id="signup-pass" placeholder="min 6 characters">
-        </div>
-        <button class="btn-primary" onclick="doSignup()">Create Account</button>
-      </div>
-
-      <div class="auth-divider"><span>or</span></div>
-      <button class="btn-offline" onclick="goOffline()">Continue Offline (local storage only)</button>
-      <p class="auth-note">Offline mode stores data only on this device.<br>Sign in to sync across all your devices.</p>
+      <button class="nav-item" data-page="faculty" onclick="navigateTo('faculty')">
+        <span class="nav-icon">👩‍🏫</span><span class="nav-label">Faculty</span>
+      </button>
+      <button class="nav-item" data-page="programs" onclick="navigateTo('programs')">
+        <span class="nav-icon">🎓</span><span class="nav-label">Special Programs</span>
+      </button>
+      <button class="nav-item" data-page="graph" onclick="navigateTo('graph')">
+        <span class="nav-icon">📊</span><span class="nav-label">Graph</span>
+      </button>
+      <button class="nav-item" data-page="timetable" onclick="navigateTo('timetable')">
+        <span class="nav-icon">📅</span><span class="nav-label">Timetable</span>
+      </button>
+      <button class="nav-item" data-page="settings" onclick="navigateTo('settings')">
+        <span class="nav-icon">⚙️</span><span class="nav-label">Settings</span>
+      </button>
     </div>
   </div>
 
-  <!-- ═══ APP SCREEN ═══ -->
-  <div id="app-screen" style="display:none">
+  <!-- MAIN AREA -->
+  <div class="app-main">
 
+    <!-- TOP NAV -->
     <nav id="main-nav">
-      <div class="nav-logo">
-        <div class="nav-logo-icon">💸</div>
-        <div class="nav-logo-name">FeeFlow</div>
+      <div class="nav-logo" style="gap:8px">
+        <button onclick="toggleSidebar()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--muted);padding:4px">☰</button>
+        <div id="page-title" style="font-family:var(--font-d);font-size:16px;font-weight:700;color:var(--muted2)">Students</div>
       </div>
       <div class="nav-right">
+        <button id="theme-toggle" onclick="toggleTheme()" title="Toggle theme">☀️</button>
         <div class="sync-status">
           <div class="sync-dot" id="sync-dot"></div>
           <span id="sync-label">Offline</span>
@@ -118,36 +109,16 @@
       </div>
     </nav>
 
-    <div class="page">
-
-      <!-- SUMMARY -->
+    <!-- ═══ STUDENTS PAGE ═══ -->
+    <div id="page-students" class="page">
       <div class="summary-strip">
-        <div class="sum-card" style="animation-delay:.05s">
-          <div class="sum-label">Total Students</div>
-          <div class="sum-val" id="s-total">0</div>
-          <div class="sum-sub">enrolled</div>
-        </div>
-        <div class="sum-card" style="animation-delay:.1s">
-          <div class="sum-label">Collected (All Time)</div>
-          <div class="sum-val green" id="s-collected">₹0</div>
-          <div class="sum-sub">all payments received</div>
-        </div>
-        <div class="sum-card" style="animation-delay:.15s">
-          <div class="sum-label">Total Outstanding</div>
-          <div class="sum-val red" id="s-pending">₹0</div>
-          <div class="sum-sub">fees + special fees due</div>
-        </div>
-        <div class="sum-card" style="animation-delay:.2s">
-          <div class="sum-label">Overdue (2+ months)</div>
-          <div class="sum-val yellow" id="s-overdue">0</div>
-          <div class="sum-sub">students</div>
-        </div>
+        <div class="sum-card" style="animation-delay:.05s"><div class="sum-label">Total Students</div><div class="sum-val" id="s-total">0</div><div class="sum-sub">enrolled</div></div>
+        <div class="sum-card" style="animation-delay:.1s"><div class="sum-label">Collected (All Time)</div><div class="sum-val green" id="s-collected">₹0</div><div class="sum-sub">total received</div></div>
+        <div class="sum-card" style="animation-delay:.15s"><div class="sum-label">Outstanding</div><div class="sum-val red" id="s-pending">₹0</div><div class="sum-sub">fees due</div></div>
+        <div class="sum-card" style="animation-delay:.2s"><div class="sum-label">Overdue (2+ mo)</div><div class="sum-val yellow" id="s-overdue">0</div><div class="sum-sub">students</div></div>
       </div>
-
-      <!-- MAIN GRID -->
       <div class="main-grid">
-
-        <!-- Students List -->
+        <!-- List -->
         <div>
           <div class="panel">
             <div class="panel-head">
@@ -158,125 +129,255 @@
               <div class="controls">
                 <div class="search-wrap">
                   <span class="search-icon">🔍</span>
-                  <input type="text" id="search-inp" placeholder="Search by name, class, board…" oninput="render()">
+                  <input type="text" id="search-inp" placeholder="Search by name, class, board…" oninput="renderStudents()">
                 </div>
                 <div class="filter-tabs">
                   <button class="ftab active" onclick="setFilter('all',this)">All</button>
                   <button class="ftab" onclick="setFilter('red',this)">Overdue</button>
-                  <button class="ftab" onclick="setFilter('blue',this)">Due</button>
+                  <button class="ftab" onclick="setFilter('blue',this)">Partial</button>
                   <button class="ftab" onclick="setFilter('green',this)">Paid</button>
                 </div>
               </div>
               <div class="students-list" id="students-list">
-                <div class="empty-state">
-                  <div class="empty-icon">📋</div>
-                  <p>No students yet</p>
-                  <small>Add your first student using the form →</small>
-                </div>
+                <div class="empty-state"><div class="empty-icon">📋</div><p>No students yet</p><small>Add a student using the form →</small></div>
               </div>
             </div>
           </div>
         </div>
-
-        <!-- Enrol Form -->
+        <!-- Form -->
         <div>
           <div class="panel form-sticky">
-            <div class="panel-head">
-              <div class="panel-title">Enroll New Student</div>
-            </div>
+            <div class="panel-head"><div class="panel-title">Enroll New Student</div></div>
             <div class="panel-body">
-
               <div class="form-row">
-                <div class="fg">
-                  <label>Full Name *</label>
-                  <input class="fi" type="text" id="f-name" placeholder="e.g. Rahul Sharma">
-                </div>
-                <div class="fg">
-                  <label>Phone / Parent</label>
-                  <input class="fi" type="text" id="f-phone" placeholder="+91 98765 43210">
-                </div>
+                <div class="fg"><label>Full Name *</label><input class="fi" type="text" id="f-name" placeholder="e.g. Rahul Sharma"></div>
+                <div class="fg"><label>Phone / Parent</label><input class="fi" type="text" id="f-phone" placeholder="+91 98765 43210"></div>
               </div>
-
               <div class="form-row">
-                <div class="fg">
-                  <label>Class / Grade *</label>
+                <div class="fg"><label>Class *</label>
                   <select class="fi" id="f-class">
                     <option value="">Select class</option>
-                    <option>Class 1</option><option>Class 2</option><option>Class 3</option>
-                    <option>Class 4</option><option>Class 5</option><option>Class 6</option>
-                    <option>Class 7</option><option>Class 8</option><option>Class 9</option>
-                    <option>Class 10</option><option>Class 11</option><option>Class 12</option>
-                    <option>College / Other</option>
+                    <option>Class 1</option><option>Class 2</option><option>Class 3</option><option>Class 4</option><option>Class 5</option><option>Class 6</option><option>Class 7</option><option>Class 8</option><option>Class 9</option><option>Class 10</option><option>Class 11</option><option>Class 12</option><option>College / Other</option>
                   </select>
                 </div>
-                <div class="fg">
-                  <label>Board *</label>
+                <div class="fg"><label>Board *</label>
                   <select class="fi" id="f-board">
                     <option value="">Select board</option>
-                    <option>CBSE</option>
-                    <option>ICSE</option>
-                    <option>State Board</option>
-                    <option>IB</option>
-                    <option>IGCSE</option>
-                    <option>Other</option>
+                    <option>CBSE</option><option>ICSE</option><option>State Board</option><option>IB</option><option>IGCSE</option><option>Other</option>
                   </select>
                 </div>
               </div>
-
+              <div class="fg"><label>School Name</label><input class="fi" type="text" id="f-school" placeholder="e.g. Delhi Public School"></div>
               <div class="form-row">
-                <div class="fg">
-                  <label>Subject / Course *</label>
-                  <input class="fi" type="text" id="f-course" placeholder="e.g. Physics, Maths">
-                </div>
-                <div class="fg">
-                  <label>Joining Date *</label>
-                  <input class="fi" type="date" id="f-date">
-                </div>
+                <div class="fg"><label>Subject / Course</label><input class="fi" type="text" id="f-course" placeholder="e.g. Physics, Maths"></div>
+                <div class="fg"><label>Joining Date *</label><input class="fi" type="date" id="f-date"></div>
               </div>
-
-              <div class="fg">
-                <label>Monthly Fee (₹) *</label>
-                <div class="pfx-wrap">
-                  <span class="pfx">₹</span>
-                  <input class="fi pfx-input" type="number" id="f-fee" placeholder="e.g. 2500" min="0">
-                </div>
+              <div class="fg"><label>Monthly Fee (₹) *</label>
+                <div class="pfx-wrap"><span class="pfx">₹</span><input class="fi pfx-input" type="number" id="f-fee" placeholder="e.g. 2500" min="0"></div>
               </div>
-
+              <div class="fg"><label>Enrollment Type</label>
+                <select class="fi" id="f-progtype">
+                  <option value="regular">Regular Class</option>
+                  <option value="summer">Summer Program</option>
+                  <option value="winter">Winter Program</option>
+                  <option value="both">Regular + Special Program</option>
+                </select>
+              </div>
               <div class="section-sep">One-Time Special Fees <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
               <div class="special-fees-list" id="form-sf-list"></div>
               <div class="sf-add-row">
                 <input class="fi sf-fi" type="text" id="sf-name-inp" placeholder="Label (e.g. Books, Kit)">
-                <input class="fi sf-fi sf-amt" type="number" id="sf-amt-inp" placeholder="₹ Amt" min="0">
+                <input class="fi sf-fi sf-amt-inp" type="number" id="sf-amt-inp" placeholder="₹ Amt" min="0">
                 <button class="btn-add-sf" onclick="addFormSF()">+ Add</button>
               </div>
-
-              <button class="btn-primary" style="margin-top:20px" onclick="addStudent()">+ Enroll Student</button>
-
+              <button class="btn-primary" style="margin-top:18px" onclick="addStudent()">+ Enroll Student</button>
             </div>
           </div>
         </div>
-
       </div>
     </div>
-  </div>
 
-  <!-- TOAST -->
-  <div class="toast" id="toast">
-    <span id="toast-icon"></span>
-    <span id="toast-msg"></span>
-  </div>
+    <!-- ═══ FACULTY PAGE ═══ -->
+    <div id="page-faculty" class="page" style="display:none">
+      <div class="fac-summary-strip">
+        <div class="sum-card"><div class="sum-label">Total Teachers</div><div class="sum-val" id="fac-total">0</div><div class="sum-sub">faculty</div></div>
+        <div class="sum-card"><div class="sum-label">Monthly Payroll</div><div class="sum-val yellow" id="fac-total-sal">₹0</div><div class="sum-sub">total salaries</div></div>
+        <div class="sum-card"><div class="sum-label">Paid This Month</div><div class="sum-val green" id="fac-paid-sal">₹0</div><div class="sum-sub">salaries paid</div></div>
+        <div class="sum-card"><div class="sum-label">Still Due</div><div class="sum-val red" id="fac-due-sal">₹0</div><div class="sum-sub">unpaid salaries</div></div>
+      </div>
+      <div class="main-grid">
+        <div>
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Faculty</div></div>
+            <div class="panel-body">
+              <div class="faculty-list" id="faculty-list">
+                <div class="empty-state"><div class="empty-icon">👩‍🏫</div><p>No faculty added yet</p><small>Add teachers using the form →</small></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="panel form-sticky">
+            <div class="panel-head"><div class="panel-title">Add Teacher</div></div>
+            <div class="panel-body">
+              <div class="form-row">
+                <div class="fg"><label>Full Name *</label><input class="fi" type="text" id="fac-name" placeholder="e.g. Priya Nair"></div>
+                <div class="fg"><label>Phone</label><input class="fi" type="text" id="fac-phone" placeholder="+91 98765 43210"></div>
+              </div>
+              <div class="form-row">
+                <div class="fg"><label>Monthly Salary *</label>
+                  <div class="pfx-wrap"><span class="pfx">₹</span><input class="fi pfx-input" type="number" id="fac-salary" placeholder="e.g. 20000" min="0"></div>
+                </div>
+                <div class="fg"><label>Joining Date *</label><input class="fi" type="date" id="fac-date"></div>
+              </div>
+              <div class="fg"><label>Qualification</label><input class="fi" type="text" id="fac-qual" placeholder="e.g. M.Sc Physics, B.Ed"></div>
+              <div class="section-sep">Subjects / Classes</div>
+              <div class="subject-tags-wrap" id="faculty-subject-tags"></div>
+              <div class="subject-inp-row">
+                <input class="fi" type="text" id="fac-subject-inp" placeholder="e.g. Class 9 Physics" onkeydown="if(event.key==='Enter'){addFacultySubject();event.preventDefault();}">
+                <button onclick="addFacultySubject()">+ Add</button>
+              </div>
+              <button class="btn-primary" style="margin-top:18px" onclick="addFaculty()">+ Add Teacher</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <!-- Scripts (firebase-init must be type=module) -->
-  <script type="module" src="js/firebase-init.js"></script>
-  <script src="js/utils.js"></script>
-  <script src="js/storage.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/students.js"></script>
-  <script src="js/render.js"></script>
-  <script src="js/app.js"></script>
+    <!-- ═══ PROGRAMS PAGE ═══ -->
+    <div id="page-programs" class="page" style="display:none">
+      <div class="main-grid">
+        <div>
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Special Programs</div></div>
+            <div class="panel-body">
+              <div class="programs-list" id="programs-list">
+                <div class="empty-state"><div class="empty-icon">🎓</div><p>No programs yet</p><small>Create a special program using the form →</small></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="panel form-sticky">
+            <div class="panel-head"><div class="panel-title">Create Program</div></div>
+            <div class="panel-body">
+              <div class="fg"><label>Program Name *</label><input class="fi" type="text" id="prog-name" placeholder="e.g. Summer Bootcamp 2025"></div>
+              <div class="fg"><label>Program Fee (₹) *</label>
+                <div class="pfx-wrap"><span class="pfx">₹</span><input class="fi pfx-input" type="number" id="prog-fee" placeholder="e.g. 5000" min="0"></div>
+              </div>
+              <div class="section-sep">Program Duration</div>
+              <div class="form-row">
+                <div class="fg"><label>Start Month</label>
+                  <select class="fi" id="prog-start-month">
+                    <option value="">Month</option>
+                    <option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                  </select>
+                </div>
+                <div class="fg"><label>Start Year</label><input class="fi" type="number" id="prog-start-year" placeholder="e.g. 2025" min="2020" max="2035"></div>
+              </div>
+              <div class="form-row">
+                <div class="fg"><label>End Month</label>
+                  <select class="fi" id="prog-end-month">
+                    <option value="">Month</option>
+                    <option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                  </select>
+                </div>
+                <div class="fg"><label>End Year</label><input class="fi" type="number" id="prog-end-year" placeholder="e.g. 2025" min="2020" max="2035"></div>
+              </div>
+              <div class="fg"><label>Description (optional)</label><input class="fi" type="text" id="prog-desc" placeholder="Brief description…"></div>
+              <button class="btn-primary" style="margin-top:6px" onclick="addProgram()">+ Create Program</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
+    <!-- ═══ GRAPH PAGE ═══ -->
+    <div id="page-graph" class="page" style="display:none">
+      <div class="graph-controls">
+        <button class="graph-tab active" onclick="setGraphMode('current',this)">This Month</button>
+        <button class="graph-tab" onclick="setGraphMode('3months',this)">Last 3 Months</button>
+        <button class="graph-tab" onclick="setGraphMode('6months',this)">Last 6 Months</button>
+        <button class="graph-tab" onclick="setGraphMode('year',this)">Last 12 Months</button>
+      </div>
+      <div class="graph-canvas-wrap">
+        <canvas id="revenue-chart"></canvas>
+      </div>
+    </div>
+
+    <!-- ═══ TIMETABLE PAGE ═══ -->
+    <div id="page-timetable" class="page" style="display:none">
+      <div class="empty-state" style="margin-top:40px">
+        <div class="empty-icon">📅</div>
+        <p>Timetable coming soon</p>
+        <small>This feature will be available in the next update.</small>
+      </div>
+    </div>
+
+    <!-- ═══ SETTINGS PAGE ═══ -->
+    <div id="page-settings" class="page" style="display:none">
+      <div class="panel" style="max-width:500px">
+        <div class="panel-head"><div class="panel-title">Settings</div></div>
+        <div class="panel-body">
+          <div class="section-sep">Account</div>
+          <div class="detail-grid" id="settings-user-info"></div>
+          <div class="section-sep" style="margin-top:20px">Appearance</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-weight:600;font-size:14px">Theme</div>
+              <div style="font-size:12px;color:var(--muted)">Switch between dark and light mode</div>
+            </div>
+            <button id="theme-toggle-settings" onclick="toggleTheme();renderSettings()" style="background:var(--surf2);border:1.5px solid var(--border2);border-radius:8px;padding:8px 16px;cursor:pointer;font-family:var(--font-b);font-size:13px;color:var(--text)">Toggle Theme</button>
+          </div>
+          <div class="section-sep" style="margin-top:20px">Data</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0">
+            <div>
+              <div style="font-weight:600;font-size:14px;color:var(--red)">Clear All Data</div>
+              <div style="font-size:12px;color:var(--muted)">Permanently delete all students, faculty and programs</div>
+            </div>
+            <button onclick="if(confirm('Delete ALL data? This is permanent.')){window.students=[];window.faculty=[];window.programs=[];saveAll();toast('All data cleared','red');}" style="background:rgba(239,68,68,.1);border:1.5px solid rgba(239,68,68,.3);border-radius:8px;padding:8px 14px;color:var(--red);font-family:var(--font-b);font-size:13px;cursor:pointer;">Delete All</button>
+          </div>
+          <div style="margin-top:16px">
+            <button class="btn-logout" style="width:100%;padding:12px;border-radius:var(--rad-sm)" onclick="doLogout()">Sign Out</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /app-main -->
+</div><!-- /app-layout -->
+</div><!-- /app-screen -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span id="toast-icon"></span><span id="toast-msg"></span></div>
+
+<!-- SCRIPTS -->
 <script type="module" src="js/firebase-init.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/students.js"></script>
+<script src="js/faculty.js"></script>
+<script src="js/programs.js"></script>
+<script src="js/render.js"></script>
+<script>
+  // Page title update
+  const _origNav = navigateTo;
+  navigateTo = function(page) {
+    _origNav(page);
+    const titles = {students:"Students",faculty:"Faculty",graph:"Graph",timetable:"Timetable",programs:"Special Programs",settings:"Settings"};
+    const t = document.getElementById("page-title");
+    if (t) t.textContent = titles[page]||page;
+  };
 
-
+  // Init date fields
+  document.addEventListener("DOMContentLoaded", () => {
+    ["f-date","fac-date"].forEach(id => {
+      const el=document.getElementById(id); if(el) el.valueAsDate=new Date();
+    });
+    loadTheme();
+  });
+</script>
 </body>
 </html>
