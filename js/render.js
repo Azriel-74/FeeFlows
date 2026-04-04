@@ -1,7 +1,4 @@
 // FeeStacks — js/render.js
-const MONTHS       = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-const MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-
 window.activeFilter = "all";
 
 function setFilter(f, btn) {
