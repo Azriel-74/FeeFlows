@@ -1,17 +1,19 @@
 // FeeStacks — js/storage.js
-const LS_STUDENTS  = "feestacks_v1_students";
-const LS_FACULTY   = "feestacks_v1_faculty";
-const LS_PROGRAMS  = "feestacks_v1_programs";
-const LS_THEME     = "feestacks_theme";
+const LS_STUDENTS = "feestacks_v1_students";
+const LS_FACULTY  = "feestacks_v1_faculty";
+const LS_PROGRAMS = "feestacks_v1_programs";
+const LS_THEME    = "feestacks_theme";
 
-let _saveTimer = null;
+let _saveTimer   = null;
+let _isSaving    = false;
 
 // ── LOCAL ──────────────────────────────────────────────────
 function loadLocal() {
-  try { window.students  = JSON.parse(localStorage.getItem(LS_STUDENTS)  || "[]"); } catch(_){ window.students=[]; }
-  try { window.faculty   = JSON.parse(localStorage.getItem(LS_FACULTY)   || "[]"); } catch(_){ window.faculty=[]; }
-  try { window.programs  = JSON.parse(localStorage.getItem(LS_PROGRAMS)  || "[]"); } catch(_){ window.programs=[]; }
+  try { window.students = JSON.parse(localStorage.getItem(LS_STUDENTS) || "[]"); } catch(_){ window.students=[]; }
+  try { window.faculty  = JSON.parse(localStorage.getItem(LS_FACULTY)  || "[]"); } catch(_){ window.faculty=[]; }
+  try { window.programs = JSON.parse(localStorage.getItem(LS_PROGRAMS) || "[]"); } catch(_){ window.programs=[]; }
 }
+
 function saveLocal() {
   localStorage.setItem(LS_STUDENTS, JSON.stringify(window.students));
   localStorage.setItem(LS_FACULTY,  JSON.stringify(window.faculty));
@@ -19,12 +21,17 @@ function saveLocal() {
 }
 
 // ── CLOUD ──────────────────────────────────────────────────
+// Only called after debounce fires — shows syncing ONLY at this point
 async function _doCloudSave() {
   if (!window._firebaseReady || !window._fbUser) return;
-  const {db,doc,setDoc} = window._fb;
+  if (_isSaving) return; // prevent overlap
+  _isSaving = true;
+
+  const {db, doc, setDoc} = window._fb;
   setSyncStatus("syncing");
+
   try {
-    await setDoc(doc(db,"users",window._fbUser.uid,"data","main"), {
+    await setDoc(doc(db, "users", window._fbUser.uid, "data", "main"), {
       students: window.students,
       faculty:  window.faculty,
       programs: window.programs
@@ -33,49 +40,52 @@ async function _doCloudSave() {
   } catch(e) {
     console.warn("Cloud save failed:", e.message);
     setSyncStatus("online");
+  } finally {
+    _isSaving = false;
   }
 }
 
-// Debounced — waits 1.5s after last change before saving to cloud
-// This fixes the infinite syncing loop
+// Debounced — queues a save, resets timer on every new call.
+// "Syncing" only appears AFTER the 2s wait, not immediately.
 function saveCloud() {
   clearTimeout(_saveTimer);
-  _saveTimer = setTimeout(_doCloudSave, 1500);
+  // Don't show syncing yet — wait until debounce actually fires
+  _saveTimer = setTimeout(_doCloudSave, 2000);
 }
 
 async function loadCloud() {
   if (!window._firebaseReady || !window._fbUser) return;
-  const {db,doc,getDoc} = window._fb;
+  const {db, doc, getDoc} = window._fb;
   try {
-    const snap = await getDoc(doc(db,"users",window._fbUser.uid,"data","main"));
+    const snap = await getDoc(doc(db, "users", window._fbUser.uid, "data", "main"));
     if (snap.exists()) {
       const d = snap.data();
       window.students = d.students || [];
       window.faculty  = d.faculty  || [];
       window.programs = d.programs || [];
+      // saveLocal here but NOT saveCloud — avoids triggering another sync
       saveLocal();
     }
-  } catch(e) { console.warn("Cloud load failed:", e.message); loadLocal(); }
+  } catch(e) {
+    console.warn("Cloud load failed:", e.message);
+    loadLocal();
+  }
 }
 
-// ── COMBINED ────────────────────────────────────────────────
-// IMPORTANT: saveAll() NEVER calls render/refresh functions.
-// Callers are responsible for re-rendering after saveAll().
-// This is what fixes the infinite sync loop —
-// render → saveAll → cloud → render was the cycle.
+// ── SAVE ───────────────────────────────────────────────────
+// saveAll only saves — never renders, never triggers UI updates
 function saveAll() {
   saveLocal();
   if (navigator.onLine && window._fbUser) saveCloud();
-  // ← NO render call here intentionally
 }
 
-// ── SYNC DOT ────────────────────────────────────────────────
+// ── SYNC STATUS ─────────────────────────────────────────────
 function setSyncStatus(state) {
   const dot = document.getElementById("sync-dot");
   const lbl = document.getElementById("sync-label");
-  if (!dot||!lbl) return;
-  dot.className  = "sync-dot "+(state==="online"?"online":state==="syncing"?"syncing":"");
-  lbl.textContent = state==="online"?"Synced":state==="syncing"?"Syncing…":"Offline";
+  if (!dot || !lbl) return;
+  dot.className   = "sync-dot " + (state === "online" ? "online" : state === "syncing" ? "syncing" : "");
+  lbl.textContent = state === "online" ? "Synced" : state === "syncing" ? "Syncing…" : "Offline";
 }
 
 // ── THEME ───────────────────────────────────────────────────
@@ -87,15 +97,28 @@ function applyTheme(t) {
   document.documentElement.setAttribute("data-theme", t);
   localStorage.setItem(LS_THEME, t);
   const btn = document.getElementById("theme-toggle");
-  if (btn) btn.textContent = t==="dark" ? "☀️" : "🌙";
+  if (btn) btn.textContent = t === "dark" ? "☀️" : "🌙";
 }
 function toggleTheme() {
   const cur = document.documentElement.getAttribute("data-theme") || "dark";
-  applyTheme(cur==="dark"?"light":"dark");
+  applyTheme(cur === "dark" ? "light" : "dark");
 }
 
-window.addEventListener("online",  ()=>{ setSyncStatus("online"); if(window._fbUser) saveCloud(); });
-window.addEventListener("offline", ()=> setSyncStatus("offline"));
+// ── NETWORK ─────────────────────────────────────────────────
+// Debounce the online event too — Live Server pings cause it to flicker
+let _onlineTimer = null;
+window.addEventListener("online", () => {
+  clearTimeout(_onlineTimer);
+  _onlineTimer = setTimeout(() => {
+    setSyncStatus("online");
+    if (window._fbUser) saveCloud();
+  }, 1000);
+});
+window.addEventListener("offline", () => {
+  clearTimeout(_onlineTimer);
+  clearTimeout(_saveTimer); // cancel any pending cloud save
+  setSyncStatus("offline");
+});
 
 // Init
 window.students = [];
