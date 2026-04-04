@@ -27,7 +27,9 @@ function addFaculty() {
   });
   const fd=document.getElementById("fac-date"); if(fd) fd.valueAsDate=new Date();
 
-  saveAll();
+  saveLocal();
+  if (navigator.onLine && window._fbUser) saveCloud();
+  renderFaculty(); updateFacultySummary();
   toast(`${name} added to faculty!`,"green");
 }
 
@@ -35,7 +37,9 @@ function deleteFaculty(id) {
   const f=window.faculty.find(x=>x.id===id); if(!f) return;
   if (!confirm(`Remove ${f.name} from faculty?`)) return;
   window.faculty=window.faculty.filter(x=>x.id!==id);
-  saveAll();
+  saveLocal();
+  if (navigator.onLine && window._fbUser) saveCloud();
+  renderFaculty(); updateFacultySummary();
   toast(`${f.name} removed`,"red");
 }
 
@@ -70,7 +74,9 @@ function toggleSalary(id) {
     f.monthsPaid.push(key);
     toast(`${f.name} — salary paid!`,"green");
   }
-  saveAll();
+  saveLocal();
+  if (navigator.onLine && window._fbUser) saveCloud();
+  renderFaculty(); updateFacultySummary();
 }
 
 function isSalaryPaidThisMonth(f) {

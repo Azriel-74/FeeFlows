@@ -88,7 +88,7 @@ body {
 
 .nav-right { display:flex; align-items:center; gap:12px; }
 
-.sync-status { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); }
+.sync-status { display:flex; align-items:center; gap:6px; font-size:14px; color:var(--muted); }
 .sync-dot { width:7px; height:7px; border-radius:50%; background:var(--muted); transition:background .3s; }
 .sync-dot.online  { background:var(--green); box-shadow:0 0 6px rgba(34,197,94,.5); }
 .sync-dot.syncing { background:var(--yellow); animation:pulse 1s infinite; }
@@ -96,13 +96,13 @@ body {
 .user-chip {
   display:flex; align-items:center; gap:7px;
   background:var(--surf2); border:1px solid var(--border2);
-  border-radius:100px; padding:5px 12px; font-size:12px;
+  border-radius:100px; padding:5px 12px; font-size:14px;
 }
 
 .btn-logout {
   background:transparent; border:1.5px solid var(--border2);
   border-radius:8px; padding:6px 12px; color:var(--muted);
-  font-family:var(--font-b); font-size:12px; cursor:pointer; transition:all .2s;
+  font-family:var(--font-b); font-size:14px; cursor:pointer; transition:all .2s;
 }
 .btn-logout:hover { border-color:var(--red); color:var(--red); }
 
@@ -127,16 +127,16 @@ body {
   border-radius:var(--rad); padding:18px 20px;
   animation:fadeUp .4s ease both;
 }
-.sum-label { font-size:11px; color:var(--muted); font-weight:600; letter-spacing:.5px; text-transform:uppercase; margin-bottom:8px; }
+.sum-label { font-size:13px; color:var(--muted); font-weight:600; letter-spacing:.5px; text-transform:uppercase; margin-bottom:8px; }
 .sum-val { font-family:var(--font-d); font-size:26px; font-weight:700; line-height:1; }
-.sum-sub { font-size:11px; color:var(--muted); margin-top:5px; }
+.sum-sub { font-size:13px; color:var(--muted); margin-top:5px; }
 
 /* ── PANEL ── */
 .panel { background:var(--surf); border:1px solid var(--border); border-radius:20px; overflow:hidden; }
 .panel-head { display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid var(--border); }
 .panel-title { font-family:var(--font-d); font-size:16px; font-weight:700; }
 .panel-body { padding:18px 22px; }
-.list-count { font-size:12px; color:var(--muted); }
+.list-count { font-size:14px; color:var(--muted); }
 
 /* ── MAIN GRID ── */
 .main-grid { display:grid; grid-template-columns:1fr 360px; gap:22px; align-items:start; }

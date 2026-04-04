@@ -99,7 +99,9 @@ function addStudent() {
   });
   const fd=document.getElementById("f-date"); if(fd) fd.valueAsDate=new Date();
 
-  saveAll();
+  saveLocal();
+  if (navigator.onLine && window._fbUser) saveCloud();
+  renderStudents(); updateStudentSummary();
   toast(`${name} enrolled!`,"green");
 }
 
@@ -108,7 +110,9 @@ function deleteStudent(id) {
   const s=window.students.find(x=>x.id===id); if(!s) return;
   if (!confirm(`Remove ${s.name}? This cannot be undone.`)) return;
   window.students=window.students.filter(x=>x.id!==id);
-  saveAll();
+  saveLocal();
+  if (navigator.onLine && window._fbUser) saveCloud();
+  renderStudents(); updateStudentSummary();
   toast(`${s.name} removed`,"red");
 }
 
@@ -131,7 +135,8 @@ function onAmountInput(id, val) {
   }
   s.partialAmount = remainder > 0 ? Math.round(remainder) : 0;
 
-  saveAll();
+  saveLocal();
+  if (navigator.onLine && window._fbUser) saveCloud();
   _refreshCard(id);
 }
 
@@ -189,7 +194,8 @@ function addSpecialFeeToStudent(studentId) {
   s.specialFees.push({id:Date.now()+Math.random(),label:n,amount:a,paid:false});
   document.getElementById(`asf-name-${studentId}`).value="";
   document.getElementById(`asf-amt-${studentId}`).value="";
-  saveAll();
+  saveLocal();
+  if (navigator.onLine && window._fbUser) saveCloud();
   toast(`Special fee added for ${s.name}`,"green");
   const det=document.getElementById(`detail-${studentId}`);
   if (det?.classList.contains("open")) { det.classList.remove("open"); toggleDetail(studentId); }
@@ -199,7 +205,9 @@ function paySpecialFee(studentId,sfId) {
   const s=window.students.find(x=>x.id===studentId); if(!s) return;
   const sf=(s.specialFees||[]).find(f=>f.id===sfId); if(!sf) return;
   sf.paid=true;
-  saveAll();
+  saveLocal();
+  if (navigator.onLine && window._fbUser) saveCloud();
+  _refreshCard(studentId);
   toast(`"${sf.label}" marked as paid!`,"green");
   const det=document.getElementById(`detail-${studentId}`);
   if (det?.classList.contains("open")) { det.classList.remove("open"); toggleDetail(studentId); }

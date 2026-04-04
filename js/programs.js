@@ -26,7 +26,9 @@ function addProgram() {
     const el=document.getElementById(id); if(el) el.value="";
   });
 
-  saveAll();
+  saveLocal();
+  if (navigator.onLine && window._fbUser) saveCloud();
+  renderPrograms();
   toast(`${name} created!`,"green");
 }
 
@@ -34,7 +36,9 @@ function deleteProgram(id) {
   const p=window.programs.find(x=>x.id===id); if(!p) return;
   if (!confirm(`Delete "${p.name}"?`)) return;
   window.programs=window.programs.filter(x=>x.id!==id);
-  saveAll();
+  saveLocal();
+  if (navigator.onLine && window._fbUser) saveCloud();
+  renderPrograms();
   toast("Program deleted","red");
 }
 
@@ -47,8 +51,8 @@ function toggleProgramEnroll(programId, studentId) {
   } else {
     p.enrolledStudents.push(studentId);
   }
-  saveAll();
-  // re-render enroll section
+  saveLocal();
+  if (navigator.onLine && window._fbUser) saveCloud();
   renderProgramEnroll(programId);
 }
 

@@ -60,7 +60,6 @@
 
   <!-- SIDEBAR -->
   <div id="sidebar">
-    <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
     <div class="sidebar-logo">
       <div class="sidebar-logo-icon">💸</div>
       <div class="sidebar-logo-name">FeeStacks</div>
@@ -362,16 +361,6 @@
 <script src="js/programs.js"></script>
 <script src="js/render.js"></script>
 <script>
-  // Page title update
-  const _origNav = navigateTo;
-  navigateTo = function(page) {
-    _origNav(page);
-    const titles = {students:"Students",faculty:"Faculty",graph:"Graph",timetable:"Timetable",programs:"Special Programs",settings:"Settings"};
-    const t = document.getElementById("page-title");
-    if (t) t.textContent = titles[page]||page;
-  };
-
-  // Init date fields
   document.addEventListener("DOMContentLoaded", () => {
     ["f-date","fac-date"].forEach(id => {
       const el=document.getElementById(id); if(el) el.valueAsDate=new Date();

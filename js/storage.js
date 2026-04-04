@@ -59,10 +59,14 @@ async function loadCloud() {
 }
 
 // ── COMBINED ────────────────────────────────────────────────
+// IMPORTANT: saveAll() NEVER calls render/refresh functions.
+// Callers are responsible for re-rendering after saveAll().
+// This is what fixes the infinite sync loop —
+// render → saveAll → cloud → render was the cycle.
 function saveAll() {
   saveLocal();
   if (navigator.onLine && window._fbUser) saveCloud();
-  if (typeof refreshCurrentPage === "function") refreshCurrentPage();
+  // ← NO render call here intentionally
 }
 
 // ── SYNC DOT ────────────────────────────────────────────────
