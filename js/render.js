@@ -68,6 +68,7 @@ function _buildStudentCard(s, i) {
         <div class="sc-total-lbl">${owed>0?"outstanding":"all clear"}</div>
       </div>
       <div class="sc-actions">
+        <button class="ic-btn wa" onclick="event.stopPropagation();sendWhatsApp(${s.id})" title="Send WhatsApp reminder">💬</button>
         <button class="ic-btn del" onclick="event.stopPropagation();deleteStudent(${s.id})" title="Remove">🗑</button>
       </div>
     </div>

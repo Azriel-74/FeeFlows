@@ -220,3 +220,45 @@ function updateStudentSummary() {
   document.getElementById("s-pending").textContent   = fmt(window.students.reduce((a,x)=>a+totalOwed(x),0));
   document.getElementById("s-overdue").textContent   = window.students.filter(x=>monthsOwed(x)>=2||sfOwed(x)>0).length;
 }
+
+// ── WHATSAPP REMINDER ──────────────────────────────────────
+function sendWhatsApp(id) {
+  const s = window.students.find(x => x.id === id);
+  if (!s) return;
+
+  if (!s.phone) {
+    toast("No phone number saved for " + s.name, "yellow");
+    return;
+  }
+
+  // Clean phone number — remove spaces, dashes, brackets
+  let phone = s.phone.replace(/[\s\-\(\)]/g, "");
+  // If number starts with 0, replace with +91
+  if (phone.startsWith("0")) phone = "+91" + phone.slice(1);
+  // If number has no country code (10 digits), add +91
+  if (phone.length === 10 && !phone.startsWith("+")) phone = "+91" + phone;
+  // Remove the + for the wa.me URL
+  phone = phone.replace("+", "");
+
+  const owed     = totalOwed(s);
+  const months   = monthsOwed(s);
+  const partial  = partialRemaining(s);
+  const now      = new Date();
+  const monthName = MONTHS[now.getMonth()];
+
+  // Build message based on how much is owed
+  let msg = "";
+  if (owed === 0) {
+    msg = `Hello ${s.name}, this is a reminder from your coaching centre. Your fees are all up to date. Thank you! 🙏`;
+  } else if (partial > 0 && months === 0) {
+    msg = `Hello ${s.name}, this is a friendly reminder from your coaching centre. You have a remaining balance of ${fmt(partial)} for ${monthName}. Kindly clear the dues at your earliest. Thank you! 🙏`;
+  } else if (months === 1) {
+    msg = `Hello ${s.name}, this is a friendly reminder from your coaching centre. Your fee of ${fmt(s.fee)} for ${monthName} is due. Kindly clear the dues at your earliest. Thank you! 🙏`;
+  } else {
+    msg = `Hello ${s.name}, this is a reminder from your coaching centre. You have ${months} months of pending fees totalling ${fmt(owed)}. Please clear your dues as soon as possible. Thank you! 🙏`;
+  }
+
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+  window.open(url, "_blank");
+  toast(`Opening WhatsApp for ${s.name}…`, "green");
+}
