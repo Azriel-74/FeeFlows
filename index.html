@@ -11,6 +11,10 @@
   <link rel="stylesheet" href="css/sidebar.css">
   <link rel="stylesheet" href="css/app.css">
   <link rel="stylesheet" href="css/components.css">
+<style>
+  .sync-dot.error { background: var(--red); box-shadow: 0 0 6px rgba(239,68,68,.5); }
+  .sync-status { cursor: help; }
+</style>
 </head>
 <body>
 
@@ -97,7 +101,7 @@
       </div>
       <div class="nav-right">
         <button id="theme-toggle" onclick="toggleTheme()" title="Toggle theme">☀️</button>
-        <div class="sync-status">
+        <div class="sync-status" id="sync-wrap" style="cursor:help">
           <div class="sync-dot" id="sync-dot"></div>
           <span id="sync-label">Offline</span>
         </div>
