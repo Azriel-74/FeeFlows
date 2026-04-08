@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduStack — Student Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/student.css">
+</head>
+<body>
+
+<!-- ═══ AUTH ═══ -->
+<div id="s-auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">🎓</div>
+      <div>
+        <div class="auth-logo-name">EduStack</div>
+        <div class="auth-logo-sub">Student Portal</div>
+      </div>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchSAuthTab('login',this)">Sign In</button>
+      <button class="auth-tab" onclick="switchSAuthTab('signup',this)">Register</button>
+    </div>
+
+    <div id="s-auth-login">
+      <div class="fg"><label>Email</label><input class="fi" type="email" id="s-login-email" placeholder="student@email.com"></div>
+      <div class="fg"><label>Password</label><input class="fi" type="password" id="s-login-pass" placeholder="••••••••"></div>
+      <button class="btn-primary" onclick="doStudentLogin()">Sign In</button>
+    </div>
+
+    <div id="s-auth-signup" style="display:none">
+      <div class="fg"><label>Full Name</label><input class="fi" type="text" id="s-reg-name" placeholder="Your name"></div>
+      <div class="fg"><label>Email</label><input class="fi" type="email" id="s-reg-email" placeholder="student@email.com"></div>
+      <div class="fg"><label>Password</label><input class="fi" type="password" id="s-reg-pass" placeholder="min 6 characters"></div>
+      <div class="fg"><label>Class</label>
+        <select class="fi" id="s-reg-class">
+          <option value="">Select your class</option>
+          <option>Class 6</option><option>Class 7</option><option>Class 8</option>
+          <option>Class 9</option><option>Class 10</option><option>Class 11</option><option>Class 12</option>
+        </select>
+      </div>
+      <div class="fg"><label>Board</label>
+        <select class="fi" id="s-reg-board">
+          <option value="">Select board</option>
+          <option>CBSE</option><option>ICSE</option><option>State Board</option><option>IB</option><option>IGCSE</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Institution ID <span style="font-weight:400;text-transform:none">(optional — links you to your school's admin)</span></label>
+        <input class="fi" type="text" id="s-reg-instid" placeholder="Enter your school's EduStack ID">
+      </div>
+      <button class="btn-primary" onclick="doStudentRegister()">Create Account</button>
+    </div>
+
+    <div style="margin-top:12px;text-align:center">
+      <a href="index.html" style="font-size:13px;color:var(--muted);text-decoration:none">← Back to Home</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ STUDENT APP ═══ -->
+<div id="s-app" style="display:none">
+  <div id="s-layout">
+
+    <!-- SIDEBAR -->
+    <div id="s-sidebar">
+      <div class="s-sidebar-top">
+        <div class="s-logo">
+          <div class="s-logo-icon">🎓</div>
+          <div class="s-logo-name">EduStack</div>
+        </div>
+        <div class="s-student-info" id="s-student-chip">
+          <div class="s-student-avatar" id="s-avatar">S</div>
+          <div>
+            <div class="s-student-name" id="s-name-label">Student</div>
+            <div class="s-student-class" id="s-class-label">Class —</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="s-nav">
+        <button class="s-nav-item active" data-page="home" onclick="sNavigate('home')">
+          <span class="s-nav-icon">🏠</span><span class="s-nav-label">Home</span>
+        </button>
+        <button class="s-nav-item" data-page="attendance" onclick="sNavigate('attendance')">
+          <span class="s-nav-icon">📝</span><span class="s-nav-label">Attendance</span>
+        </button>
+        <button class="s-nav-item" data-page="assignments" onclick="sNavigate('assignments')">
+          <span class="s-nav-icon">📋</span><span class="s-nav-label">Assignments</span>
+        </button>
+        <div class="s-nav-section-label">Subjects</div>
+        <div id="s-subject-nav"></div>
+      </div>
+
+      <div class="s-sidebar-bottom">
+        <button class="s-nav-item" onclick="doStudentLogout()">
+          <span class="s-nav-icon">🚪</span><span class="s-nav-label">Sign Out</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="s-main">
+      <div class="s-topbar">
+        <div id="s-page-title" class="s-page-title">Home</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button id="s-theme-btn" onclick="toggleTheme()" style="background:var(--surf2);border:1.5px solid var(--border2);border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">☀️</button>
+        </div>
+      </div>
+
+      <!-- HOME PAGE -->
+      <div id="s-page-home" class="s-page">
+        <div class="s-welcome" id="s-welcome-msg">Welcome back! 👋</div>
+
+        <!-- Quick stats -->
+        <div class="s-stats-grid" id="s-stats-grid"></div>
+
+        <!-- Subjects overview -->
+        <div class="s-section-title">Your Subjects</div>
+        <div class="s-subjects-grid" id="s-subjects-home"></div>
+
+        <!-- Notifications -->
+        <div class="s-section-title" style="margin-top:28px">Notifications</div>
+        <div id="s-notifications"></div>
+      </div>
+
+      <!-- ATTENDANCE PAGE -->
+      <div id="s-page-attendance" class="s-page" style="display:none">
+        <div class="s-section-title">My Attendance</div>
+        <div id="s-att-stats"></div>
+        <div id="s-att-history"></div>
+      </div>
+
+      <!-- ASSIGNMENTS PAGE -->
+      <div id="s-page-assignments" class="s-page" style="display:none">
+        <div class="s-section-title">Assignments & Homework</div>
+        <div id="s-assignments-list"></div>
+      </div>
+
+      <!-- SUBJECT PAGE (dynamically filled) -->
+      <div id="s-page-subject" class="s-page" style="display:none">
+        <div id="s-subject-content"></div>
+      </div>
+
+      <!-- CHAPTER PAGE -->
+      <div id="s-page-chapter" class="s-page" style="display:none">
+        <div id="s-chapter-content"></div>
+      </div>
+
+      <!-- QUIZ PAGE -->
+      <div id="s-page-quiz" class="s-page" style="display:none">
+        <div id="s-quiz-content"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span id="toast-icon"></span><span id="toast-msg"></span></div>
+
+<!-- Scripts -->
+<script src="js/data/qb_registry.js"></script>
+<script src="js/data/class9_physics.js"></script>
+<script src="js/data/class9_science.js"></script>
+<script src="js/data/class9_maths.js"></script>
+<script src="js/data/class9_sst.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/storage.js"></script>
+<script type="module" src="js/firebase-init.js"></script>
+<script src="js/student_auth.js"></script>
+<script src="js/student_portal.js"></script>
+</body>
+</html>

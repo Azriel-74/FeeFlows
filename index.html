@@ -3,437 +3,254 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FeeStacks — Student Fee Manager</title>
-  <meta name="description" content="FeeStacks — Smart student fee management for tutors and coaching centres.">
-  <meta name="theme-color" content="#0a0c10">
+  <title>EduStack — Smart Learning & Fee Management</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/sidebar.css">
-  <link rel="stylesheet" href="css/newfeatures.css">
-  <link rel="stylesheet" href="css/app.css">
-  <link rel="stylesheet" href="css/components.css">
-<style>
-  .sync-dot.error { background: var(--red); box-shadow: 0 0 6px rgba(239,68,68,.5); }
-  .sync-status { cursor: help; }
-</style>
+  <style>
+    :root {
+      --bg:      #0a0c10;
+      --surf:    #12151c;
+      --surf2:   #181c26;
+      --border:  #252836;
+      --accent:  #3b82f6;
+      --accent-g:linear-gradient(135deg,#3b82f6,#6366f1);
+      --green:   #22c55e;
+      --text:    #e2e8f0;
+      --muted:   #64748b;
+      --muted2:  #94a3b8;
+      --font-d: 'Syne', sans-serif;
+      --font-b: 'Karla', sans-serif;
+    }
+    [data-theme="light"] {
+      --bg:#f1f5f9; --surf:#fff; --surf2:#f8fafc;
+      --border:#e2e8f0; --text:#0f172a; --muted:#64748b; --muted2:#475569;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body { background:var(--bg); color:var(--text); font-family:var(--font-b); min-height:100vh; overflow-x:hidden; }
+
+    /* Animated background */
+    body::before {
+      content:''; position:fixed; inset:0; pointer-events:none;
+      background:
+        radial-gradient(ellipse 70% 50% at 15% 10%, rgba(59,130,246,0.12), transparent),
+        radial-gradient(ellipse 60% 40% at 85% 90%, rgba(99,102,241,0.1), transparent),
+        radial-gradient(ellipse 40% 30% at 50% 50%, rgba(34,197,94,0.04), transparent);
+    }
+
+    /* NAV */
+    nav {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:20px 48px; position:sticky; top:0; z-index:100;
+      background:rgba(10,12,16,.8); backdrop-filter:blur(16px);
+      border-bottom:1px solid var(--border);
+    }
+    .nav-logo { display:flex; align-items:center; gap:12px; }
+    .nav-logo-icon { width:38px; height:38px; border-radius:10px; background:var(--accent-g); display:flex; align-items:center; justify-content:center; font-size:18px; }
+    .nav-logo-name { font-family:var(--font-d); font-size:20px; font-weight:800; }
+    .nav-links { display:flex; gap:28px; }
+    .nav-link { color:var(--muted); font-size:14px; text-decoration:none; transition:color .2s; cursor:pointer; }
+    .nav-link:hover { color:var(--text); }
+    .nav-cta {
+      background:var(--accent-g); color:#fff; border:none; border-radius:9px;
+      padding:9px 20px; font-family:var(--font-b); font-size:14px; font-weight:600;
+      cursor:pointer; transition:opacity .2s;
+    }
+    .nav-cta:hover { opacity:.88; }
+
+    /* HERO */
+    .hero {
+      text-align:center; padding:100px 24px 80px;
+      position:relative; z-index:1;
+    }
+    .hero-badge {
+      display:inline-flex; align-items:center; gap:8px;
+      background:rgba(59,130,246,.1); border:1px solid rgba(59,130,246,.3);
+      border-radius:100px; padding:6px 16px; font-size:13px; color:var(--accent);
+      font-weight:600; margin-bottom:24px;
+    }
+    .hero-title {
+      font-family:var(--font-d); font-size:clamp(36px,6vw,72px); font-weight:800;
+      line-height:1.1; margin-bottom:20px; letter-spacing:-1px;
+    }
+    .hero-title .grad {
+      background:var(--accent-g); -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .hero-sub {
+      font-size:18px; color:var(--muted2); max-width:560px; margin:0 auto 40px;
+      line-height:1.7;
+    }
+
+    /* ROLE CARDS */
+    .role-section {
+      padding:0 24px 100px; position:relative; z-index:1;
+      max-width:800px; margin:0 auto;
+    }
+    .role-title { text-align:center; font-family:var(--font-d); font-size:22px; font-weight:700; margin-bottom:10px; }
+    .role-sub { text-align:center; font-size:15px; color:var(--muted); margin-bottom:36px; }
+    .role-cards { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+
+    .role-card {
+      background:var(--surf); border:1.5px solid var(--border);
+      border-radius:20px; padding:36px 28px; cursor:pointer;
+      transition:all .3s; text-align:center; text-decoration:none; color:var(--text);
+      display:block; position:relative; overflow:hidden;
+    }
+    .role-card::before {
+      content:''; position:absolute; inset:0; opacity:0;
+      transition:opacity .3s;
+    }
+    .role-card.admin::before { background:linear-gradient(135deg,rgba(59,130,246,.08),rgba(99,102,241,.08)); }
+    .role-card.student::before { background:linear-gradient(135deg,rgba(34,197,94,.08),rgba(56,189,248,.08)); }
+    .role-card:hover { transform:translateY(-4px); }
+    .role-card.admin:hover  { border-color:rgba(59,130,246,.5); }
+    .role-card.student:hover { border-color:rgba(34,197,94,.5); }
+    .role-card:hover::before { opacity:1; }
+
+    .role-icon { font-size:48px; margin-bottom:16px; display:block; }
+    .role-name { font-family:var(--font-d); font-size:22px; font-weight:800; margin-bottom:8px; }
+    .role-desc { font-size:14px; color:var(--muted2); line-height:1.6; margin-bottom:24px; }
+    .role-features { list-style:none; text-align:left; display:flex; flex-direction:column; gap:8px; margin-bottom:28px; }
+    .role-features li { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted2); }
+    .role-features li::before { content:'✓'; color:var(--green); font-weight:700; flex-shrink:0; }
+    .role-btn {
+      display:block; width:100%; padding:13px; border-radius:10px;
+      font-family:var(--font-d); font-size:14px; font-weight:700;
+      border:none; cursor:pointer; transition:opacity .2s;
+    }
+    .role-btn.admin-btn { background:var(--accent-g); color:#fff; }
+    .role-btn.student-btn { background:linear-gradient(135deg,#22c55e,#16a34a); color:#fff; }
+    .role-btn:hover { opacity:.88; }
+
+    /* FEATURES SECTION */
+    .features { padding:80px 24px; position:relative; z-index:1; }
+    .features-inner { max-width:1000px; margin:0 auto; }
+    .features-title { text-align:center; font-family:var(--font-d); font-size:32px; font-weight:800; margin-bottom:10px; }
+    .features-sub { text-align:center; color:var(--muted); margin-bottom:48px; font-size:15px; }
+    .features-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+    .feat-card { background:var(--surf); border:1px solid var(--border); border-radius:16px; padding:24px; }
+    .feat-icon { font-size:28px; margin-bottom:12px; }
+    .feat-name { font-family:var(--font-d); font-size:16px; font-weight:700; margin-bottom:6px; }
+    .feat-desc { font-size:13px; color:var(--muted2); line-height:1.6; }
+
+    /* FOOTER */
+    footer { border-top:1px solid var(--border); padding:32px 48px; display:flex; align-items:center; justify-content:space-between; position:relative; z-index:1; }
+    .footer-logo { font-family:var(--font-d); font-size:16px; font-weight:800; }
+    .footer-right { font-size:13px; color:var(--muted); }
+
+    /* Theme toggle */
+    .theme-btn { background:var(--surf2); border:1.5px solid var(--border); border-radius:8px; width:36px; height:36px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; }
+
+    @media(max-width:600px) {
+      nav { padding:16px 20px; }
+      .nav-links { display:none; }
+      .hero { padding:60px 20px 50px; }
+      .role-cards { grid-template-columns:1fr; }
+      .features-grid { grid-template-columns:1fr; }
+      footer { flex-direction:column; gap:12px; text-align:center; }
+    }
+  </style>
 </head>
 <body>
 
-<!-- ═══════════════ AUTH SCREEN ═══════════════ -->
-<div id="auth-screen">
-  <div class="auth-card">
-    <div class="auth-logo">
-      <div class="auth-logo-icon">💸</div>
-      <div>
-        <div class="auth-logo-name">FeeStacks</div>
-        <div class="auth-logo-sub">Student Fee Manager</div>
-      </div>
-    </div>
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-icon">🎓</div>
+    <div class="nav-logo-name">EduStack</div>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link" href="#features">Features</a>
+    <a class="nav-link" href="#roles">Get Started</a>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center">
+    <button class="theme-btn" id="theme-btn" onclick="toggleLandingTheme()">☀️</button>
+    <button class="nav-cta" onclick="document.getElementById('roles').scrollIntoView({behavior:'smooth'})">Get Started</button>
+  </div>
+</nav>
 
-    <button class="btn-google" onclick="doGoogleLogin()">
-      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
-      Continue with Google
-    </button>
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">🚀 Smart Education Management Platform</div>
+  <h1 class="hero-title">Manage your institute.<br><span class="grad">Empower your students.</span></h1>
+  <p class="hero-sub">EduStack combines fee management, attendance tracking, timetabling, and a full student learning portal — all in one platform.</p>
+  <button class="nav-cta" style="padding:14px 32px;font-size:16px" onclick="document.getElementById('roles').scrollIntoView({behavior:'smooth'})">
+    Get Started — It's Free ↓
+  </button>
+</div>
 
-    <div class="auth-divider"><span>or use email</span></div>
+<!-- ROLE CARDS -->
+<div class="role-section" id="roles">
+  <div class="role-title">Who are you?</div>
+  <div class="role-sub">Choose your role to continue</div>
+  <div class="role-cards">
 
-    <div class="auth-tabs">
-      <button class="auth-tab active" onclick="switchAuthTab('login',this)">Sign In</button>
-      <button class="auth-tab" onclick="switchAuthTab('signup',this)">Create Account</button>
-    </div>
+    <!-- ADMIN -->
+    <a class="role-card admin" href="admin.html">
+      <span class="role-icon">🏫</span>
+      <div class="role-name">Admin / Teacher</div>
+      <p class="role-desc">Manage your coaching centre or school. Track fees, attendance, faculty, and student progress.</p>
+      <ul class="role-features">
+        <li>Fee tracking with cloud sync</li>
+        <li>Attendance management</li>
+        <li>Faculty & salary management</li>
+        <li>Timetable builder</li>
+        <li>WhatsApp reminders</li>
+        <li>Income graphs & reports</li>
+      </ul>
+      <button class="role-btn admin-btn">Enter Admin Panel →</button>
+    </a>
 
-    <div id="auth-login">
-      <div class="fg"><label>Email</label><input class="fi" type="email" id="login-email" placeholder="you@example.com"></div>
-      <div class="fg"><label>Password</label><input class="fi" type="password" id="login-pass" placeholder="••••••••"></div>
-      <button class="btn-primary" onclick="doLogin()">Sign In</button>
-    </div>
-    <div id="auth-signup" style="display:none">
-      <div class="fg"><label>Email</label><input class="fi" type="email" id="signup-email" placeholder="you@example.com"></div>
-      <div class="fg"><label>Password</label><input class="fi" type="password" id="signup-pass" placeholder="min 6 characters"></div>
-      <button class="btn-primary" onclick="doSignup()">Create Account</button>
-    </div>
+    <!-- STUDENT -->
+    <a class="role-card student" href="student.html">
+      <span class="role-icon">👨‍🎓</span>
+      <div class="role-name">Student</div>
+      <p class="role-desc">Access your personalised learning portal. Practice questions, view attendance, and track your progress.</p>
+      <ul class="role-features">
+        <li>Chapter-wise questions</li>
+        <li>Theory & key notes</li>
+        <li>Timed & practice quiz modes</li>
+        <li>View your attendance</li>
+        <li>Assignments & homework</li>
+        <li>CBSE, ICSE, State Board</li>
+      </ul>
+      <button class="role-btn student-btn">Enter Student Portal →</button>
+    </a>
 
-    <div class="auth-divider"><span>or</span></div>
-    <button class="btn-offline" onclick="goOffline()">Continue Offline</button>
-    <p class="auth-note">Offline mode stores data only on this device.<br>Sign in to sync across devices.</p>
   </div>
 </div>
 
-<!-- ═══════════════ APP SCREEN ═══════════════ -->
-<div id="app-screen">
-<div id="app-layout">
-
-  <!-- SIDEBAR -->
-  <div id="sidebar">
-    <div class="sidebar-logo">
-      <div class="sidebar-logo-icon">💸</div>
-      <div class="sidebar-logo-name">FeeStacks</div>
-    </div>
-    <div class="sidebar-nav">
-      <button class="nav-item active" data-page="students" onclick="navigateTo('students')">
-        <span class="nav-icon">👨‍🎓</span><span class="nav-label">Students</span>
-      </button>
-      <button class="nav-item" data-page="faculty" onclick="navigateTo('faculty')">
-        <span class="nav-icon">👩‍🏫</span><span class="nav-label">Faculty</span>
-      </button>
-      <button class="nav-item" data-page="attendance" onclick="navigateTo('attendance')">
-        <span class="nav-icon">📝</span><span class="nav-label">Attendance</span>
-      </button>
-      <button class="nav-item" data-page="timetable" onclick="navigateTo('timetable')">
-        <span class="nav-icon">📅</span><span class="nav-label">Timetable</span>
-      </button>
-      <button class="nav-item" data-page="programs" onclick="navigateTo('programs')">
-        <span class="nav-icon">🎓</span><span class="nav-label">Special Programs</span>
-      </button>
-      <button class="nav-item" data-page="graph" onclick="navigateTo('graph')">
-        <span class="nav-icon">📊</span><span class="nav-label">Graph</span>
-      </button>
-      <button class="nav-item" data-page="timetable" onclick="navigateTo('timetable')">
-        <span class="nav-icon">📅</span><span class="nav-label">Timetable</span>
-      </button>
-      <button class="nav-item" data-page="settings" onclick="navigateTo('settings')">
-        <span class="nav-icon">⚙️</span><span class="nav-label">Settings</span>
-      </button>
+<!-- FEATURES -->
+<div class="features" id="features">
+  <div class="features-inner">
+    <div class="features-title">Everything you need</div>
+    <div class="features-sub">Built for modern coaching centres and schools</div>
+    <div class="features-grid">
+      <div class="feat-card"><div class="feat-icon">💸</div><div class="feat-name">Fee Management</div><div class="feat-desc">Track monthly fees, partial payments, special fees. Colour-coded sliders show who's paid, who's due, who's overdue.</div></div>
+      <div class="feat-card"><div class="feat-icon">☁️</div><div class="feat-name">Cloud Sync</div><div class="feat-desc">All data syncs instantly to Firebase. Access your institute data from any device, anywhere.</div></div>
+      <div class="feat-card"><div class="feat-icon">📝</div><div class="feat-name">Attendance</div><div class="feat-desc">Mark attendance daily with one tap. View full history. Send absent notifications directly via WhatsApp.</div></div>
+      <div class="feat-card"><div class="feat-icon">📚</div><div class="feat-name">Question Bank</div><div class="feat-desc">Chapter-wise MCQs with theory, formulae, and detailed explanations for CBSE, ICSE, and State Board students.</div></div>
+      <div class="feat-card"><div class="feat-icon">📊</div><div class="feat-name">Analytics</div><div class="feat-desc">Income bar graphs by class, month, and year. See which classes generate the most revenue at a glance.</div></div>
+      <div class="feat-card"><div class="feat-icon">💬</div><div class="feat-name">WhatsApp Integration</div><div class="feat-desc">Send fee reminders, absent notifications, and bulk messages to all parents directly through WhatsApp.</div></div>
     </div>
   </div>
+</div>
 
-  <!-- MAIN AREA -->
-  <div class="app-main">
+<footer>
+  <div class="footer-logo">🎓 EduStack</div>
+  <div class="footer-right">Built with ❤️ for Indian coaching centres</div>
+</footer>
 
-    <!-- TOP NAV -->
-    <nav id="main-nav">
-      <div class="nav-logo" style="gap:8px">
-        <button onclick="toggleSidebar()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--muted);padding:4px">☰</button>
-        <div id="page-title" style="font-family:var(--font-d);font-size:16px;font-weight:700;color:var(--muted2)">Students</div>
-      </div>
-      <div class="nav-right">
-        <button id="theme-toggle" onclick="toggleTheme()" title="Toggle theme">☀️</button>
-        <div class="sync-status" id="sync-wrap" style="cursor:help">
-          <div class="sync-dot" id="sync-dot"></div>
-          <span id="sync-label">Offline</span>
-        </div>
-        <div class="user-chip" id="user-chip" style="display:none">
-          <span>👤</span><span id="user-email-label"></span>
-        </div>
-        <button class="btn-logout" onclick="doLogout()">Sign Out</button>
-      </div>
-    </nav>
-
-    <!-- ═══ STUDENTS PAGE ═══ -->
-    <div id="page-students" class="page">
-      <div class="summary-strip">
-        <div class="sum-card" style="animation-delay:.05s"><div class="sum-label">Total Students</div><div class="sum-val" id="s-total">0</div><div class="sum-sub">enrolled</div></div>
-        <div class="sum-card" style="animation-delay:.1s"><div class="sum-label">Collected (All Time)</div><div class="sum-val green" id="s-collected">₹0</div><div class="sum-sub">total received</div></div>
-        <div class="sum-card" style="animation-delay:.15s"><div class="sum-label">Outstanding</div><div class="sum-val red" id="s-pending">₹0</div><div class="sum-sub">fees due</div></div>
-        <div class="sum-card" style="animation-delay:.2s"><div class="sum-label">Overdue (2+ mo)</div><div class="sum-val yellow" id="s-overdue">0</div><div class="sum-sub">students</div></div>
-      </div>
-      <div class="main-grid">
-        <!-- List -->
-        <div>
-          <div class="panel">
-            <div class="panel-head">
-              <div class="panel-title">All Students</div>
-              <span id="list-count" class="list-count">0 students</span>
-            </div>
-            <div class="panel-body">
-              <!-- MESSAGE ALL BAR -->
-              <div class="msg-all-bar">
-                <button class="btn-msg-all" onclick="openMessageAll('all')">💬 Message All Students</button>
-                <button class="btn-msg-all dues" onclick="openMessageAll('dues')">⚠️ Message Students with Dues</button>
-              </div>
-              <div class="controls">
-                <div class="search-wrap">
-                  <span class="search-icon">🔍</span>
-                  <input type="text" id="search-inp" placeholder="Search by name, class, board…" oninput="renderStudents()">
-                </div>
-                <div class="filter-tabs">
-                  <button class="ftab active" onclick="setFilter('all',this)">All</button>
-                  <button class="ftab" onclick="setFilter('red',this)">Overdue</button>
-                  <button class="ftab" onclick="setFilter('blue',this)">Partial</button>
-                  <button class="ftab" onclick="setFilter('green',this)">Paid</button>
-                </div>
-              </div>
-              <div class="students-list" id="students-list">
-                <div class="empty-state"><div class="empty-icon">📋</div><p>No students yet</p><small>Add a student using the form →</small></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Form -->
-        <div>
-          <div class="panel form-sticky">
-            <div class="panel-head"><div class="panel-title">Enroll New Student</div></div>
-            <div class="panel-body">
-              <div class="form-row">
-                <div class="fg"><label>Full Name *</label><input class="fi" type="text" id="f-name" placeholder="e.g. Rahul Sharma"></div>
-                <div class="fg"><label>Phone / Parent</label><input class="fi" type="text" id="f-phone" placeholder="+91 98765 43210"></div>
-              </div>
-              <div class="form-row">
-                <div class="fg"><label>Class *</label>
-                  <select class="fi" id="f-class">
-                    <option value="">Select class</option>
-                    <option>Class 1</option><option>Class 2</option><option>Class 3</option><option>Class 4</option><option>Class 5</option><option>Class 6</option><option>Class 7</option><option>Class 8</option><option>Class 9</option><option>Class 10</option><option>Class 11</option><option>Class 12</option><option>College / Other</option>
-                  </select>
-                </div>
-                <div class="fg"><label>Board *</label>
-                  <select class="fi" id="f-board">
-                    <option value="">Select board</option>
-                    <option>CBSE</option><option>ICSE</option><option>State Board</option><option>IB</option><option>IGCSE</option><option>Other</option>
-                  </select>
-                </div>
-              </div>
-              <div class="fg"><label>School Name</label><input class="fi" type="text" id="f-school" placeholder="e.g. Delhi Public School"></div>
-              <div class="form-row">
-                <div class="fg"><label>Subject / Course</label><input class="fi" type="text" id="f-course" placeholder="e.g. Physics, Maths"></div>
-                <div class="fg"><label>Joining Date *</label><input class="fi" type="date" id="f-date"></div>
-              </div>
-              <div class="fg"><label>Monthly Fee (₹) *</label>
-                <div class="pfx-wrap"><span class="pfx">₹</span><input class="fi pfx-input" type="number" id="f-fee" placeholder="e.g. 2500" min="0"></div>
-              </div>
-              <div class="fg"><label>Enrollment Type</label>
-                <select class="fi" id="f-progtype">
-                  <option value="regular">Regular Class</option>
-                  <option value="summer">Summer Program</option>
-                  <option value="winter">Winter Program</option>
-                  <option value="both">Regular + Special Program</option>
-                </select>
-              </div>
-              <div class="section-sep">One-Time Special Fees <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
-              <div class="special-fees-list" id="form-sf-list"></div>
-              <div class="sf-add-row">
-                <input class="fi sf-fi" type="text" id="sf-name-inp" placeholder="Label (e.g. Books, Kit)">
-                <input class="fi sf-fi sf-amt-inp" type="number" id="sf-amt-inp" placeholder="₹ Amt" min="0">
-                <button class="btn-add-sf" onclick="addFormSF()">+ Add</button>
-              </div>
-              <button class="btn-primary" style="margin-top:18px" onclick="addStudent()">+ Enroll Student</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═══ FACULTY PAGE ═══ -->
-    <div id="page-faculty" class="page" style="display:none">
-      <div class="fac-summary-strip">
-        <div class="sum-card"><div class="sum-label">Total Teachers</div><div class="sum-val" id="fac-total">0</div><div class="sum-sub">faculty</div></div>
-        <div class="sum-card"><div class="sum-label">Monthly Payroll</div><div class="sum-val yellow" id="fac-total-sal">₹0</div><div class="sum-sub">total salaries</div></div>
-        <div class="sum-card"><div class="sum-label">Paid This Month</div><div class="sum-val green" id="fac-paid-sal">₹0</div><div class="sum-sub">salaries paid</div></div>
-        <div class="sum-card"><div class="sum-label">Still Due</div><div class="sum-val red" id="fac-due-sal">₹0</div><div class="sum-sub">unpaid salaries</div></div>
-      </div>
-      <div class="main-grid">
-        <div>
-          <div class="panel">
-            <div class="panel-head"><div class="panel-title">Faculty</div></div>
-            <div class="panel-body">
-              <div class="faculty-list" id="faculty-list">
-                <div class="empty-state"><div class="empty-icon">👩‍🏫</div><p>No faculty added yet</p><small>Add teachers using the form →</small></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div>
-          <div class="panel form-sticky">
-            <div class="panel-head"><div class="panel-title">Add Teacher</div></div>
-            <div class="panel-body">
-              <div class="form-row">
-                <div class="fg"><label>Full Name *</label><input class="fi" type="text" id="fac-name" placeholder="e.g. Priya Nair"></div>
-                <div class="fg"><label>Phone</label><input class="fi" type="text" id="fac-phone" placeholder="+91 98765 43210"></div>
-              </div>
-              <div class="form-row">
-                <div class="fg"><label>Monthly Salary *</label>
-                  <div class="pfx-wrap"><span class="pfx">₹</span><input class="fi pfx-input" type="number" id="fac-salary" placeholder="e.g. 20000" min="0"></div>
-                </div>
-                <div class="fg"><label>Joining Date *</label><input class="fi" type="date" id="fac-date"></div>
-              </div>
-              <div class="fg"><label>Qualification</label><input class="fi" type="text" id="fac-qual" placeholder="e.g. M.Sc Physics, B.Ed"></div>
-              <div class="section-sep">Subjects / Classes</div>
-              <div class="subject-tags-wrap" id="faculty-subject-tags"></div>
-              <div class="subject-inp-row">
-                <input class="fi" type="text" id="fac-subject-inp" placeholder="e.g. Class 9 Physics" onkeydown="if(event.key==='Enter'){addFacultySubject();event.preventDefault();}">
-                <button onclick="addFacultySubject()">+ Add</button>
-              </div>
-              <button class="btn-primary" style="margin-top:18px" onclick="addFaculty()">+ Add Teacher</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═══ PROGRAMS PAGE ═══ -->
-    <div id="page-programs" class="page" style="display:none">
-      <div class="main-grid">
-        <div>
-          <div class="panel">
-            <div class="panel-head"><div class="panel-title">Special Programs</div></div>
-            <div class="panel-body">
-              <div class="programs-list" id="programs-list">
-                <div class="empty-state"><div class="empty-icon">🎓</div><p>No programs yet</p><small>Create a special program using the form →</small></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div>
-          <div class="panel form-sticky">
-            <div class="panel-head"><div class="panel-title">Create Program</div></div>
-            <div class="panel-body">
-              <div class="fg"><label>Program Name *</label><input class="fi" type="text" id="prog-name" placeholder="e.g. Summer Bootcamp 2025"></div>
-              <div class="fg"><label>Program Fee (₹) *</label>
-                <div class="pfx-wrap"><span class="pfx">₹</span><input class="fi pfx-input" type="number" id="prog-fee" placeholder="e.g. 5000" min="0"></div>
-              </div>
-              <div class="section-sep">Program Duration</div>
-              <div class="form-row">
-                <div class="fg"><label>Start Month</label>
-                  <select class="fi" id="prog-start-month">
-                    <option value="">Month</option>
-                    <option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option>
-                  </select>
-                </div>
-                <div class="fg"><label>Start Year</label><input class="fi" type="number" id="prog-start-year" placeholder="e.g. 2025" min="2020" max="2035"></div>
-              </div>
-              <div class="form-row">
-                <div class="fg"><label>End Month</label>
-                  <select class="fi" id="prog-end-month">
-                    <option value="">Month</option>
-                    <option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option>
-                  </select>
-                </div>
-                <div class="fg"><label>End Year</label><input class="fi" type="number" id="prog-end-year" placeholder="e.g. 2025" min="2020" max="2035"></div>
-              </div>
-              <div class="fg"><label>Description (optional)</label><input class="fi" type="text" id="prog-desc" placeholder="Brief description…"></div>
-              <button class="btn-primary" style="margin-top:6px" onclick="addProgram()">+ Create Program</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═══ GRAPH PAGE ═══ -->
-    <div id="page-graph" class="page" style="display:none">
-      <div class="graph-controls">
-        <button class="graph-tab active" onclick="setGraphMode('current',this)">This Month</button>
-        <button class="graph-tab" onclick="setGraphMode('3months',this)">Last 3 Months</button>
-        <button class="graph-tab" onclick="setGraphMode('6months',this)">Last 6 Months</button>
-        <button class="graph-tab" onclick="setGraphMode('year',this)">Last 12 Months</button>
-      </div>
-      <div class="graph-canvas-wrap">
-        <canvas id="revenue-chart"></canvas>
-      </div>
-    </div>
-
-    <!-- ═══ ATTENDANCE PAGE ═══ -->
-    <div id="page-attendance" class="page" style="display:none">
-      <div class="att-controls-bar">
-        <div class="att-date-nav">
-          <button onclick="changeAttendanceDate(-1)">◀</button>
-          <span id="att-date-display">Today</span>
-          <button onclick="changeAttendanceDate(1)">▶</button>
-        </div>
-        <input type="date" class="att-date-picker" id="att-date-inp"
-          onchange="goToAttendanceDate(this.value)">
-      </div>
-      <div id="att-summary"></div>
-      <div id="att-class-filter"></div>
-      <div id="attendance-list"></div>
-    </div>
-
-    <!-- ═══ TIMETABLE PAGE ═══ -->
-    <div id="page-timetable" class="page" style="display:none">
-      <!-- Setup Panel -->
-      <div class="tt-setup-panel">
-        <div class="tt-setup-title">⚙️ Institution Setup</div>
-
-        <div class="fg"><label>Working Days</label>
-          <div class="tt-days-wrap" id="tt-days-wrap"></div>
-        </div>
-
-        <div class="fg"><label>Institution Timings</label>
-          <div class="tt-timing-row">
-            <span style="color:var(--muted);font-size:14px">Opens</span>
-            <input type="time" class="tt-time-inp" id="tt-start" value="09:00">
-            <span style="color:var(--muted);font-size:14px">Closes</span>
-            <input type="time" class="tt-time-inp" id="tt-end" value="18:00">
-            <button class="btn-add-sf" onclick="saveTimetableTimings()">Save Timings</button>
-          </div>
-        </div>
-
-        <div class="fg"><label>Periods</label>
-          <div id="tt-periods-list"></div>
-          <div class="tt-add-period-row">
-            <input type="time" id="tt-period-start">
-            <span style="color:var(--muted);font-size:13px">to</span>
-            <input type="time" id="tt-period-end">
-            <input type="text" id="tt-period-label" placeholder="Period name (e.g. Period 1)">
-            <button class="btn-add-sf" onclick="addPeriod()">+ Add Period</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Timetable Grid -->
-      <div class="panel">
-        <div class="panel-head"><div class="panel-title">📅 Weekly Timetable</div></div>
-        <div class="panel-body">
-          <div id="tt-grid"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═══ SETTINGS PAGE ═══ -->
-    <div id="page-settings" class="page" style="display:none">
-      <div class="panel" style="max-width:500px">
-        <div class="panel-head"><div class="panel-title">Settings</div></div>
-        <div class="panel-body">
-          <div class="section-sep">Account</div>
-          <div class="detail-grid" id="settings-user-info"></div>
-          <div class="section-sep" style="margin-top:20px">Appearance</div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
-            <div>
-              <div style="font-weight:600;font-size:14px">Theme</div>
-              <div style="font-size:12px;color:var(--muted)">Switch between dark and light mode</div>
-            </div>
-            <button id="theme-toggle-settings" onclick="toggleTheme();renderSettings()" style="background:var(--surf2);border:1.5px solid var(--border2);border-radius:8px;padding:8px 16px;cursor:pointer;font-family:var(--font-b);font-size:13px;color:var(--text)">Toggle Theme</button>
-          </div>
-          <div class="section-sep" style="margin-top:20px">Data</div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0">
-            <div>
-              <div style="font-weight:600;font-size:14px;color:var(--red)">Clear All Data</div>
-              <div style="font-size:12px;color:var(--muted)">Permanently delete all students, faculty and programs</div>
-            </div>
-            <button onclick="if(confirm('Delete ALL data? This is permanent.')){window.students=[];window.faculty=[];window.programs=[];saveAll();toast('All data cleared','red');}" style="background:rgba(239,68,68,.1);border:1.5px solid rgba(239,68,68,.3);border-radius:8px;padding:8px 14px;color:var(--red);font-family:var(--font-b);font-size:13px;cursor:pointer;">Delete All</button>
-          </div>
-          <div style="margin-top:16px">
-            <button class="btn-logout" style="width:100%;padding:12px;border-radius:var(--rad-sm)" onclick="doLogout()">Sign Out</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /app-main -->
-</div><!-- /app-layout -->
-</div><!-- /app-screen -->
-
-<!-- TOAST -->
-<div class="toast" id="toast"><span id="toast-icon"></span><span id="toast-msg"></span></div>
-
-<!-- SCRIPTS -->
-<script src="js/utils.js"></script>
-  <script src="js/storage.js"></script>
-  <script src="js/students.js"></script>
-  <script src="js/faculty.js"></script>
-  <script src="js/programs.js"></script>
-  <script src="js/attendance.js"></script>
-  <script src="js/timetable.js"></script>
-  <script src="js/messageall.js"></script>
-  <script src="js/render.js"></script>
-  <script src="js/nav.js"></script>
-  <script src="js/auth.js"></script>
-  <script type="module" src="js/firebase-init.js"></script>
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    ["f-date","fac-date"].forEach(id => {
-      const el=document.getElementById(id); if(el) el.valueAsDate=new Date();
-    });
-    loadTheme();
-  });
+function toggleLandingTheme() {
+  const cur = document.documentElement.getAttribute("data-theme")||"dark";
+  const next = cur==="dark"?"light":"dark";
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem("feestacks_theme", next);
+  document.getElementById("theme-btn").textContent = next==="dark"?"☀️":"🌙";
+}
+// Apply saved theme
+const t = localStorage.getItem("feestacks_theme")||"dark";
+document.documentElement.setAttribute("data-theme", t);
+document.getElementById("theme-btn").textContent = t==="dark"?"☀️":"🌙";
 </script>
 </body>
 </html>
