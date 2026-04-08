@@ -252,3 +252,50 @@ window.students        = [];
 window.faculty         = [];
 window.programs        = [];
 window.timetableConfig = null;
+
+// ── INSTITUTION ID ────────────────────────────────────────
+// Generate a unique institution ID for this admin account
+function generateInstitutionId(uid) {
+  // Create a readable ID from uid: first 6 chars + 4 random digits
+  const base = uid.replace(/[^a-zA-Z0-9]/g,'').substring(0,6).toUpperCase();
+  const rand = Math.floor(1000 + Math.random()*9000);
+  return `ES-${base}-${rand}`;
+}
+
+function getInstitutionId() {
+  return window.institutionData?.id || null;
+}
+
+async function saveInstitutionData(data) {
+  window.institutionData = data;
+  localStorage.setItem("feestacks_institution", JSON.stringify(data));
+  if (navigator.onLine && window._fbUser) {
+    try {
+      const url   = `https://firestore.googleapis.com/v1/projects/${window._fb?.projectId}/databases/(default)/documents/institutions/${data.id}`;
+      const token = await window._fbUser.getIdToken();
+      const body  = {
+        fields: {
+          id:        { stringValue: data.id },
+          name:      { stringValue: data.name || "" },
+          adminUid:  { stringValue: window._fbUser.uid },
+          adminEmail:{ stringValue: window._fbUser.email || "" }
+        }
+      };
+      await fetch(url, {
+        method: "PATCH",
+        headers: { "Content-Type":"application/json","Authorization":"Bearer "+token },
+        body: JSON.stringify(body)
+      });
+    } catch(e) { console.warn("Institution save failed:", e.message); }
+  }
+}
+
+function loadInstitutionData() {
+  try {
+    window.institutionData = JSON.parse(localStorage.getItem("feestacks_institution")||"null");
+  } catch(_) { window.institutionData = null; }
+}
+
+// Init
+loadInstitutionData();
+window.institutionData = window.institutionData || null;

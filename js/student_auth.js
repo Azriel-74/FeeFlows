@@ -1,144 +1,167 @@
 // EduStack — js/student_auth.js
-// Student login, registration, institution linking
+const LS_STUDENT = "edustack_student_v1";
 
 window._studentProfile = null;
-const LS_STUDENT_PROFILE = "edustack_student_profile";
 
-window._onAuthChange = async function(user) {
-  // This fires for both admin and student pages
-  // Student page handles its own auth separately
-};
-
-function switchSAuthTab(tab, btn) {
-  document.querySelectorAll(".auth-tab").forEach(b => b.classList.remove("active"));
+// ── TAB SWITCHER ────────────────────────────────────────────
+function switchSTab(tab, btn) {
+  document.querySelectorAll(".auth-tab").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
-  document.getElementById("s-auth-login").style.display  = tab==="login"  ? "block" : "none";
-  document.getElementById("s-auth-signup").style.display = tab==="signup" ? "block" : "none";
+  document.getElementById("s-login-form").style.display    = tab==="login"    ? "block":"none";
+  document.getElementById("s-register-form").style.display = tab==="register" ? "block":"none";
 }
 
+// ── SIGN IN ─────────────────────────────────────────────────
 async function doStudentLogin() {
-  const email = document.getElementById("s-login-email").value.trim();
-  const pass  = document.getElementById("s-login-pass").value;
+  const email = document.getElementById("sl-email")?.value.trim();
+  const pass  = document.getElementById("sl-pass")?.value;
   if (!email||!pass) { toast("Enter email and password","yellow"); return; }
   try {
-    await window._fb.signInWithEmailAndPassword(window._fb.auth, email, pass);
-    const user = window._fb.auth.currentUser;
-    window._fbUser = user;
-    await loadStudentProfile(user);
-    showStudentApp();
-  } catch(e) { toast("Sign in failed: "+e.message,"red"); }
+    const cred = await window._fb.signInWithEmailAndPassword(window._fb.auth, email, pass);
+    window._fbUser = cred.user;
+    await _loadProfile(cred.user);
+    if (!window._studentProfile) {
+      // First time login — no profile yet
+      toast("Account found! Please complete registration.","yellow");
+      switchSTab("register", document.querySelectorAll(".auth-tab")[1]);
+      document.getElementById("sr-email").value = email;
+      return;
+    }
+    _showStudentApp();
+  } catch(e) { toast("Sign in failed: "+_sAuthMsg(e.code),"red"); }
 }
 
+// ── REGISTER ────────────────────────────────────────────────
 async function doStudentRegister() {
-  const name   = document.getElementById("s-reg-name").value.trim();
-  const email  = document.getElementById("s-reg-email").value.trim();
-  const pass   = document.getElementById("s-reg-pass").value;
-  const cls    = document.getElementById("s-reg-class").value;
-  const board  = document.getElementById("s-reg-board").value;
-  const instId = document.getElementById("s-reg-instid").value.trim();
+  const name   = document.getElementById("sr-name")?.value.trim();
+  const phone  = document.getElementById("sr-phone")?.value.trim();
+  const email  = document.getElementById("sr-email")?.value.trim();
+  const pass   = document.getElementById("sr-pass")?.value;
+  const cls    = document.getElementById("sr-class")?.value;
+  const board  = document.getElementById("sr-board")?.value;
+  const school = document.getElementById("sr-school")?.value.trim();
+  const instId = document.getElementById("sr-instid")?.value.trim().toUpperCase();
 
-  if (!name)  { toast("Enter your name","yellow"); return; }
-  if (!email) { toast("Enter email","yellow"); return; }
+  if (!name)         { toast("Enter your full name","yellow"); return; }
+  if (!email)        { toast("Enter your email","yellow"); return; }
   if (!pass||pass.length<6) { toast("Password must be at least 6 characters","yellow"); return; }
-  if (!cls)   { toast("Select your class","yellow"); return; }
-  if (!board) { toast("Select your board","yellow"); return; }
+  if (!cls)          { toast("Select your class","yellow"); return; }
+  if (!board)        { toast("Select your board","yellow"); return; }
 
   try {
     const cred = await window._fb.createUserWithEmailAndPassword(window._fb.auth, email, pass);
     window._fbUser = cred.user;
 
-    const profile = { name, email, cls, board, institutionId: instId||null, joinDate: new Date().toISOString(), progress:{}, attendance:{} };
-    await saveStudentProfile(cred.user, profile);
+    const profile = {
+      uid:           cred.user.uid,
+      name, phone, email, cls, board, school,
+      institutionId: instId || null,
+      joinDate:      new Date().toISOString(),
+      progress:      {},
+      attendance:    {},
+      assignments:   [],
+      notifications: []
+    };
+
+    await _saveProfile(cred.user, profile);
     window._studentProfile = profile;
-    showStudentApp();
+    _showStudentApp();
     toast("Welcome to EduStack, "+name+"! 🎉","green");
-  } catch(e) { toast("Registration failed: "+e.message,"red"); }
+  } catch(e) { toast("Registration failed: "+_sAuthMsg(e.code),"red"); }
 }
 
-async function saveStudentProfile(user, profile) {
-  if (!window._firebaseReady||!user) {
-    localStorage.setItem(LS_STUDENT_PROFILE, JSON.stringify(profile));
-    return;
-  }
+// ── LOGOUT ──────────────────────────────────────────────────
+async function doStudentLogout() {
+  try { await window._fb.signOut(window._fb.auth); } catch(_){}
+  window._studentProfile = null;
+  localStorage.removeItem(LS_STUDENT);
+  document.getElementById("s-app").style.display        = "none";
+  document.getElementById("s-auth-screen").style.display= "flex";
+}
+
+// ── PROFILE SAVE / LOAD ─────────────────────────────────────
+async function _saveProfile(user, profile) {
+  localStorage.setItem(LS_STUDENT, JSON.stringify(profile));
+  if (!window._firebaseReady||!user) return;
   try {
     const url   = `https://firestore.googleapis.com/v1/projects/${window._fb.projectId}/databases/(default)/documents/students/${user.uid}`;
     const token = await user.getIdToken();
+    // Store as a single JSON string field for simplicity
     await fetch(url, {
       method: "PATCH",
-      headers: { "Content-Type":"application/json", "Authorization":"Bearer "+token },
-      body: JSON.stringify({ fields: _profileToFirestore(profile) })
+      headers: { "Content-Type":"application/json","Authorization":"Bearer "+token },
+      body: JSON.stringify({ fields: { profileJson: { stringValue: JSON.stringify(profile) } } })
     });
-    localStorage.setItem(LS_STUDENT_PROFILE, JSON.stringify(profile));
-  } catch(e) { localStorage.setItem(LS_STUDENT_PROFILE, JSON.stringify(profile)); }
+  } catch(e) { console.warn("Profile save failed:", e.message); }
 }
 
-async function loadStudentProfile(user) {
-  // Try cloud first, fall back to local
-  try {
-    const url   = `https://firestore.googleapis.com/v1/projects/${window._fb.projectId}/databases/(default)/documents/students/${user.uid}`;
-    const token = await user.getIdToken();
-    const res   = await fetch(url, { headers: { "Authorization":"Bearer "+token } });
-    if (res.ok) {
-      const data    = await res.json();
-      const profile = _firestoreToProfile(data.fields||{});
-      window._studentProfile = profile;
-      localStorage.setItem(LS_STUDENT_PROFILE, JSON.stringify(profile));
-      return;
-    }
-  } catch(e) {}
+async function _loadProfile(user) {
+  // Try cloud first
+  if (window._firebaseReady && user) {
+    try {
+      const url   = `https://firestore.googleapis.com/v1/projects/${window._fb.projectId}/databases/(default)/documents/students/${user.uid}`;
+      const token = await user.getIdToken();
+      const res   = await fetch(url, { headers: { "Authorization":"Bearer "+token } });
+      if (res.ok) {
+        const data = await res.json();
+        const json = data.fields?.profileJson?.stringValue;
+        if (json) {
+          const profile = JSON.parse(json);
+          window._studentProfile = profile;
+          localStorage.setItem(LS_STUDENT, json);
+          return;
+        }
+      }
+    } catch(e) {}
+  }
   // Fall back to local
-  try { window._studentProfile = JSON.parse(localStorage.getItem(LS_STUDENT_PROFILE)||"null"); } catch(e) {}
-}
-
-// Simple Firestore conversion for student profile
-function _profileToFirestore(p) {
-  const f = {};
-  Object.entries(p).forEach(([k,v]) => {
-    if (v===null||v===undefined) f[k]={nullValue:null};
-    else if (typeof v==="string") f[k]={stringValue:v};
-    else if (typeof v==="number") f[k]={doubleValue:v};
-    else if (typeof v==="boolean") f[k]={booleanValue:v};
-    else f[k]={stringValue:JSON.stringify(v)};
-  });
-  return f;
-}
-function _firestoreToProfile(fields) {
-  const p = {};
-  Object.entries(fields).forEach(([k,fv]) => {
-    if ("stringValue" in fv) {
-      try { p[k] = JSON.parse(fv.stringValue); } catch(e) { p[k] = fv.stringValue; }
-    } else if ("doubleValue" in fv) p[k]=fv.doubleValue;
-    else if ("booleanValue" in fv) p[k]=fv.booleanValue;
-    else if ("nullValue" in fv) p[k]=null;
-  });
-  return p;
-}
-
-async function doStudentLogout() {
-  try { await window._fb.signOut(window._fb.auth); } catch(_) {}
-  window._studentProfile = null;
-  document.getElementById("s-app").style.display = "none";
-  document.getElementById("s-auth-screen").style.display = "flex";
-}
-
-function showStudentApp() {
-  document.getElementById("s-auth-screen").style.display = "none";
-  document.getElementById("s-app").style.display = "flex";
-  initStudentPortal();
-}
-
-// Check if already logged in on page load
-document.addEventListener("DOMContentLoaded", () => {
-  // Try localStorage profile
   try {
-    const p = JSON.parse(localStorage.getItem(LS_STUDENT_PROFILE)||"null");
-    if (p && window._fb?.auth?.currentUser) {
-      window._studentProfile = p;
-      showStudentApp();
-    }
+    const local = localStorage.getItem(LS_STUDENT);
+    if (local) window._studentProfile = JSON.parse(local);
   } catch(e) {}
+}
+
+// Save profile (called from portal after progress updates)
+async function saveStudentProfile(profile) {
+  window._studentProfile = profile;
+  if (window._fbUser) await _saveProfile(window._fbUser, profile);
+  else localStorage.setItem(LS_STUDENT, JSON.stringify(profile));
+}
+
+// ── SHOW APP ────────────────────────────────────────────────
+function _showStudentApp() {
+  document.getElementById("s-auth-screen").style.display = "none";
+  document.getElementById("s-app").style.display         = "flex";
   loadTheme();
   const btn = document.getElementById("s-theme-btn");
   const t   = localStorage.getItem("feestacks_theme")||"dark";
   if (btn) btn.textContent = t==="dark"?"☀️":"🌙";
-});
+  initStudentPortal();
+}
+
+// ── AUTH ERROR MESSAGES ──────────────────────────────────────
+function _sAuthMsg(code) {
+  const m = {
+    "auth/user-not-found":        "No account with that email.",
+    "auth/wrong-password":        "Incorrect password.",
+    "auth/email-already-in-use":  "Email already registered. Sign in instead.",
+    "auth/invalid-email":         "Invalid email address.",
+    "auth/invalid-credential":    "Incorrect email or password.",
+    "auth/weak-password":         "Password is too weak.",
+    "auth/network-request-failed":"Network error. Check your connection."
+  };
+  return m[code] || code;
+}
+
+// ── AUTO LOGIN CHECK ─────────────────────────────────────────
+// Firebase module fires onAuthStateChanged — student page needs its own handler
+window._onAuthChange = function(user) {
+  // Only act on student page
+  if (!document.getElementById("s-auth-screen")) return;
+  if (user) {
+    window._fbUser = user;
+    _loadProfile(user).then(()=>{
+      if (window._studentProfile) _showStudentApp();
+    });
+  }
+};

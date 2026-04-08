@@ -297,3 +297,44 @@
 }
 .btn-msg-all:hover { border-color: #25d366; color: #25d366; }
 .btn-msg-all.dues:hover { border-color: var(--red); color: var(--red); }
+
+/* ══════════════════════════════════════════
+   INSTITUTION ID BOX
+══════════════════════════════════════════ */
+.inst-id-box {
+  background: var(--surf2);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--rad);
+  padding: 20px 22px;
+  margin-top: 8px;
+}
+.inst-id-label {
+  font-size: 12px; font-weight: 600; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px;
+}
+.inst-id-value {
+  font-family: var(--font-d); font-size: 26px; font-weight: 800;
+  color: var(--accent); letter-spacing: 1px; margin-bottom: 4px;
+  word-break: break-all;
+}
+.inst-id-name {
+  font-size: 14px; color: var(--muted2); margin-bottom: 10px;
+}
+.inst-id-hint {
+  font-size: 13px; color: var(--muted); line-height: 1.6;
+}
+
+/* ══════════════════════════════════════════
+   MOBILE NAV FIXES
+══════════════════════════════════════════ */
+/* Ensure top nav hamburger is always on top */
+#main-nav {
+  position: sticky;
+  top: 0;
+  z-index: 150; /* below sidebar (300) but above content */
+}
+
+#mobile-menu-btn {
+  z-index: 400 !important;
+  position: relative;
+}

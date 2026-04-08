@@ -335,10 +335,74 @@ function renderPrograms() {
 //  SETTINGS PAGE
 // ════════════════════════════════════════════════════════════
 function renderSettings() {
-  const el=document.getElementById("settings-user-info"); if(!el) return;
-  const u=window._fbUser;
-  el.innerHTML=u
+  const el = document.getElementById("settings-user-info"); if (!el) return;
+  const u   = window._fbUser;
+  const inst = window.institutionData;
+
+  // Account info
+  el.innerHTML = u
     ? `<div class="dg-item"><div class="dg-label">Signed in as</div><div class="dg-val">${u.displayName||u.email}</div></div>
        <div class="dg-item"><div class="dg-label">Email</div><div class="dg-val">${u.email}</div></div>`
     : `<div class="dg-item"><div class="dg-label">Mode</div><div class="dg-val">Offline (local storage)</div></div>`;
+
+  // Institution ID section
+  const instEl = document.getElementById("settings-institution"); if (!instEl) return;
+
+  if (inst && inst.id) {
+    instEl.innerHTML = `
+      <div class="inst-id-box">
+        <div class="inst-id-label">Your Institution ID</div>
+        <div class="inst-id-value" id="inst-id-display">${inst.id}</div>
+        <div class="inst-id-name">${inst.name||"Unnamed Institution"}</div>
+        <div class="inst-id-hint">Share this ID with your students. They enter it when registering to link their account to your institution.</div>
+        <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+          <button class="btn-add-sf" onclick="copyInstId()">📋 Copy ID</button>
+          <button class="btn-add-sf" onclick="shareInstId()">💬 Share via WhatsApp</button>
+          <button class="btn-add-sf" style="color:var(--red);border-color:var(--red)" onclick="resetInstitution()">Reset</button>
+        </div>
+      </div>`;
+  } else {
+    instEl.innerHTML = `
+      <div class="inst-id-box">
+        <div class="inst-id-label">Create Your Institution</div>
+        <div class="inst-id-hint" style="margin-bottom:14px">Set up your institution to get a unique ID. Share this ID with students so they can link their accounts to your institution.</div>
+        <div class="fg">
+          <label>Institution / Coaching Centre Name</label>
+          <input class="fi" type="text" id="inst-name-inp" placeholder="e.g. Sri Chaitanya Coaching Centre">
+        </div>
+        <button class="btn-primary" style="margin-top:8px" onclick="createInstitution()">Generate Institution ID</button>
+      </div>`;
+  }
+}
+
+function createInstitution() {
+  const nameEl = document.getElementById("inst-name-inp");
+  const name   = nameEl?.value.trim();
+  if (!name) { toast("Enter your institution name","yellow"); return; }
+  const uid  = window._fbUser?.uid || ("offline-"+Date.now());
+  const id   = generateInstitutionId(uid);
+  saveInstitutionData({ id, name, adminUid: uid });
+  toast("Institution ID created: "+id,"green");
+  renderSettings();
+}
+
+function copyInstId() {
+  const id = window.institutionData?.id;
+  if (!id) return;
+  navigator.clipboard.writeText(id).then(()=>toast("ID copied!","green")).catch(()=>toast("Copy failed","yellow"));
+}
+
+function shareInstId() {
+  const inst = window.institutionData;
+  if (!inst) return;
+  const msg = `Hi! Join my institution on EduStack. Use this ID when registering: *${inst.id}* (${inst.name}). Download at: your-website.com`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,"_blank");
+}
+
+function resetInstitution() {
+  if (!confirm("Reset institution ID? Students will lose their link to your account.")) return;
+  window.institutionData = null;
+  localStorage.removeItem("feestacks_institution");
+  renderSettings();
+  toast("Institution reset","red");
 }

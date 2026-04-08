@@ -241,3 +241,34 @@
   #s-sidebar { display:none; }
   .s-page { padding:16px 14px 60px; }
 }
+
+/* ── STUDENT MOBILE SIDEBAR ── */
+@media (max-width: 768px) {
+  #s-sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    z-index: 300;
+    transform: translateX(-100%);
+    transition: transform .3s ease;
+    overflow-y: auto;
+    width: 240px !important;
+  }
+  #s-sidebar.s-open {
+    transform: translateX(0);
+    box-shadow: 6px 0 30px rgba(0,0,0,.4);
+  }
+  /* Always show menu button on mobile */
+  #s-menu-btn { display: flex !important; }
+  .s-topbar { position: sticky; top: 0; z-index: 150; background: var(--surf); }
+}
+
+@media (min-width: 769px) {
+  /* Hide mobile hamburger on desktop — sidebar always visible */
+  #s-menu-btn { display: none !important; }
+}
+
+/* Form row on mobile */
+@media (max-width: 500px) {
+  .form-row { grid-template-columns: 1fr !important; }
+  .s-stats-grid { grid-template-columns: 1fr 1fr !important; }
+}

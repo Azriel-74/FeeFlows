@@ -1,4 +1,4 @@
-// FeeStacks — js/nav.js
+// EduStack — js/nav.js
 const PAGES = ["students","faculty","attendance","timetable","programs","graph","settings"];
 
 const PAGE_TITLES = {
@@ -29,6 +29,9 @@ function navigateTo(page) {
 
   window._currentPage = page;
   _renderCurrentPage();
+
+  // Close sidebar on mobile after navigation
+  if (window.innerWidth <= 768) closeMobileSidebar();
 }
 
 function _renderCurrentPage() {
@@ -42,7 +45,35 @@ function _renderCurrentPage() {
   else if (page === "settings")   { renderSettings(); }
 }
 
+// ── SIDEBAR TOGGLE ──────────────────────────────────────────
 function toggleSidebar() {
-  const sidebar = document.getElementById("sidebar");
-  sidebar.classList.toggle("collapsed");
+  const isMobile = window.innerWidth <= 768;
+  if (isMobile) {
+    const sidebar   = document.getElementById("sidebar");
+    const backdrop  = document.getElementById("sidebar-backdrop");
+    const isOpen    = sidebar.classList.contains("mobile-open");
+    if (isOpen) {
+      closeMobileSidebar();
+    } else {
+      sidebar.classList.add("mobile-open");
+      if (backdrop) { backdrop.classList.add("visible"); backdrop.style.display = "block"; }
+    }
+  } else {
+    // Desktop: collapse/expand
+    const sidebar = document.getElementById("sidebar");
+    sidebar.classList.toggle("collapsed");
+  }
 }
+
+function closeMobileSidebar() {
+  const sidebar  = document.getElementById("sidebar");
+  const backdrop = document.getElementById("sidebar-backdrop");
+  sidebar.classList.remove("mobile-open");
+  if (backdrop) { backdrop.classList.remove("visible"); backdrop.style.display = "none"; }
+}
+
+// Close sidebar when clicking backdrop
+document.addEventListener("DOMContentLoaded", () => {
+  const backdrop = document.getElementById("sidebar-backdrop");
+  if (backdrop) backdrop.addEventListener("click", closeMobileSidebar);
+});

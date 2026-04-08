@@ -203,3 +203,51 @@ function renderAttendanceHistory(studentId) {
       <span class="${att[d]==="present"?"hr-paid":"hr-unpaid"}">${att[d]==="present"?"Present ✓":"Absent ✗"}</span>
     </div>`).join("");
 }
+
+// ── SYNC ATTENDANCE TO STUDENT ACCOUNTS ────────────────────
+// When admin marks attendance, push it to the student's Firestore doc
+async function syncAttendanceToStudent(student, dateStr, status) {
+  if (!window._firebaseReady || !window._fbUser) return;
+  if (!student.phone && !student.email) return; // no way to identify student account
+
+  // We need to find the student's Firebase UID
+  // We store a mapping: institutionId + studentName → studentUid in a lookup doc
+  // For now, sync via institution + student ID lookup
+  const instId = window.institutionData?.id;
+  if (!instId) return;
+
+  try {
+    const token = await window._fbUser.getIdToken();
+    const projId = window._fb?.projectId;
+
+    // Update attendance in a shared attendance collection
+    const url = `https://firestore.googleapis.com/v1/projects/${projId}/databases/(default)/documents/attendance/${instId}_${student.id}_${dateStr}`;
+    await fetch(url, {
+      method: "PATCH",
+      headers: { "Content-Type":"application/json","Authorization":"Bearer "+token },
+      body: JSON.stringify({ fields: {
+        studentId:     { stringValue: String(student.id) },
+        studentName:   { stringValue: student.name },
+        institutionId: { stringValue: instId },
+        date:          { stringValue: dateStr },
+        status:        { stringValue: status }
+      }})
+    });
+  } catch(e) { /* silent fail — local still works */ }
+}
+
+// Override setAttendance to also sync to cloud attendance collection
+const _origSetAttendance = setAttendance;
+// Re-define to add sync
+window.setAttendanceWithSync = function(studentId, dateStr, status) {
+  const s = window.students.find(x => x.id === studentId); if (!s) return;
+  if (!s.attendance) s.attendance = {};
+  s.attendance[dateStr] = status;
+  saveLocal();
+  if (navigator.onLine && window._fbUser) {
+    saveCloud();
+    syncAttendanceToStudent(s, dateStr, status);
+  }
+  _refreshAttendanceRow(studentId);
+  updateAttendanceSummary();
+}

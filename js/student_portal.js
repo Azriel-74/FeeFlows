@@ -1,4 +1,7 @@
 // EduStack — js/student_portal.js
+// sNav is the public navigation function
+function sNav(page, data) { sNavigate(page, data); }
+
 // Full student portal: home dashboard, subjects, chapters, theory, quiz engine
 
 // ── NAVIGATION ─────────────────────────────────────────────
@@ -520,8 +523,8 @@ function saveQuizProgress() {
   p.progress[q.subj].attempted+=q.questions.length;
   p.progress[q.subj].correct  +=correct;
   // Save
-  if (window._fbUser) saveStudentProfile(window._fbUser, p);
-  else localStorage.setItem("edustack_student_profile", JSON.stringify(p));
+  saveStudentProfile(p);
+  // profile saved via saveStudentProfile()
 }
 
 function confirmQuitQuiz() {

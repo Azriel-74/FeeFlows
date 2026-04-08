@@ -20,6 +20,9 @@
 <body>
 
 <!-- ═══════════════ AUTH SCREEN ═══════════════ -->
+<!-- Mobile sidebar backdrop -->
+<div id="sidebar-backdrop"></div>
+
 <div id="auth-screen">
   <div class="auth-card">
     <div class="auth-logo">
@@ -100,7 +103,11 @@
     <!-- TOP NAV -->
     <nav id="main-nav">
       <div class="nav-logo" style="gap:8px">
-        <button onclick="toggleSidebar()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--muted);padding:4px">☰</button>
+        <button id="mobile-menu-btn" onclick="toggleSidebar()"
+          style="background:var(--surf2);border:1.5px solid var(--border2);border-radius:9px;
+                 cursor:pointer;font-size:18px;color:var(--text);padding:6px 10px;
+                 display:flex;align-items:center;justify-content:center;
+                 min-width:38px;height:38px;z-index:400;position:relative">☰</button>
         <div id="page-title" style="font-family:var(--font-d);font-size:16px;font-weight:700;color:var(--muted2)">Students</div>
       </div>
       <div class="nav-right">
@@ -360,7 +367,10 @@
         <div class="panel-head"><div class="panel-title">Settings</div></div>
         <div class="panel-body">
           <div class="section-sep">Account</div>
-          <div class="detail-grid" id="settings-user-info"></div>
+          <div class="detail-grid" id="settings-user-info" style="margin-bottom:20px"></div>
+
+          <div class="section-sep">Institution</div>
+          <div id="settings-institution"></div>
           <div class="section-sep" style="margin-top:20px">Appearance</div>
           <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
             <div>

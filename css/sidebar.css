@@ -1,5 +1,6 @@
-/* FeeStacks — css/sidebar.css */
+/* EduStack — css/sidebar.css */
 
+/* ── DESKTOP SIDEBAR ── */
 #sidebar {
   width: var(--sidebar-w);
   background: var(--surf);
@@ -44,10 +45,10 @@
 
 #sidebar.collapsed .sidebar-logo-name { opacity: 0; pointer-events: none; }
 
-/* Toggle button */
+/* Desktop collapse toggle (small circle on edge) */
 .sidebar-toggle {
   position: absolute;
-  top: 20px;
+  top: 22px;
   right: -12px;
   width: 24px; height: 24px;
   background: var(--surf);
@@ -55,10 +56,10 @@
   border-radius: 50%;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  font-size: 12px;
-  z-index: 10;
+  font-size: 11px;
+  z-index: 210;
   transition: all .2s;
-  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
 }
 .sidebar-toggle:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
 
@@ -69,7 +70,8 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .nav-item {
@@ -92,27 +94,22 @@
   font-weight: 500;
 }
 
-.nav-item:hover { background: var(--surf2); color: var(--text); }
+.nav-item:hover  { background: var(--surf2); color: var(--text); }
 .nav-item.active { background: rgba(59,130,246,.12); color: var(--accent); font-weight: 600; }
 .nav-item.active .nav-icon { transform: scale(1.1); }
 
-.nav-icon { font-size: 18px; min-width: 20px; text-align: center; flex-shrink: 0; }
+.nav-icon  { font-size: 18px; min-width: 20px; text-align: center; flex-shrink: 0; }
+.nav-label { font-size: 13px; transition: opacity .2s, width .2s; }
 
-.nav-label {
-  font-size: 13px;
-  transition: opacity .2s;
-}
+#sidebar.collapsed .nav-label { opacity: 0; width: 0; }
 
-#sidebar.collapsed .nav-label { opacity: 0; width: 0; overflow: hidden; }
-
-/* Sidebar bottom */
 .sidebar-bottom {
   padding: 12px 8px;
   border-top: 1px solid var(--border);
   flex-shrink: 0;
 }
 
-/* App layout */
+/* App layout wrapper */
 #app-layout {
   display: flex;
   flex-direction: row;
@@ -121,17 +118,61 @@
   height: 100%;
 }
 
-@media(max-width: 768px) {
+/* ── MOBILE OVERLAY BACKDROP ── */
+#sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  z-index: 290;
+  backdrop-filter: blur(2px);
+}
+
+/* ── MOBILE: sidebar is a slide-over drawer ── */
+@media (max-width: 768px) {
+
+  /* Hamburger in top nav — always on top, never covered */
+  #mobile-menu-btn {
+    display: flex !important;
+  }
+
+  /* Hide desktop edge toggle on mobile */
+  .sidebar-toggle { display: none; }
+
+  /* Sidebar slides in from left as overlay */
   #sidebar {
     position: fixed;
     left: 0; top: 0; bottom: 0;
+    width: var(--sidebar-w) !important; /* always full width when open */
     z-index: 300;
-    transform: translateX(0);
-    box-shadow: 4px 0 20px rgba(0,0,0,.3);
+    transform: translateX(-100%);  /* hidden by default on mobile */
+    transition: transform .3s ease, box-shadow .3s ease;
+    box-shadow: none;
+    overflow-y: auto;
   }
+
+  /* When open on mobile */
+  #sidebar.mobile-open {
+    transform: translateX(0);
+    box-shadow: 6px 0 30px rgba(0,0,0,.4);
+  }
+
+  /* Show backdrop when sidebar is open */
+  #sidebar.mobile-open ~ * #sidebar-backdrop,
+  #sidebar-backdrop.visible {
+    display: block;
+  }
+
+  /* Desktop collapsed class does nothing on mobile */
   #sidebar.collapsed {
-    width: 0;
+    width: var(--sidebar-w) !important;
     transform: translateX(-100%);
   }
-  .sidebar-toggle { display: none; }
+  #sidebar.collapsed .nav-label { opacity: 1; width: auto; }
+  #sidebar.collapsed .sidebar-logo-name { opacity: 1; }
+}
+
+@media (min-width: 769px) {
+  #mobile-menu-btn { display: none !important; }
+  #sidebar-backdrop { display: none !important; }
 }
