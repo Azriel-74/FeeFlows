@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/sidebar.css">
+  <link rel="stylesheet" href="css/newfeatures.css">
   <link rel="stylesheet" href="css/app.css">
   <link rel="stylesheet" href="css/components.css">
 <style>
@@ -75,6 +76,12 @@
       <button class="nav-item" data-page="faculty" onclick="navigateTo('faculty')">
         <span class="nav-icon">👩‍🏫</span><span class="nav-label">Faculty</span>
       </button>
+      <button class="nav-item" data-page="attendance" onclick="navigateTo('attendance')">
+        <span class="nav-icon">📝</span><span class="nav-label">Attendance</span>
+      </button>
+      <button class="nav-item" data-page="timetable" onclick="navigateTo('timetable')">
+        <span class="nav-icon">📅</span><span class="nav-label">Timetable</span>
+      </button>
       <button class="nav-item" data-page="programs" onclick="navigateTo('programs')">
         <span class="nav-icon">🎓</span><span class="nav-label">Special Programs</span>
       </button>
@@ -129,6 +136,11 @@
               <span id="list-count" class="list-count">0 students</span>
             </div>
             <div class="panel-body">
+              <!-- MESSAGE ALL BAR -->
+              <div class="msg-all-bar">
+                <button class="btn-msg-all" onclick="openMessageAll('all')">💬 Message All Students</button>
+                <button class="btn-msg-all dues" onclick="openMessageAll('dues')">⚠️ Message Students with Dues</button>
+              </div>
               <div class="controls">
                 <div class="search-wrap">
                   <span class="search-icon">🔍</span>
@@ -308,12 +320,60 @@
       </div>
     </div>
 
+    <!-- ═══ ATTENDANCE PAGE ═══ -->
+    <div id="page-attendance" class="page" style="display:none">
+      <div class="att-controls-bar">
+        <div class="att-date-nav">
+          <button onclick="changeAttendanceDate(-1)">◀</button>
+          <span id="att-date-display">Today</span>
+          <button onclick="changeAttendanceDate(1)">▶</button>
+        </div>
+        <input type="date" class="att-date-picker" id="att-date-inp"
+          onchange="goToAttendanceDate(this.value)">
+      </div>
+      <div id="att-summary"></div>
+      <div id="att-class-filter"></div>
+      <div id="attendance-list"></div>
+    </div>
+
     <!-- ═══ TIMETABLE PAGE ═══ -->
     <div id="page-timetable" class="page" style="display:none">
-      <div class="empty-state" style="margin-top:40px">
-        <div class="empty-icon">📅</div>
-        <p>Timetable coming soon</p>
-        <small>This feature will be available in the next update.</small>
+      <!-- Setup Panel -->
+      <div class="tt-setup-panel">
+        <div class="tt-setup-title">⚙️ Institution Setup</div>
+
+        <div class="fg"><label>Working Days</label>
+          <div class="tt-days-wrap" id="tt-days-wrap"></div>
+        </div>
+
+        <div class="fg"><label>Institution Timings</label>
+          <div class="tt-timing-row">
+            <span style="color:var(--muted);font-size:14px">Opens</span>
+            <input type="time" class="tt-time-inp" id="tt-start" value="09:00">
+            <span style="color:var(--muted);font-size:14px">Closes</span>
+            <input type="time" class="tt-time-inp" id="tt-end" value="18:00">
+            <button class="btn-add-sf" onclick="saveTimetableTimings()">Save Timings</button>
+          </div>
+        </div>
+
+        <div class="fg"><label>Periods</label>
+          <div id="tt-periods-list"></div>
+          <div class="tt-add-period-row">
+            <input type="time" id="tt-period-start">
+            <span style="color:var(--muted);font-size:13px">to</span>
+            <input type="time" id="tt-period-end">
+            <input type="text" id="tt-period-label" placeholder="Period name (e.g. Period 1)">
+            <button class="btn-add-sf" onclick="addPeriod()">+ Add Period</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timetable Grid -->
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">📅 Weekly Timetable</div></div>
+        <div class="panel-body">
+          <div id="tt-grid"></div>
+        </div>
       </div>
     </div>
 
@@ -360,6 +420,9 @@
   <script src="js/students.js"></script>
   <script src="js/faculty.js"></script>
   <script src="js/programs.js"></script>
+  <script src="js/attendance.js"></script>
+  <script src="js/timetable.js"></script>
+  <script src="js/messageall.js"></script>
   <script src="js/render.js"></script>
   <script src="js/nav.js"></script>
   <script src="js/auth.js"></script>

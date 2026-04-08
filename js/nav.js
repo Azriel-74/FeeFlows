@@ -1,13 +1,14 @@
 // FeeStacks — js/nav.js
-const PAGES = ["students","faculty","graph","timetable","programs","settings"];
+const PAGES = ["students","faculty","attendance","timetable","programs","graph","settings"];
 
 const PAGE_TITLES = {
-  students:  "Students",
-  faculty:   "Faculty",
-  graph:     "Graph",
-  timetable: "Timetable",
-  programs:  "Special Programs",
-  settings:  "Settings"
+  students:   "Students",
+  faculty:    "Faculty",
+  attendance: "Attendance",
+  timetable:  "Timetable",
+  programs:   "Special Programs",
+  graph:      "Graph",
+  settings:   "Settings"
 };
 
 function navigateTo(page) {
@@ -23,24 +24,22 @@ function navigateTo(page) {
   const activeNav = document.querySelector(`.nav-item[data-page="${page}"]`);
   if (activeNav) activeNav.classList.add("active");
 
-  // Update top heading
   const titleEl = document.getElementById("page-title");
   if (titleEl) titleEl.textContent = PAGE_TITLES[page] || page;
 
   window._currentPage = page;
-
-  // Pure UI refresh — never touches saveAll
   _renderCurrentPage();
 }
 
-// UI-only render — never saves, never triggers sync
 function _renderCurrentPage() {
   const page = window._currentPage || "students";
-  if      (page === "students") { renderStudents(); updateStudentSummary(); }
-  else if (page === "faculty")  { renderFaculty();  updateFacultySummary(); }
-  else if (page === "graph")    { renderGraph(); }
-  else if (page === "programs") { renderPrograms(); }
-  else if (page === "settings") { renderSettings(); }
+  if      (page === "students")   { renderStudents();   updateStudentSummary(); }
+  else if (page === "faculty")    { renderFaculty();    updateFacultySummary(); }
+  else if (page === "attendance") { renderAttendance(); }
+  else if (page === "timetable")  { renderTimetable(); }
+  else if (page === "graph")      { renderGraph(); }
+  else if (page === "programs")   { renderPrograms(); }
+  else if (page === "settings")   { renderSettings(); }
 }
 
 function toggleSidebar() {

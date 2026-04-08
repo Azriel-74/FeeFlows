@@ -6,6 +6,7 @@
 const LS_STUDENTS = "feestacks_v1_students";
 const LS_FACULTY  = "feestacks_v1_faculty";
 const LS_PROGRAMS = "feestacks_v1_programs";
+const LS_TIMETABLE = "feestacks_v1_timetable";
 const LS_THEME    = "feestacks_theme";
 
 let _saveTimer  = null;
@@ -14,15 +15,17 @@ let _syncProgress = 0; // 0-100 for hover tooltip
 
 // ── LOCAL STORAGE ───────────────────────────────────────────
 function loadLocal() {
-  try { window.students = JSON.parse(localStorage.getItem(LS_STUDENTS) || "[]"); } catch(_){ window.students=[]; }
-  try { window.faculty  = JSON.parse(localStorage.getItem(LS_FACULTY)  || "[]"); } catch(_){ window.faculty=[]; }
-  try { window.programs = JSON.parse(localStorage.getItem(LS_PROGRAMS) || "[]"); } catch(_){ window.programs=[]; }
+  try { window.students        = JSON.parse(localStorage.getItem(LS_STUDENTS)  || "[]"); } catch(_){ window.students=[]; }
+  try { window.faculty         = JSON.parse(localStorage.getItem(LS_FACULTY)   || "[]"); } catch(_){ window.faculty=[]; }
+  try { window.programs        = JSON.parse(localStorage.getItem(LS_PROGRAMS)  || "[]"); } catch(_){ window.programs=[]; }
+  try { window.timetableConfig = JSON.parse(localStorage.getItem(LS_TIMETABLE) || "null"); } catch(_){ window.timetableConfig=null; }
 }
 
 function saveLocal() {
-  localStorage.setItem(LS_STUDENTS, JSON.stringify(window.students));
-  localStorage.setItem(LS_FACULTY,  JSON.stringify(window.faculty));
-  localStorage.setItem(LS_PROGRAMS, JSON.stringify(window.programs));
+  localStorage.setItem(LS_STUDENTS,  JSON.stringify(window.students));
+  localStorage.setItem(LS_FACULTY,   JSON.stringify(window.faculty));
+  localStorage.setItem(LS_PROGRAMS,  JSON.stringify(window.programs));
+  localStorage.setItem(LS_TIMETABLE, JSON.stringify(window.timetableConfig||null));
 }
 
 // ── FIRESTORE REST API ──────────────────────────────────────
@@ -87,16 +90,17 @@ async function _doCloudSave() {
 
     const body = {
       fields: {
-        students: _toFirestoreValue(window.students),
-        faculty:  _toFirestoreValue(window.faculty),
-        programs: _toFirestoreValue(window.programs)
+        students:        _toFirestoreValue(window.students),
+        faculty:         _toFirestoreValue(window.faculty),
+        programs:        _toFirestoreValue(window.programs),
+        timetableConfig: _toFirestoreValue(window.timetableConfig||{})
       }
     };
 
     _syncProgress = 60;
     updateSyncTooltip();
 
-    const res = await fetch(url + "?updateMask.fieldPaths=students&updateMask.fieldPaths=faculty&updateMask.fieldPaths=programs", {
+    const res = await fetch(url + "?updateMask.fieldPaths=students&updateMask.fieldPaths=faculty&updateMask.fieldPaths=programs&updateMask.fieldPaths=timetableConfig", {
       method:  "PATCH",
       headers: {
         "Content-Type":  "application/json",
@@ -144,9 +148,10 @@ async function loadCloud() {
     const data   = await res.json();
     const fields = data.fields || {};
 
-    if (fields.students) window.students = _fromFirestoreValue(fields.students) || [];
-    if (fields.faculty)  window.faculty  = _fromFirestoreValue(fields.faculty)  || [];
-    if (fields.programs) window.programs = _fromFirestoreValue(fields.programs) || [];
+    if (fields.students)        window.students        = _fromFirestoreValue(fields.students) || [];
+    if (fields.faculty)         window.faculty         = _fromFirestoreValue(fields.faculty)  || [];
+    if (fields.programs)        window.programs        = _fromFirestoreValue(fields.programs) || [];
+    if (fields.timetableConfig) window.timetableConfig = _fromFirestoreValue(fields.timetableConfig) || null;
 
     saveLocal(); // keep local cache in sync — does NOT trigger cloud save
   } catch(e) {
@@ -243,6 +248,7 @@ window.addEventListener("offline", () => {
 });
 
 // Init
-window.students = [];
-window.faculty  = [];
-window.programs = [];
+window.students        = [];
+window.faculty         = [];
+window.programs        = [];
+window.timetableConfig = null;
