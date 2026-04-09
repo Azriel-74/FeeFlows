@@ -338,3 +338,150 @@
   z-index: 400 !important;
   position: relative;
 }
+
+/* ══════════════════════════════════════════
+   ADMIN PAYMENTS PAGE
+══════════════════════════════════════════ */
+.pay-student-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 14px; background: var(--surf2);
+  border: 1.5px solid var(--border); border-radius: var(--rad);
+  margin-bottom: 8px; animation: fadeUp .25s ease both;
+  transition: border-color .2s;
+}
+.pay-student-row.paid { border-color: rgba(34,197,94,.3); }
+.pay-avatar { width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:14px;font-weight:700;flex-shrink:0; }
+.pay-info { flex:1;min-width:0; }
+.pay-name { font-weight:700;font-size:14px;margin-bottom:2px; }
+.pay-meta { font-size:12px;color:var(--muted); }
+.pay-amount { font-family:var(--font-d);font-size:16px;font-weight:700;flex-shrink:0; }
+.pay-amount.red   { color:var(--red); }
+.pay-amount.green { color:var(--green); }
+.pay-actions { display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap; }
+.pay-remind-btn {
+  padding:6px 12px;border-radius:8px;border:1.5px solid rgba(37,211,102,.4);
+  background:rgba(37,211,102,.08);color:#25d366;font-family:var(--font-b);
+  font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;
+}
+.pay-remind-btn:hover { background:rgba(37,211,102,.18); }
+.pay-mark-btn {
+  padding:6px 12px;border-radius:8px;border:1.5px solid rgba(34,197,94,.4);
+  background:rgba(34,197,94,.08);color:var(--green);font-family:var(--font-b);
+  font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;
+}
+.pay-mark-btn:hover { background:rgba(34,197,94,.18); }
+.pay-record-row {
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:10px 12px;background:var(--surf2);border:1px solid var(--border);
+  border-radius:9px;margin-bottom:6px;font-size:13px;
+}
+.pay-record-info { flex:1; }
+.pay-record-name { font-weight:600;margin-bottom:2px; }
+.pay-record-meta { font-size:12px;color:var(--muted); }
+.pay-record-amt { font-family:var(--font-d);font-size:15px;font-weight:700; }
+
+/* ══════════════════════════════════════════
+   STUDENT PAYMENTS PAGE
+══════════════════════════════════════════ */
+.s-fee-due-card {
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:16px 18px;background:var(--surf);border:1.5px solid var(--red-d);
+  border-radius:var(--rad);margin-bottom:12px;animation:fadeUp .25s ease both;
+}
+.s-fee-due-card.paid { border-color:rgba(34,197,94,.3); }
+.s-fee-due-left { flex:1; }
+.s-fee-due-month { font-family:var(--font-d);font-size:16px;font-weight:700;margin-bottom:3px; }
+.s-fee-due-desc  { font-size:13px;color:var(--muted);margin-bottom:6px; }
+.s-fee-due-right { text-align:right;flex-shrink:0; }
+.s-fee-due-amount { font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--red);margin-bottom:8px; }
+.s-fee-due-card.paid .s-fee-due-amount { color:var(--green); }
+.s-pay-now-btn {
+  display:block;padding:9px 20px;background:var(--accent-g);
+  border:none;border-radius:9px;color:#fff;font-family:var(--font-d);
+  font-size:13px;font-weight:700;cursor:pointer;transition:opacity .2s;
+}
+.s-pay-now-btn:hover { opacity:.88; }
+.s-pay-record {
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:12px 14px;background:var(--surf2);border:1px solid var(--border);
+  border-radius:9px;
+}
+
+/* ══════════════════════════════════════════
+   BILL / INVOICE MODAL
+══════════════════════════════════════════ */
+.s-bill-overlay {
+  position:fixed;inset:0;z-index:800;
+  background:rgba(0,0,0,.75);backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;
+  padding:16px;animation:fadeUp .3s ease;
+}
+.s-bill-box {
+  background:var(--surf);border:1px solid var(--border2);
+  border-radius:20px;width:100%;max-width:440px;
+  max-height:92vh;overflow-y:auto;
+  box-shadow:0 24px 60px rgba(0,0,0,.5);
+}
+.s-bill-header {
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 22px;border-bottom:1px solid var(--border);
+}
+.s-bill-logo { font-family:var(--font-d);font-size:16px;font-weight:800; }
+.s-bill-close {
+  background:none;border:none;color:var(--muted);cursor:pointer;
+  font-size:18px;padding:4px;border-radius:6px;transition:color .2s;
+}
+.s-bill-close:hover { color:var(--red); }
+.s-bill-body { padding:20px 22px; }
+.s-bill-title { font-family:var(--font-d);font-size:22px;font-weight:800;margin-bottom:4px; }
+.s-bill-num   { font-size:12px;color:var(--muted);margin-bottom:18px;font-family:monospace; }
+
+.s-bill-table { background:var(--surf2);border-radius:10px;overflow:hidden;margin-bottom:20px; }
+.s-bill-row {
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;border-bottom:1px solid var(--border);
+  font-size:13px;
+}
+.s-bill-row:last-child { border-bottom:none; }
+.s-bill-row span { color:var(--muted); }
+.s-bill-row strong { color:var(--text); }
+.s-bill-total { background:rgba(59,130,246,.06); }
+.s-bill-total span { font-weight:700;color:var(--text); }
+.s-bill-total strong { font-family:var(--font-d);font-size:17px;color:var(--accent); }
+
+/* QR section */
+.s-bill-qr-section { text-align:center;margin-bottom:18px; }
+.s-bill-qr-title { font-size:13px;font-weight:600;color:var(--muted);margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px; }
+.s-bill-qr-wrap {
+  display:inline-block;padding:14px;background:#fff;
+  border-radius:14px;margin-bottom:12px;
+  box-shadow:0 4px 16px rgba(0,0,0,.15);
+}
+.s-bill-qr-img { width:200px;height:200px;display:block; }
+.s-bill-upi-id {
+  font-family:monospace;font-size:14px;font-weight:700;
+  color:var(--accent);margin-bottom:8px;
+  background:var(--surf2);padding:7px 14px;border-radius:8px;
+  display:inline-block;
+}
+.s-bill-upi-hint { font-size:12px;color:var(--muted);line-height:1.6; }
+
+/* Note and actions */
+.s-bill-note {
+  background:var(--yellow-d);border:1px solid rgba(245,158,11,.3);
+  border-radius:9px;padding:12px 14px;font-size:13px;
+  color:var(--text);line-height:1.6;margin-bottom:16px;
+}
+.s-bill-actions { display:flex;flex-direction:column;gap:10px; }
+.s-bill-confirm-btn {
+  width:100%;padding:14px;background:linear-gradient(135deg,#25d366,#128c7e);
+  border:none;border-radius:10px;color:#fff;font-family:var(--font-d);
+  font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s;
+}
+.s-bill-confirm-btn:hover { opacity:.88; }
+.s-bill-cancel-btn {
+  width:100%;padding:12px;background:var(--surf2);border:1.5px solid var(--border2);
+  border-radius:10px;color:var(--muted2);font-family:var(--font-b);
+  font-size:14px;cursor:pointer;transition:all .2s;
+}
+.s-bill-cancel-btn:hover { border-color:var(--accent);color:var(--accent); }

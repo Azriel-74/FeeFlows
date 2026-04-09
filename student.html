@@ -130,6 +130,9 @@
         <button class="s-nav-item active" data-page="home" onclick="sNav('home')">
           <span class="s-nav-icon">🏠</span><span class="s-nav-label">Home</span>
         </button>
+        <button class="s-nav-item" data-page="payments" onclick="sNav('payments')">
+          <span class="s-nav-icon">💳</span><span class="s-nav-label">Payments</span>
+        </button>
         <button class="s-nav-item" data-page="attendance" onclick="sNav('attendance')">
           <span class="s-nav-icon">📝</span><span class="s-nav-label">Attendance</span>
         </button>
@@ -174,6 +177,7 @@
       <div id="s-page-assignments" class="s-page" style="display:none"></div>
       <div id="s-page-subject"     class="s-page" style="display:none"></div>
       <div id="s-page-chapter"     class="s-page" style="display:none"></div>
+      <div id="s-page-payments" class="s-page" style="display:none"></div>
       <div id="s-page-quiz"        class="s-page" style="display:none"></div>
     </div>
   </div>
@@ -191,6 +195,7 @@
 <script src="js/utils.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/student_auth.js"></script>
+<script src="js/student_payments.js"></script>
 <script src="js/student_portal.js"></script>
 <script type="module" src="js/firebase-init.js"></script>
 

@@ -76,6 +76,9 @@
       <button class="nav-item active" data-page="students" onclick="navigateTo('students')">
         <span class="nav-icon">👨‍🎓</span><span class="nav-label">Students</span>
       </button>
+      <button class="nav-item" data-page="payments" onclick="navigateTo('payments')">
+        <span class="nav-icon">💳</span><span class="nav-label">Payments</span>
+      </button>
       <button class="nav-item" data-page="faculty" onclick="navigateTo('faculty')">
         <span class="nav-icon">👩‍🏫</span><span class="nav-label">Faculty</span>
       </button>
@@ -362,6 +365,9 @@
     </div>
 
     <!-- ═══- ═══ SETTINGS PAGE ═══ -->
+        <!-- ═══ PAYMENTS PAGE ═══ -->
+    <div id="page-payments" class="page" style="display:none"></div>
+
     <div id="page-settings" class="page" style="display:none">
       <div class="panel" style="max-width:500px">
         <div class="panel-head"><div class="panel-title">Settings</div></div>
@@ -410,6 +416,7 @@
   <script src="js/attendance.js"></script>
   <script src="js/timetable.js"></script>
   <script src="js/messageall.js"></script>
+  <script src="js/payments.js"></script>
   <script src="js/render.js"></script>
   <script src="js/nav.js"></script>
   <script src="js/auth.js"></script>

@@ -5,7 +5,7 @@ function sNav(page, data) { sNavigate(page, data); }
 // Full student portal: home dashboard, subjects, chapters, theory, quiz engine
 
 // ── NAVIGATION ─────────────────────────────────────────────
-const S_PAGES = ["home","attendance","assignments","subject","chapter","quiz"];
+const S_PAGES = ["home","payments","attendance","assignments","subject","chapter","quiz"];
 
 function sNavigate(page, data) {
   S_PAGES.forEach(p => {
@@ -19,7 +19,7 @@ function sNavigate(page, data) {
   const activeNav = document.querySelector(`.s-nav-item[data-page="${page}"]`);
   if (activeNav) activeNav.classList.add("active");
 
-  const titles = { home:"Home", attendance:"My Attendance", assignments:"Assignments", subject:"Subject", chapter:"Chapter", quiz:"Quiz" };
+  const titles = { home:"Home", payments:"Payments", attendance:"My Attendance", assignments:"Assignments", subject:"Subject", chapter:"Chapter", quiz:"Quiz" };
   const titleEl = document.getElementById("s-page-title");
   if (titleEl) titleEl.textContent = titles[page]||page;
 
@@ -27,6 +27,7 @@ function sNavigate(page, data) {
   window._sPageData    = data;
 
   if (page==="home")        renderStudentHome();
+  else if (page==="payments")  renderStudentPayments();
   else if (page==="attendance")  renderStudentAttendance();
   else if (page==="assignments") renderStudentAssignments();
   else if (page==="subject")     renderSubjectPage(data);

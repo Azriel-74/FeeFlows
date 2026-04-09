@@ -1,5 +1,5 @@
 // EduStack — js/nav.js
-const PAGES = ["students","faculty","attendance","timetable","programs","graph","settings"];
+const PAGES = ["students","payments","faculty","attendance","timetable","programs","graph","settings"];
 
 const PAGE_TITLES = {
   students:   "Students",
@@ -7,6 +7,7 @@ const PAGE_TITLES = {
   attendance: "Attendance",
   timetable:  "Timetable",
   programs:   "Special Programs",
+  payments:   "Payments",
   graph:      "Graph",
   settings:   "Settings"
 };
@@ -40,6 +41,7 @@ function _renderCurrentPage() {
   else if (page === "faculty")    { renderFaculty();    updateFacultySummary(); }
   else if (page === "attendance") { renderAttendance(); }
   else if (page === "timetable")  { renderTimetable(); }
+  else if (page === "payments")   { renderAdminPayments(); }
   else if (page === "graph")      { renderGraph(); }
   else if (page === "programs")   { renderPrograms(); }
   else if (page === "settings")   { renderSettings(); }

@@ -136,6 +136,11 @@ function _showStudentApp() {
   const btn = document.getElementById("s-theme-btn");
   const t   = localStorage.getItem("feestacks_theme")||"dark";
   if (btn) btn.textContent = t==="dark"?"☀️":"🌙";
+  // Fetch institution UPI config if student is linked to an institution
+  const instId = window._studentProfile?.institutionId;
+  if (instId && typeof fetchInstitutionUpiConfig === "function") {
+    fetchInstitutionUpiConfig(instId);
+  }
   initStudentPortal();
 }
 
