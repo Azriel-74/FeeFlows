@@ -81,7 +81,7 @@ function renderStudentHome() {
   const wEl = document.getElementById("s-welcome-msg");
   if (wEl) {
     const hr = new Date().getHours();
-    const greeting = hr<12?"Good morning":"hr<17?Good afternoon":"Good evening";
+    const greeting = hr<12?"Good morning":hr<17?"Good afternoon":"Good evening";
     const g = hr<12?"Good morning ☀️":hr<17?"Good afternoon 🌤️":"Good evening 🌙";
     wEl.textContent = `${g}, ${p.name||"Student"}!`;
   }

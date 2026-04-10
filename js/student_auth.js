@@ -82,11 +82,11 @@ async function doStudentLogout() {
 // ── PROFILE SAVE / LOAD ─────────────────────────────────────
 async function _saveProfile(user, profile) {
   localStorage.setItem(LS_STUDENT, JSON.stringify(profile));
-  if (!window._firebaseReady||!user) return;
+  if (!window._firebaseReady || !user) return;
   try {
-    const url   = `https://firestore.googleapis.com/v1/projects/${window._fb.projectId}/databases/(default)/documents/students/${user.uid}`;
+    // Store under users/{uid}/data/studentProfile — covered by existing Firestore rules
+    const url   = `https://firestore.googleapis.com/v1/projects/${window._fb.projectId}/databases/(default)/documents/users/${user.uid}/data/studentProfile`;
     const token = await user.getIdToken();
-    // Store as a single JSON string field for simplicity
     await fetch(url, {
       method: "PATCH",
       headers: { "Content-Type":"application/json","Authorization":"Bearer "+token },
@@ -99,7 +99,8 @@ async function _loadProfile(user) {
   // Try cloud first
   if (window._firebaseReady && user) {
     try {
-      const url   = `https://firestore.googleapis.com/v1/projects/${window._fb.projectId}/databases/(default)/documents/students/${user.uid}`;
+      // Same path as save: users/{uid}/data/studentProfile
+      const url   = `https://firestore.googleapis.com/v1/projects/${window._fb.projectId}/databases/(default)/documents/users/${user.uid}/data/studentProfile`;
       const token = await user.getIdToken();
       const res   = await fetch(url, { headers: { "Authorization":"Bearer "+token } });
       if (res.ok) {

@@ -47,7 +47,9 @@ function _buildFeeDuesList(p, upiCfg) {
     return `<div class="empty-state"><div class="empty-icon">✅</div><p>No pending fees</p><small>Your fee dues will appear here once your admin updates them</small></div>`;
   }
 
-  return dues.map(due => `
+  // Store dues in window so onclick can reference by index safely
+  window._currentDues = dues;
+  return dues.map((due, idx) => `
     <div class="s-fee-due-card ${due.paid ? "paid" : ""}">
       <div class="s-fee-due-left">
         <div class="s-fee-due-month">${due.month}</div>
@@ -57,7 +59,7 @@ function _buildFeeDuesList(p, upiCfg) {
       <div class="s-fee-due-right">
         <div class="s-fee-due-amount">${fmt(due.amount)}</div>
         ${!due.paid && upiCfg?.upiId ? `
-          <button class="s-pay-now-btn" onclick="openPaymentBill(${JSON.stringify(due).replace(/"/g,"'")})">
+          <button class="s-pay-now-btn" onclick="openPaymentBill(${idx})">
             Pay Now →
           </button>` : ""}
       </div>
@@ -84,7 +86,8 @@ function _buildPaymentHistory(p) {
 }
 
 // ── OPEN PAYMENT BILL ───────────────────────────────────────
-function openPaymentBill(due) {
+function openPaymentBill(idx) {
+  const due    = (window._currentDues || [])[idx]; if (!due) return;
   const p      = window._studentProfile; if (!p) return;
   const upiCfg = _getStudentUpiConfig();
   if (!upiCfg?.upiId) { toast("UPI not set up by your institution yet","yellow"); return; }
@@ -104,6 +107,9 @@ function _showBillModal({ due, upiCfg, qrUrl, note, amount, p }) {
 
   const now     = new Date();
   const billNum = `INV-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,"0")}-${p.uid?.slice(-4)||"0000"}`;
+
+  // Store current bill data in window for the confirm button
+  window._currentBill = { due, amount, note, upiCfg, p };
 
   const modal = document.createElement("div");
   modal.id    = "bill-modal";
@@ -157,7 +163,7 @@ function _showBillModal({ due, upiCfg, qrUrl, note, amount, p }) {
 
         <!-- Action buttons -->
         <div class="s-bill-actions">
-          <button class="s-bill-confirm-btn" onclick="sendPaymentConfirmation(${JSON.stringify({amount,month:due.month,note}).replace(/"/g,"'")})">
+          <button class="s-bill-confirm-btn" onclick="sendPaymentConfirmation()">
             💬 Send Payment Screenshot via WhatsApp
           </button>
           <button class="s-bill-cancel-btn" onclick="document.getElementById('bill-modal').remove()">
@@ -244,9 +250,14 @@ async function fetchInstitutionUpiConfig(instId) {
     if (!token) return;
 
     // Fetch institution doc to get admin UID
+    // Note: Firestore rules must allow read on institutions collection for this to work
+    // If 403, student can still pay via UPI ID shown as text
     const instUrl = `https://firestore.googleapis.com/v1/projects/${projId}/databases/(default)/documents/institutions/${instId}`;
     const instRes = await fetch(instUrl, { headers:{ "Authorization":"Bearer "+token }});
-    if (!instRes.ok) return;
+    if (!instRes.ok) {
+      console.warn("Institution lookup returned:", instRes.status, "— student may need to enter UPI manually");
+      return;
+    }
     const instData  = await instRes.json();
     const adminUid  = instData.fields?.adminUid?.stringValue;
     if (!adminUid) return;
