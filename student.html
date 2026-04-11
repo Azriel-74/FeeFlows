@@ -186,7 +186,50 @@
 <!-- TOAST -->
 <div class="toast" id="toast"><span id="toast-icon"></span><span id="toast-msg"></span></div>
 
-<!-- Scripts -->
+<!-- Firebase inline init — avoids module import chain issues -->
+<script type="module">
+  import { initializeApp }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signInWithPopup,
+    GoogleAuthProvider,
+    signOut,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey:            "AIzaSyCj9x8r9tXubsm6vR8B4mIssWXBUhn13Ms",
+    authDomain:        "freeflows.firebaseapp.com",
+    projectId:         "freeflows",
+    storageBucket:     "freeflows.firebasestorage.app",
+    messagingSenderId: "331022595641",
+    appId:             "1:331022595641:web:f3d7d2e03b11234bd17fe8"
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  window._fb = {
+    auth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signInWithPopup,
+    GoogleAuthProvider,
+    signOut,
+    projectId: firebaseConfig.projectId
+  };
+  window._firebaseReady = true;
+
+  onAuthStateChanged(auth, user => {
+    window._fbUser = user || null;
+    if (typeof window._onAuthChange === "function") window._onAuthChange(user || null);
+  });
+</script>
+
+<!-- App scripts -->
 <script src="js/data/qb_registry.js"></script>
 <script src="js/data/class9_physics.js"></script>
 <script src="js/data/class9_science.js"></script>
@@ -197,7 +240,6 @@
 <script src="js/student_auth.js"></script>
 <script src="js/student_payments.js"></script>
 <script src="js/student_portal.js"></script>
-<script type="module" src="js/firebase-init.js"></script>
 
 <script>
 // Student sidebar toggle (separate from admin)

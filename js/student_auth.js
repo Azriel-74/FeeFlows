@@ -13,6 +13,21 @@ function switchSTab(tab, btn) {
 
 // ── SIGN IN ─────────────────────────────────────────────────
 async function doStudentLogin() {
+  if (!window._firebaseReady || !window._fb?.auth) {
+    toast("Connecting to server...","yellow");
+    let waited = 0;
+    const interval = setInterval(() => {
+      waited += 200;
+      if (window._firebaseReady && window._fb?.auth) {
+        clearInterval(interval);
+        doStudentLogin();
+      } else if (waited >= 3000) {
+        clearInterval(interval);
+        toast("Could not connect. Check your internet and try again.","red");
+      }
+    }, 200);
+    return;
+  }
   const email = document.getElementById("sl-email")?.value.trim();
   const pass  = document.getElementById("sl-pass")?.value;
   if (!email||!pass) { toast("Enter email and password","yellow"); return; }
@@ -33,6 +48,22 @@ async function doStudentLogin() {
 
 // ── REGISTER ────────────────────────────────────────────────
 async function doStudentRegister() {
+  // Wait for Firebase to be ready (retry up to 3 seconds)
+  if (!window._firebaseReady || !window._fb?.auth) {
+    toast("Connecting to server...","yellow");
+    let waited = 0;
+    const interval = setInterval(() => {
+      waited += 200;
+      if (window._firebaseReady && window._fb?.auth) {
+        clearInterval(interval);
+        doStudentRegister(); // retry
+      } else if (waited >= 3000) {
+        clearInterval(interval);
+        toast("Could not connect to server. Check your internet and try again.","red");
+      }
+    }, 200);
+    return;
+  }
   const name   = document.getElementById("sr-name")?.value.trim();
   const phone  = document.getElementById("sr-phone")?.value.trim();
   const email  = document.getElementById("sr-email")?.value.trim();
@@ -99,11 +130,14 @@ async function _loadProfile(user) {
   // Try cloud first
   if (window._firebaseReady && user) {
     try {
-      // Same path as save: users/{uid}/data/studentProfile
       const url   = `https://firestore.googleapis.com/v1/projects/${window._fb.projectId}/databases/(default)/documents/users/${user.uid}/data/studentProfile`;
       const token = await user.getIdToken();
       const res   = await fetch(url, { headers: { "Authorization":"Bearer "+token } });
-      if (res.ok) {
+
+      if (res.status === 404) {
+        // Brand new account — no profile saved yet, that's fine
+        // Fall through to local storage check
+      } else if (res.ok) {
         const data = await res.json();
         const json = data.fields?.profileJson?.stringValue;
         if (json) {
@@ -113,9 +147,9 @@ async function _loadProfile(user) {
           return;
         }
       }
-    } catch(e) {}
+    } catch(e) { console.warn("Profile load error:", e.message); }
   }
-  // Fall back to local
+  // Fall back to local storage
   try {
     const local = localStorage.getItem(LS_STUDENT);
     if (local) window._studentProfile = JSON.parse(local);
