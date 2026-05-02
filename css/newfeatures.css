@@ -1,487 +1,341 @@
-/* FeeStacks — css/newfeatures.css */
+/* ═══════════════════════════════════════════════════════════════════
+   newfeatures.css
+   Styles for Feature 1 (fee input) and Feature 2 (fee breakdown)
+═══════════════════════════════════════════════════════════════════ */
 
-/* ══════════════════════════════════════════
-   ATTENDANCE PAGE
-══════════════════════════════════════════ */
-.att-controls-bar {
-  display: flex; align-items: center; gap:12px;
-  margin-bottom: 20px; flex-wrap: wrap;
+/* ─── Fee breakdown grid ──────────────────────────────────────────── */
+.sc-fee-breakdown {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px,1fr));
+  gap: 8px;
+  margin: 10px 0 14px;
+  background: var(--surf2);
+  border-radius: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
 }
-.att-date-nav {
-  display: flex; align-items: center; gap:10px;
-  background: var(--surf); border:1px solid var(--border);
-  border-radius: var(--rad-sm); padding: 8px 14px;
+.fbd-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
-.att-date-nav button {
-  background: none; border: none; cursor: pointer;
-  color: var(--muted); font-size: 18px; padding: 0 4px;
-  transition: color .2s;
+.fbd-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--muted);
+  font-weight: 600;
 }
-.att-date-nav button:hover { color: var(--accent); }
-#att-date-display { font-weight: 600; font-size: 16px; white-space: nowrap; }
+.fbd-val {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  font-family: var(--font-d);
+}
 
-.att-date-picker {
-  background: var(--surf2); border: 1.5px solid var(--border);
-  border-radius: var(--rad-sm); padding: 8px 12px;
-  color: var(--text); font-family: var(--font-b); font-size: 15px;
-  outline: none; cursor: pointer;
+/* ─── Slider ─────────────────────────────────────────────────────── */
+.sc-slider-wrap { margin: 0 0 14px; }
+.sc-slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 6px;
 }
-.att-date-picker:focus { border-color: var(--accent); }
-
-#att-summary {
-  display: flex; gap: 14px; margin-bottom: 20px; flex-wrap: wrap;
+.sl-paid { color: var(--muted2); font-weight: 500; }
+.sl-rem  { font-weight: 600; }
+.sl-rem.red   { color: var(--red,#ef4444); }
+.sl-rem.green { color: var(--green,#22c55e); }
+.fee-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 4px;
+  background: linear-gradient(
+    to right,
+    var(--accent) 0%,
+    var(--accent) var(--pct,50%),
+    var(--border) var(--pct,50%),
+    var(--border) 100%
+  );
+  outline: none;
+  cursor: default;
 }
-.att-sum-item {
-  background: var(--surf); border: 1px solid var(--border);
-  border-radius: 10px; padding: 10px 18px;
-  font-size: 15px; display: flex; align-items: center; gap: 8px;
-}
-.att-sum-item.green { border-color: rgba(34,197,94,.3); color: var(--green); }
-.att-sum-item.red   { border-color: rgba(239,68,68,.3);  color: var(--red); }
-.att-sum-item.muted { color: var(--muted); }
-.att-sum-item strong { font-size: 18px; font-family: var(--font-d); }
-
-#att-class-filter { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
-
-/* Attendance rows */
-.att-row {
-  display: flex; align-items: center; gap: 14px;
-  padding: 14px 18px;
-  background: var(--surf2); border: 1.5px solid var(--border);
-  border-radius: var(--rad); margin-bottom: 10px;
-  transition: border-color .2s;
-  animation: fadeUp .25s ease both;
-}
-.att-row:has(.att-toggle.present) { border-color: rgba(34,197,94,.3); }
-.att-row:has(.att-toggle.absent)  { border-color: rgba(239,68,68,.3); }
-
-.att-avatar {
-  width: 40px; height: 40px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-d); font-size: 15px; font-weight: 700;
-  flex-shrink: 0;
-}
-.att-info { flex: 1; min-width: 0; }
-.att-name { font-family: var(--font-d); font-size: 16px; font-weight: 700; margin-bottom: 2px; }
-.att-meta { font-size: 13px; color: var(--muted); }
-
-.att-label {
-  font-size: 13px; font-weight: 600; min-width: 80px; text-align: center;
-  padding: 4px 10px; border-radius: 100px;
-}
-.att-label.present  { color: var(--green); background: var(--green-d); }
-.att-label.absent   { color: var(--red);   background: var(--red-d); }
-.att-label.unmarked { color: var(--muted); background: var(--surf3); }
-
-.att-controls { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-
-/* Attendance toggle slider */
-.att-toggle {
-  width: 56px; height: 28px;
-  border-radius: 100px;
-  background: var(--surf3);
-  border: 1.5px solid var(--border2);
-  cursor: pointer;
-  position: relative;
-  transition: background .25s, border-color .25s;
-  flex-shrink: 0;
-}
-.att-toggle.present {
-  background: rgba(34,197,94,.2);
-  border-color: var(--green);
-}
-.att-toggle.absent {
-  background: rgba(239,68,68,.2);
-  border-color: var(--red);
-}
-.att-toggle-inner {
-  position: absolute;
-  top: 3px; left: 3px;
-  width: 20px; height: 20px;
+.fee-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
   border-radius: 50%;
-  background: var(--muted);
-  transition: transform .25s, background .25s;
+  background: var(--accent);
+  border: 2px solid var(--bg);
+  box-shadow: 0 0 0 2px var(--accent);
 }
-.att-toggle.present .att-toggle-inner {
-  transform: translateX(28px);
-  background: var(--green);
-}
-.att-toggle.absent .att-toggle-inner {
-  transform: translateX(14px);
-  background: var(--red);
+.sl-pct-label {
+  text-align: right;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
 }
 
-.att-wa-btn {
-  background: none; border: none; cursor: pointer;
-  font-size: 20px; padding: 4px; border-radius: 8px;
+/* ─── FEATURE 1: Fee input row ───────────────────────────────────── */
+.sc-fee-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.fee-inp-wrap {
+  display: flex;
+  align-items: center;
+  background: var(--surf2);
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  padding: 0 10px;
+  flex: 1;
+  transition: border-color .2s, box-shadow .2s;
+}
+.fee-inp-wrap:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+}
+.fee-inp-prefix {
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 600;
+  margin-right: 6px;
+  user-select: none;
+}
+.fee-inp {
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-b);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 0;
+  width: 100%;
+  outline: none;
+}
+.fee-inp::placeholder { color: var(--muted); font-weight: 400; }
+/* Hide browser number arrows */
+.fee-inp::-webkit-outer-spin-button,
+.fee-inp::-webkit-inner-spin-button { -webkit-appearance: none; }
+.fee-inp[type=number] { -moz-appearance: textfield; }
+
+.btn-fee-quick {
+  background: rgba(59,130,246,.12);
+  border: 1.5px solid rgba(59,130,246,.35);
+  color: var(--accent);
+  border-radius: 9px;
+  padding: 9px 14px;
+  font-family: var(--font-b);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
   transition: background .2s;
 }
-.att-wa-btn:hover { background: rgba(37,211,102,.15); }
+.btn-fee-quick:hover:not(:disabled) { background: rgba(59,130,246,.22); }
+.btn-fee-quick:disabled { opacity: .35; cursor: not-allowed; }
 
-/* ══════════════════════════════════════════
-   TIMETABLE PAGE
-══════════════════════════════════════════ */
-.tt-setup-panel {
-  background: var(--surf); border: 1px solid var(--border);
-  border-radius: var(--rad); padding: 20px 24px; margin-bottom: 24px;
+/* ─── Payment log ─────────────────────────────────────────────────── */
+.sc-pay-log {
+  background: var(--surf2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
 }
-.tt-setup-title {
-  font-family: var(--font-d); font-size: 16px; font-weight: 700;
-  margin-bottom: 16px;
+.pay-log-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--muted);
+  font-weight: 700;
+  margin-bottom: 6px;
 }
+.pay-log-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--border);
+}
+.pay-log-row:last-child { border: none; }
+.pay-log-date { color: var(--muted2); }
+.pay-log-amt  { color: var(--green,#22c55e); font-weight: 700; }
+.pay-log-empty { font-size: 12px; color: var(--muted); }
 
-/* Day checkboxes */
-.tt-days-wrap { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-.tt-day-chk {
-  display: flex; align-items: center; gap: 6px;
-  padding: 8px 14px; border-radius: 100px;
-  border: 1.5px solid var(--border2);
-  cursor: pointer; font-size: 14px; color: var(--muted);
-  transition: all .2s; user-select: none;
+/* ─── Status badges ───────────────────────────────────────────────── */
+.fee-status {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+  letter-spacing: .4px;
 }
-.tt-day-chk input { display: none; }
-.tt-day-chk.checked {
-  background: rgba(59,130,246,.12);
-  border-color: var(--accent); color: var(--accent); font-weight: 600;
-}
-.tt-day-chk:hover { border-color: var(--accent); color: var(--accent); }
+.fee-status-green { background: rgba(34,197,94,.15); color: #22c55e; }
+.fee-status-blue  { background: rgba(59,130,246,.15); color: var(--accent); }
+.fee-status-red   { background: rgba(239,68,68,.15);  color: #ef4444; }
 
-/* Timing row */
-.tt-timing-row {
-  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;
-}
-.tt-time-inp {
-  background: var(--surf2); border: 1.5px solid var(--border);
-  border-radius: var(--rad-sm); padding: 8px 12px;
-  color: var(--text); font-family: var(--font-b); font-size: 15px;
-  outline: none; transition: border-color .2s;
-}
-.tt-time-inp:focus { border-color: var(--accent); }
+/* ─── Student card border tints ───────────────────────────────────── */
+.student-card.status-red   { border-left: 3px solid #ef4444; }
+.student-card.status-blue  { border-left: 3px solid var(--accent); }
+.student-card.status-green { border-left: 3px solid #22c55e; }
 
-/* Period items */
-.tt-period-item {
-  display: flex; align-items: center; gap: 12px;
-  background: var(--surf3); border: 1px solid var(--border);
-  border-radius: 8px; padding: 8px 12px; margin-bottom: 6px;
-  font-size: 14px;
+/* ─── WhatsApp button ─────────────────────────────────────────────── */
+.sc-actions { margin-top: 6px; }
+.btn-wa {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(37,211,102,.12);
+  border: 1.5px solid rgba(37,211,102,.3);
+  color: #25d366;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background .2s;
 }
-.tt-period-time  { color: var(--accent); font-weight: 600; min-width: 100px; }
-.tt-period-label { flex: 1; }
+.btn-wa:hover { background: rgba(37,211,102,.22); }
 
-/* Add period row */
-.tt-add-period-row {
-  display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 10px;
+/* ─── Revenue bar graph ───────────────────────────────────────────── */
+.bar-graph {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  height: 240px;
+  padding: 20px 0 0;
+  overflow-x: auto;
 }
-.tt-add-period-row input {
-  background: var(--surf2); border: 1.5px solid var(--border);
-  border-radius: var(--rad-sm); padding: 8px 10px;
-  color: var(--text); font-family: var(--font-b); font-size: 14px;
-  outline: none; transition: border-color .2s;
+.bar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 60px;
+  flex: 1;
 }
-.tt-add-period-row input:focus { border-color: var(--accent); }
-.tt-add-period-row input[type="text"] { flex: 1; min-width: 100px; }
+.bar-val   { font-size: 11px; color: var(--muted); font-weight:600; }
+.bar-outer {
+  width: 100%;
+  height: 160px;
+  background: var(--surf2);
+  border-radius: 6px 6px 0 0;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.bar-fill {
+  width: 100%;
+  background: linear-gradient(180deg, var(--accent), #6366f1);
+  border-radius: 6px 6px 0 0;
+  transition: height .6s ease;
+  min-height: 2px;
+}
+.bar-label { font-size: 11px; color: var(--muted); font-weight:600; }
 
-/* Timetable grid */
-.tt-grid-wrap { overflow-x: auto; }
-.tt-table {
-  width: 100%; border-collapse: collapse;
+/* ─── Payments table ──────────────────────────────────────────────── */
+.pay-table {
+  width: 100%;
+  border-collapse: collapse;
   font-size: 13px;
 }
-.tt-th-period, .tt-th-day {
-  padding: 10px 14px;
+.pay-table th {
+  text-align: left;
+  padding: 10px 12px;
   background: var(--surf2);
-  border: 1px solid var(--border);
-  font-family: var(--font-d); font-weight: 700;
-  text-align: left; white-space: nowrap;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
 }
-.tt-th-day { text-align: center; }
-.tt-td-period {
-  padding: 10px 14px;
-  border: 1px solid var(--border);
-  background: var(--surf2);
-  vertical-align: top; min-width: 100px;
+.pay-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted2);
 }
-.tt-period-name { font-weight: 600; font-size: 14px; }
-.tt-period-time-sm { font-size: 12px; color: var(--muted); margin-top: 2px; }
-.tt-td-slot {
-  border: 1px solid var(--border);
-  padding: 8px; vertical-align: top;
-  min-width: 160px;
-}
-.tt-slot-inner { display: flex; flex-direction: column; gap: 5px; }
-.tt-select {
-  width: 100%; background: var(--surf2);
-  border: 1px solid var(--border); border-radius: 6px;
-  padding: 5px 8px; color: var(--text);
-  font-family: var(--font-b); font-size: 13px; outline: none;
-}
-.tt-select:focus { border-color: var(--accent); }
-.tt-select option { background: var(--surf2); }
-.tt-subj-inp {
-  width: 100%; background: var(--surf2);
-  border: 1px solid var(--border); border-radius: 6px;
-  padding: 5px 8px; color: var(--text);
-  font-family: var(--font-b); font-size: 13px; outline: none;
-}
-.tt-subj-inp:focus { border-color: var(--accent); }
-.tt-subj-inp::placeholder { color: var(--muted); }
+.pay-table tr:last-child td { border: none; }
+.pay-table .green { color: #22c55e; }
 
-/* ══════════════════════════════════════════
-   MESSAGE ALL MODAL
-══════════════════════════════════════════ */
-.modal-overlay {
-  position: fixed; inset: 0; z-index: 800;
-  background: rgba(0,0,0,.7); backdrop-filter: blur(6px);
-  display: flex; align-items: center; justify-content: center;
-  padding: 20px; animation: fadeUp .3s ease;
+/* ─── Enrollment info on card ─────────────────────────────────────── */
+.sc-badge-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
 }
-.modal-box {
-  background: var(--surf); border: 1px solid var(--border2);
-  border-radius: 20px; padding: 0;
-  width: 100%; max-width: 520px;
-  max-height: 90vh; overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+.sc-delete-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color .2s, background .2s;
 }
-.modal-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 20px 24px; border-bottom: 1px solid var(--border);
-}
-.modal-title { font-family: var(--font-d); font-size: 18px; font-weight: 700; }
-.modal-close {
-  background: none; border: none; color: var(--muted);
-  cursor: pointer; font-size: 18px; padding: 4px; border-radius: 6px;
-  transition: color .2s;
-}
-.modal-close:hover { color: var(--red); }
-.modal-body { padding: 20px 24px; }
-.modal-desc { font-size: 14px; color: var(--muted2); margin-bottom: 14px; }
-.modal-textarea {
-  width: 100%; height: 180px; background: var(--surf2);
-  border: 1.5px solid var(--border); border-radius: 10px;
-  padding: 12px; color: var(--text); font-family: var(--font-b);
-  font-size: 14px; outline: none; resize: vertical;
-  line-height: 1.6;
-}
-.modal-actions { display: flex; gap: 10px; margin-top: 12px; }
-.btn-wa-open {
-  flex: 1; padding: 12px; background: #25d366;
-  border: none; border-radius: var(--rad-sm);
-  color: #fff; font-family: var(--font-d); font-size: 14px;
-  font-weight: 600; cursor: pointer; transition: opacity .2s;
-}
-.btn-wa-open:hover { opacity: .88; }
-.modal-phone-list { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 16px; }
-.modal-phone-title { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: .5px; }
-.modal-phones { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-.phone-chip {
-  background: var(--surf3); border: 1px solid var(--border2);
-  border-radius: 100px; padding: 3px 10px; font-size: 12px; color: var(--muted2);
-}
-.btn-copy-phones {
-  background: var(--surf2); border: 1.5px solid var(--border2);
-  border-radius: 8px; padding: 8px 16px; color: var(--muted2);
-  font-family: var(--font-b); font-size: 13px; cursor: pointer; transition: all .2s;
-}
-.btn-copy-phones:hover { border-color: var(--accent); color: var(--accent); }
+.sc-delete-btn:hover { color: #ef4444; background: rgba(239,68,68,.1); }
 
-/* Message All button on students page */
-.msg-all-bar {
-  display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
+/* ─── Timetable styles ────────────────────────────────────────────── */
+.tt-grid-inner { display: flex; gap: 12px; overflow-x: auto; }
+.tt-col { min-width: 140px; flex: 1; }
+.tt-col-head { font-weight:700; font-size:13px; margin-bottom:8px; color:var(--accent); }
+.tt-slot {
+  background: var(--surf2); border:1px solid var(--border);
+  border-radius:6px; padding:6px 10px; font-size:12px;
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:4px;
 }
-.btn-msg-all {
-  padding: 9px 18px; border-radius: var(--rad-sm);
-  border: 1.5px solid var(--border2);
-  background: var(--surf2); color: var(--muted2);
-  font-family: var(--font-b); font-size: 14px; font-weight: 600;
-  cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: 7px;
+.tt-slot button { background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;}
+.tt-add-row { display:flex;gap:6px;margin-top:6px;}
+.tt-add-row button {
+  background:var(--accent);border:none;color:#fff;border-radius:6px;
+  padding:6px 10px;cursor:pointer;font-size:13px;font-weight:700;
 }
-.btn-msg-all:hover { border-color: #25d366; color: #25d366; }
-.btn-msg-all.dues:hover { border-color: var(--red); color: var(--red); }
+.tt-day-chip {
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--surf);border:1.5px solid var(--border);
+  border-radius:20px;padding:5px 14px;font-size:13px;cursor:pointer;
+  transition:all .2s;
+}
+.tt-day-chip.active { border-color:var(--accent);color:var(--accent);background:rgba(59,130,246,.08); }
+.tt-day-chip input { display:none; }
 
-/* ══════════════════════════════════════════
-   INSTITUTION ID BOX
-══════════════════════════════════════════ */
-.inst-id-box {
-  background: var(--surf2);
-  border: 1.5px solid var(--border2);
-  border-radius: var(--rad);
-  padding: 20px 22px;
-  margin-top: 8px;
-}
-.inst-id-label {
-  font-size: 12px; font-weight: 600; color: var(--muted);
-  text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px;
-}
-.inst-id-value {
-  font-family: var(--font-d); font-size: 26px; font-weight: 800;
-  color: var(--accent); letter-spacing: 1px; margin-bottom: 4px;
-  word-break: break-all;
-}
-.inst-id-name {
-  font-size: 14px; color: var(--muted2); margin-bottom: 10px;
-}
-.inst-id-hint {
-  font-size: 13px; color: var(--muted); line-height: 1.6;
-}
+/* ─── Attendance ──────────────────────────────────────────────────── */
+.att-row { display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border); }
+.att-info { display:flex;align-items:center;gap:10px; }
+.att-avatar { width:36px;height:36px;border-radius:50%;background:var(--surf2);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px; }
+.att-name { font-weight:600;font-size:14px; }
+.att-meta { font-size:12px;color:var(--muted); }
+.att-btns { display:flex;gap:8px; }
+.att-btn { border:1.5px solid var(--border);background:var(--surf2);color:var(--muted2);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s; }
+.att-btn.present.active { background:rgba(34,197,94,.15);border-color:#22c55e;color:#22c55e; }
+.att-btn.absent.active  { background:rgba(239,68,68,.15); border-color:#ef4444;color:#ef4444; }
+.att-summary-row { display:flex;gap:20px;padding:12px 0;font-size:13px;font-weight:600;color:var(--muted2);border-bottom:1px solid var(--border);margin-bottom:12px; }
 
-/* ══════════════════════════════════════════
-   MOBILE NAV FIXES
-══════════════════════════════════════════ */
-/* Ensure top nav hamburger is always on top */
-#main-nav {
-  position: sticky;
-  top: 0;
-  z-index: 150; /* below sidebar (300) but above content */
-}
+/* ─── Faculty ─────────────────────────────────────────────────────── */
+.fac-card { display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border); }
+.fac-avatar { width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#6366f1);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0; }
+.fac-info { flex:1; }
+.fac-name { font-weight:700;font-size:15px; }
+.fac-meta { font-size:12px;color:var(--muted2);margin-top:2px; }
+.subj-tags-row { display:flex;flex-wrap:wrap;gap:4px;margin-top:6px; }
+.subj-tag { background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);color:var(--accent);border-radius:4px;padding:2px 8px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:4px; }
+.subj-tag button { background:none;border:none;color:inherit;cursor:pointer;font-size:10px;padding:0; }
+.btn-fa-pay { background:var(--surf2);border:1.5px solid var(--border);color:var(--muted2);border-radius:7px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s; }
+.btn-fa-pay.paid { background:rgba(34,197,94,.12);border-color:#22c55e;color:#22c55e; }
 
-#mobile-menu-btn {
-  z-index: 400 !important;
-  position: relative;
-}
+/* ─── Programs ────────────────────────────────────────────────────── */
+.prog-card { display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--border); }
+.prog-name { font-weight:700;font-size:15px; }
+.prog-meta { font-size:12px;color:var(--muted2);margin-top:3px; }
 
-/* ══════════════════════════════════════════
-   ADMIN PAYMENTS PAGE
-══════════════════════════════════════════ */
-.pay-student-row {
-  display: flex; align-items: center; gap: 14px;
-  padding: 12px 14px; background: var(--surf2);
-  border: 1.5px solid var(--border); border-radius: var(--rad);
-  margin-bottom: 8px; animation: fadeUp .25s ease both;
-  transition: border-color .2s;
-}
-.pay-student-row.paid { border-color: rgba(34,197,94,.3); }
-.pay-avatar { width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:14px;font-weight:700;flex-shrink:0; }
-.pay-info { flex:1;min-width:0; }
-.pay-name { font-weight:700;font-size:14px;margin-bottom:2px; }
-.pay-meta { font-size:12px;color:var(--muted); }
-.pay-amount { font-family:var(--font-d);font-size:16px;font-weight:700;flex-shrink:0; }
-.pay-amount.red   { color:var(--red); }
-.pay-amount.green { color:var(--green); }
-.pay-actions { display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap; }
-.pay-remind-btn {
-  padding:6px 12px;border-radius:8px;border:1.5px solid rgba(37,211,102,.4);
-  background:rgba(37,211,102,.08);color:#25d366;font-family:var(--font-b);
-  font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;
-}
-.pay-remind-btn:hover { background:rgba(37,211,102,.18); }
-.pay-mark-btn {
-  padding:6px 12px;border-radius:8px;border:1.5px solid rgba(34,197,94,.4);
-  background:rgba(34,197,94,.08);color:var(--green);font-family:var(--font-b);
-  font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;
-}
-.pay-mark-btn:hover { background:rgba(34,197,94,.18); }
-.pay-record-row {
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
-  padding:10px 12px;background:var(--surf2);border:1px solid var(--border);
-  border-radius:9px;margin-bottom:6px;font-size:13px;
-}
-.pay-record-info { flex:1; }
-.pay-record-name { font-weight:600;margin-bottom:2px; }
-.pay-record-meta { font-size:12px;color:var(--muted); }
-.pay-record-amt { font-family:var(--font-d);font-size:15px;font-weight:700; }
-
-/* ══════════════════════════════════════════
-   STUDENT PAYMENTS PAGE
-══════════════════════════════════════════ */
-.s-fee-due-card {
-  display:flex;align-items:center;justify-content:space-between;gap:14px;
-  padding:16px 18px;background:var(--surf);border:1.5px solid var(--red-d);
-  border-radius:var(--rad);margin-bottom:12px;animation:fadeUp .25s ease both;
-}
-.s-fee-due-card.paid { border-color:rgba(34,197,94,.3); }
-.s-fee-due-left { flex:1; }
-.s-fee-due-month { font-family:var(--font-d);font-size:16px;font-weight:700;margin-bottom:3px; }
-.s-fee-due-desc  { font-size:13px;color:var(--muted);margin-bottom:6px; }
-.s-fee-due-right { text-align:right;flex-shrink:0; }
-.s-fee-due-amount { font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--red);margin-bottom:8px; }
-.s-fee-due-card.paid .s-fee-due-amount { color:var(--green); }
-.s-pay-now-btn {
-  display:block;padding:9px 20px;background:var(--accent-g);
-  border:none;border-radius:9px;color:#fff;font-family:var(--font-d);
-  font-size:13px;font-weight:700;cursor:pointer;transition:opacity .2s;
-}
-.s-pay-now-btn:hover { opacity:.88; }
-.s-pay-record {
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
-  padding:12px 14px;background:var(--surf2);border:1px solid var(--border);
-  border-radius:9px;
-}
-
-/* ══════════════════════════════════════════
-   BILL / INVOICE MODAL
-══════════════════════════════════════════ */
-.s-bill-overlay {
-  position:fixed;inset:0;z-index:800;
-  background:rgba(0,0,0,.75);backdrop-filter:blur(8px);
-  display:flex;align-items:center;justify-content:center;
-  padding:16px;animation:fadeUp .3s ease;
-}
-.s-bill-box {
-  background:var(--surf);border:1px solid var(--border2);
-  border-radius:20px;width:100%;max-width:440px;
-  max-height:92vh;overflow-y:auto;
-  box-shadow:0 24px 60px rgba(0,0,0,.5);
-}
-.s-bill-header {
-  display:flex;align-items:center;justify-content:space-between;
-  padding:18px 22px;border-bottom:1px solid var(--border);
-}
-.s-bill-logo { font-family:var(--font-d);font-size:16px;font-weight:800; }
-.s-bill-close {
-  background:none;border:none;color:var(--muted);cursor:pointer;
-  font-size:18px;padding:4px;border-radius:6px;transition:color .2s;
-}
-.s-bill-close:hover { color:var(--red); }
-.s-bill-body { padding:20px 22px; }
-.s-bill-title { font-family:var(--font-d);font-size:22px;font-weight:800;margin-bottom:4px; }
-.s-bill-num   { font-size:12px;color:var(--muted);margin-bottom:18px;font-family:monospace; }
-
-.s-bill-table { background:var(--surf2);border-radius:10px;overflow:hidden;margin-bottom:20px; }
-.s-bill-row {
-  display:flex;align-items:center;justify-content:space-between;
-  padding:10px 14px;border-bottom:1px solid var(--border);
-  font-size:13px;
-}
-.s-bill-row:last-child { border-bottom:none; }
-.s-bill-row span { color:var(--muted); }
-.s-bill-row strong { color:var(--text); }
-.s-bill-total { background:rgba(59,130,246,.06); }
-.s-bill-total span { font-weight:700;color:var(--text); }
-.s-bill-total strong { font-family:var(--font-d);font-size:17px;color:var(--accent); }
-
-/* QR section */
-.s-bill-qr-section { text-align:center;margin-bottom:18px; }
-.s-bill-qr-title { font-size:13px;font-weight:600;color:var(--muted);margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px; }
-.s-bill-qr-wrap {
-  display:inline-block;padding:14px;background:#fff;
-  border-radius:14px;margin-bottom:12px;
-  box-shadow:0 4px 16px rgba(0,0,0,.15);
-}
-.s-bill-qr-img { width:200px;height:200px;display:block; }
-.s-bill-upi-id {
-  font-family:monospace;font-size:14px;font-weight:700;
-  color:var(--accent);margin-bottom:8px;
-  background:var(--surf2);padding:7px 14px;border-radius:8px;
-  display:inline-block;
-}
-.s-bill-upi-hint { font-size:12px;color:var(--muted);line-height:1.6; }
-
-/* Note and actions */
-.s-bill-note {
-  background:var(--yellow-d);border:1px solid rgba(245,158,11,.3);
-  border-radius:9px;padding:12px 14px;font-size:13px;
-  color:var(--text);line-height:1.6;margin-bottom:16px;
-}
-.s-bill-actions { display:flex;flex-direction:column;gap:10px; }
-.s-bill-confirm-btn {
-  width:100%;padding:14px;background:linear-gradient(135deg,#25d366,#128c7e);
-  border:none;border-radius:10px;color:#fff;font-family:var(--font-d);
-  font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s;
-}
-.s-bill-confirm-btn:hover { opacity:.88; }
-.s-bill-cancel-btn {
-  width:100%;padding:12px;background:var(--surf2);border:1.5px solid var(--border2);
-  border-radius:10px;color:var(--muted2);font-family:var(--font-b);
-  font-size:14px;cursor:pointer;transition:all .2s;
-}
-.s-bill-cancel-btn:hover { border-color:var(--accent);color:var(--accent); }
+/* ─── SF tags (form) ─────────────────────────────────────────────── */
+.sf-tag { display:inline-flex;align-items:center;gap:6px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);border-radius:6px;padding:4px 10px;font-size:12px;margin:3px 2px; }
+.sf-amt { font-weight:700;color:var(--accent); }
+.sf-del { background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px; }

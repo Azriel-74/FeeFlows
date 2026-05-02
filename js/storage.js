@@ -1,301 +1,77 @@
-// FeeStacks — js/storage.js
-// Firestore data is saved/loaded via the REST API directly.
-// This avoids the Firestore JS SDK's persistent WebSocket
-// which was the real cause of the constant "Syncing" blink.
+// storage.js — localStorage + Firebase cloud sync
 
-const LS_STUDENTS = "feestacks_v1_students";
-const LS_FACULTY  = "feestacks_v1_faculty";
-const LS_PROGRAMS = "feestacks_v1_programs";
-const LS_TIMETABLE = "feestacks_v1_timetable";
-const LS_THEME    = "feestacks_theme";
+const KEYS = { students:"fs_students", faculty:"fs_faculty", programs:"fs_programs", meta:"fs_meta" };
 
-let _saveTimer  = null;
-let _isSaving   = false;
-let _syncProgress = 0; // 0-100 for hover tooltip
+window.students = [];
+window.faculty  = [];
+window.programs = [];
+window.appMeta  = {};
 
-// ── LOCAL STORAGE ───────────────────────────────────────────
-function loadLocal() {
-  try { window.students        = JSON.parse(localStorage.getItem(LS_STUDENTS)  || "[]"); } catch(_){ window.students=[]; }
-  try { window.faculty         = JSON.parse(localStorage.getItem(LS_FACULTY)   || "[]"); } catch(_){ window.faculty=[]; }
-  try { window.programs        = JSON.parse(localStorage.getItem(LS_PROGRAMS)  || "[]"); } catch(_){ window.programs=[]; }
-  try { window.timetableConfig = JSON.parse(localStorage.getItem(LS_TIMETABLE) || "null"); } catch(_){ window.timetableConfig=null; }
+function saveAll() {
+  localStorage.setItem(KEYS.students, JSON.stringify(window.students));
+  localStorage.setItem(KEYS.faculty,  JSON.stringify(window.faculty));
+  localStorage.setItem(KEYS.programs, JSON.stringify(window.programs));
+  localStorage.setItem(KEYS.meta,     JSON.stringify(window.appMeta));
+  cloudSync();
+}
+
+function loadAll() {
+  try { window.students = JSON.parse(localStorage.getItem(KEYS.students)) || []; } catch(e) { window.students=[]; }
+  try { window.faculty  = JSON.parse(localStorage.getItem(KEYS.faculty))  || []; } catch(e) { window.faculty=[]; }
+  try { window.programs = JSON.parse(localStorage.getItem(KEYS.programs)) || []; } catch(e) { window.programs=[]; }
+  try { window.appMeta  = JSON.parse(localStorage.getItem(KEYS.meta))     || {}; } catch(e) { window.appMeta={}; }
+}
+
+// Cloud sync via Firestore
+async function cloudSync() {
+  if (!window._fbUser || !window._fb?.db) return;
+  try {
+    const { doc, setDoc, db } = window._fb;
+    const uid = window._fbUser.uid;
+    await setDoc(doc(db, "users", uid, "data", "main"), {
+      students: window.students,
+      faculty:  window.faculty,
+      programs: window.programs,
+      meta:     window.appMeta,
+      updatedAt: new Date().toISOString(),
+    }, { merge: true });
+    setSyncStatus("synced");
+  } catch(e) {
+    setSyncStatus("error");
+  }
+}
+
+async function cloudLoad() {
+  if (!window._fbUser || !window._fb?.db) return;
+  try {
+    const { doc, getDoc } = window._fb;
+    const uid  = window._fbUser.uid;
+    const snap = await getDoc(doc(window._fb.db, "users", uid, "data", "main"));
+    if (snap.exists()) {
+      const d = snap.data();
+      if (d.students) window.students = d.students;
+      if (d.faculty)  window.faculty  = d.faculty;
+      if (d.programs) window.programs = d.programs;
+      if (d.meta)     window.appMeta  = d.meta;
+      saveLocal();
+    }
+    setSyncStatus("synced");
+  } catch(e) {
+    setSyncStatus("error");
+  }
 }
 
 function saveLocal() {
-  localStorage.setItem(LS_STUDENTS,  JSON.stringify(window.students));
-  localStorage.setItem(LS_FACULTY,   JSON.stringify(window.faculty));
-  localStorage.setItem(LS_PROGRAMS,  JSON.stringify(window.programs));
-  localStorage.setItem(LS_TIMETABLE, JSON.stringify(window.timetableConfig||null));
+  localStorage.setItem(KEYS.students, JSON.stringify(window.students));
+  localStorage.setItem(KEYS.faculty,  JSON.stringify(window.faculty));
+  localStorage.setItem(KEYS.programs, JSON.stringify(window.programs));
+  localStorage.setItem(KEYS.meta,     JSON.stringify(window.appMeta));
 }
 
-// ── FIRESTORE REST API ──────────────────────────────────────
-// Converts a JS value to Firestore REST field format
-function _toFirestoreValue(val) {
-  if (val === null || val === undefined) return { nullValue: null };
-  if (typeof val === "boolean") return { booleanValue: val };
-  if (typeof val === "number")  return { doubleValue: val };
-  if (typeof val === "string")  return { stringValue: val };
-  if (Array.isArray(val)) return {
-    arrayValue: { values: val.map(_toFirestoreValue) }
-  };
-  if (typeof val === "object") return {
-    mapValue: { fields: Object.fromEntries(
-      Object.entries(val).map(([k,v]) => [k, _toFirestoreValue(v)])
-    )}
-  };
-  return { stringValue: String(val) };
+function setSyncStatus(s) {
+  const dot   = document.getElementById("sync-dot");
+  const label = document.getElementById("sync-label");
+  if (!dot || !label) return;
+  dot.className = "sync-dot " + (s === "synced" ? "synced" : s === "error" ? "error" : "");
+  label.textContent = s === "synced" ? "Synced" : s === "error" ? "Error" : "Offline";
 }
-
-// Converts Firestore REST field back to JS value
-function _fromFirestoreValue(fv) {
-  if (!fv) return null;
-  if ("nullValue"    in fv) return null;
-  if ("booleanValue" in fv) return fv.booleanValue;
-  if ("integerValue" in fv) return Number(fv.integerValue);
-  if ("doubleValue"  in fv) return fv.doubleValue;
-  if ("stringValue"  in fv) return fv.stringValue;
-  if ("arrayValue"   in fv) return (fv.arrayValue.values || []).map(_fromFirestoreValue);
-  if ("mapValue"     in fv) return Object.fromEntries(
-    Object.entries(fv.mapValue.fields || {}).map(([k,v]) => [k, _fromFirestoreValue(v)])
-  );
-  return null;
-}
-
-function _firestoreUrl() {
-  const pid = window._fb?.projectId;
-  const uid = window._fbUser?.uid;
-  if (!pid || !uid) return null;
-  return `https://firestore.googleapis.com/v1/projects/${pid}/databases/(default)/documents/users/${uid}/data/main`;
-}
-
-async function _getIdToken() {
-  if (!window._fbUser) return null;
-  return await window._fbUser.getIdToken();
-}
-
-// ── CLOUD SAVE (REST PATCH) ──────────────────────────────────
-async function _doCloudSave() {
-  if (!window._firebaseReady || !window._fbUser) return;
-  if (_isSaving) return;
-  _isSaving = true;
-  _syncProgress = 0;
-  setSyncStatus("syncing");
-
-  try {
-    const url   = _firestoreUrl(); if (!url) throw new Error("No URL");
-    const token = await _getIdToken(); if (!token) throw new Error("No token");
-
-    _syncProgress = 30;
-    updateSyncTooltip();
-
-    const body = {
-      fields: {
-        students:        _toFirestoreValue(window.students),
-        faculty:         _toFirestoreValue(window.faculty),
-        programs:        _toFirestoreValue(window.programs),
-        timetableConfig: _toFirestoreValue(window.timetableConfig||{})
-      }
-    };
-
-    _syncProgress = 60;
-    updateSyncTooltip();
-
-    const res = await fetch(url + "?updateMask.fieldPaths=students&updateMask.fieldPaths=faculty&updateMask.fieldPaths=programs&updateMask.fieldPaths=timetableConfig", {
-      method:  "PATCH",
-      headers: {
-        "Content-Type":  "application/json",
-        "Authorization": "Bearer " + token
-      },
-      body: JSON.stringify(body)
-    });
-
-    _syncProgress = 90;
-    updateSyncTooltip();
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error?.message || "HTTP " + res.status);
-    }
-
-    _syncProgress = 100;
-    updateSyncTooltip();
-    setSyncStatus("online");
-
-  } catch(e) {
-    console.warn("Cloud save failed:", e.message);
-    setSyncStatus("error");
-    // retry once after 5s
-    setTimeout(() => { if (navigator.onLine && window._fbUser) saveCloud(); }, 5000);
-  } finally {
-    _isSaving = false;
-  }
-}
-
-// ── CLOUD LOAD (REST GET) ────────────────────────────────────
-async function loadCloud() {
-  if (!window._firebaseReady || !window._fbUser) return;
-  try {
-    const url   = _firestoreUrl(); if (!url) return;
-    const token = await _getIdToken(); if (!token) return;
-
-    const res = await fetch(url, {
-      headers: { "Authorization": "Bearer " + token }
-    });
-
-    if (res.status === 404) return; // no data yet — fresh account
-    if (!res.ok) throw new Error("HTTP " + res.status);
-
-    const data   = await res.json();
-    const fields = data.fields || {};
-
-    if (fields.students)        window.students        = _fromFirestoreValue(fields.students) || [];
-    if (fields.faculty)         window.faculty         = _fromFirestoreValue(fields.faculty)  || [];
-    if (fields.programs)        window.programs        = _fromFirestoreValue(fields.programs) || [];
-    if (fields.timetableConfig) window.timetableConfig = _fromFirestoreValue(fields.timetableConfig) || null;
-
-    saveLocal(); // keep local cache in sync — does NOT trigger cloud save
-  } catch(e) {
-    console.warn("Cloud load failed:", e.message);
-    loadLocal(); // fall back to local
-  }
-}
-
-// ── DEBOUNCED SAVE ───────────────────────────────────────────
-function saveCloud() {
-  clearTimeout(_saveTimer);
-  // 2 second debounce — no "Syncing" shown until write actually starts
-  _saveTimer = setTimeout(_doCloudSave, 2000);
-}
-
-// saveAll: saves data only — never renders anything
-function saveAll() {
-  saveLocal();
-  if (navigator.onLine && window._fbUser) saveCloud();
-}
-
-// ── SYNC STATUS ──────────────────────────────────────────────
-function setSyncStatus(state) {
-  const dot = document.getElementById("sync-dot");
-  const lbl = document.getElementById("sync-label");
-  if (!dot || !lbl) return;
-
-  if (state === "online") {
-    dot.className   = "sync-dot online";
-    lbl.textContent = "Synced";
-    _syncProgress   = 100;
-  } else if (state === "syncing") {
-    dot.className   = "sync-dot syncing";
-    lbl.textContent = "Syncing…";
-  } else if (state === "error") {
-    dot.className   = "sync-dot error";
-    lbl.textContent = "Sync failed";
-  } else {
-    dot.className   = "sync-dot";
-    lbl.textContent = "Offline";
-    _syncProgress   = 0;
-  }
-  updateSyncTooltip();
-}
-
-function updateSyncTooltip() {
-  const wrap = document.getElementById("sync-wrap");
-  if (!wrap) return;
-  const dot = document.getElementById("sync-dot");
-  const state = dot?.classList.contains("online")   ? "online"
-              : dot?.classList.contains("syncing")  ? "syncing"
-              : dot?.classList.contains("error")    ? "error"
-              : "offline";
-
-  if (state === "syncing") {
-    wrap.title = `Syncing to cloud… ${_syncProgress}% complete`;
-  } else if (state === "online") {
-    wrap.title = "All data synced to cloud ✓";
-  } else if (state === "error") {
-    wrap.title = "Sync failed — will retry";
-  } else {
-    wrap.title = "Offline — data saved locally";
-  }
-}
-
-// ── THEME ────────────────────────────────────────────────────
-function loadTheme() {
-  applyTheme(localStorage.getItem(LS_THEME) || "dark");
-}
-function applyTheme(t) {
-  document.documentElement.setAttribute("data-theme", t);
-  localStorage.setItem(LS_THEME, t);
-  const btn = document.getElementById("theme-toggle");
-  if (btn) btn.textContent = t === "dark" ? "☀️" : "🌙";
-}
-function toggleTheme() {
-  const cur = document.documentElement.getAttribute("data-theme") || "dark";
-  applyTheme(cur === "dark" ? "light" : "dark");
-}
-
-// ── NETWORK EVENTS ───────────────────────────────────────────
-let _onlineTimer = null;
-window.addEventListener("online", () => {
-  clearTimeout(_onlineTimer);
-  _onlineTimer = setTimeout(() => {
-    if (window._fbUser) saveCloud();
-    else setSyncStatus("offline");
-  }, 1500);
-});
-window.addEventListener("offline", () => {
-  clearTimeout(_onlineTimer);
-  clearTimeout(_saveTimer);
-  setSyncStatus("offline");
-});
-
-// Init
-window.students        = [];
-window.faculty         = [];
-window.programs        = [];
-window.timetableConfig = null;
-
-// ── INSTITUTION ID ────────────────────────────────────────
-// Generate a unique institution ID for this admin account
-function generateInstitutionId(uid) {
-  // Create a readable ID from uid: first 6 chars + 4 random digits
-  const base = uid.replace(/[^a-zA-Z0-9]/g,'').substring(0,6).toUpperCase();
-  const rand = Math.floor(1000 + Math.random()*9000);
-  return `ES-${base}-${rand}`;
-}
-
-function getInstitutionId() {
-  return window.institutionData?.id || null;
-}
-
-async function saveInstitutionData(data) {
-  window.institutionData = data;
-  localStorage.setItem("feestacks_institution", JSON.stringify(data));
-  if (navigator.onLine && window._fbUser) {
-    try {
-      const url   = `https://firestore.googleapis.com/v1/projects/${window._fb?.projectId}/databases/(default)/documents/institutions/${data.id}`;
-      const token = await window._fbUser.getIdToken();
-      const body  = {
-        fields: {
-          id:        { stringValue: data.id },
-          name:      { stringValue: data.name || "" },
-          adminUid:  { stringValue: window._fbUser.uid },
-          adminEmail:{ stringValue: window._fbUser.email || "" }
-        }
-      };
-      await fetch(url, {
-        method: "PATCH",
-        headers: { "Content-Type":"application/json","Authorization":"Bearer "+token },
-        body: JSON.stringify(body)
-      });
-    } catch(e) { console.warn("Institution save failed:", e.message); }
-  }
-}
-
-function loadInstitutionData() {
-  try {
-    window.institutionData = JSON.parse(localStorage.getItem("feestacks_institution")||"null");
-  } catch(_) { window.institutionData = null; }
-}
-
-// Init
-loadInstitutionData();
-window.institutionData = window.institutionData || null;

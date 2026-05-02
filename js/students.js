@@ -1,264 +1,388 @@
-// FeeStacks — js/students.js
+// ═══════════════════════════════════════════════════════════════════
+// students.js  —  Student CRUD + fee rendering
+//   Includes FEATURE 1 (fee input Enter → clear + slider update)
+//   Works with FEATURE 2 via calcTotalFeeDue() from fee_cycle.js
+// ═══════════════════════════════════════════════════════════════════
 
-// ── CALCULATIONS ───────────────────────────────────────────
-function totalMonthsDue(s) { return monthsSince(s.joinDate); }
-function monthsPaid(s)     { return (s.monthPayments||[]).length; }
-function monthsOwed(s)     { return Math.max(0, totalMonthsDue(s) - monthsPaid(s)); }
+let formSFList = [];   // special fees staged in the add-student form
+let currentFilter = "all";
 
-function sfOwed(s)      { return (s.specialFees||[]).filter(f=>!f.paid).reduce((a,f)=>a+Number(f.amount),0); }
-function sfCollected(s) { return (s.specialFees||[]).filter(f=>f.paid).reduce((a,f)=>a+Number(f.amount),0); }
+// ─── Add Student ────────────────────────────────────────────────────
+function addStudent() {
+  const name    = document.getElementById("f-name")?.value.trim();
+  const phone   = document.getElementById("f-phone")?.value.trim();
+  const klass   = document.getElementById("f-class")?.value;
+  const board   = document.getElementById("f-board")?.value;
+  const school  = document.getElementById("f-school")?.value.trim();
+  const course  = document.getElementById("f-course")?.value.trim();
+  const dateVal = document.getElementById("f-date")?.value;
+  const feeVal  = document.getElementById("f-fee")?.value;
+  const progtype= document.getElementById("f-progtype")?.value || "regular";
 
-// Partial payment amount (amount paid toward current unpaid month)
-function partialPaid(s)    { return Number(s.partialAmount||0); }
-function partialRemaining(s) {
-  const p = partialPaid(s);
-  if (p<=0) return 0;
-  return Math.max(0, Number(s.fee) - p);
+  if (!name)    { toast("Enter student name","red");   return; }
+  if (!klass)   { toast("Select a class","red");       return; }
+  if (!dateVal) { toast("Select a joining date","red");return; }
+  if (!feeVal || Number(feeVal) <= 0) { toast("Enter a valid monthly fee","red"); return; }
+
+  const student = {
+    id:           Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+    name, phone, class: klass, board, school, course, progtype,
+    fee:          Number(feeVal),
+    joinDate:     dateVal,          // ← used by calcTotalFeeDue (FEATURE 2)
+    paid:         0,
+    paymentLog:   [],
+    specialFees:  [...formSFList],
+    addedOn:      new Date().toISOString(),
+  };
+
+  window.students.push(student);
+  saveAll();
+  renderStudents();
+  updateSummary();
+
+  // Reset form
+  ["f-name","f-phone","f-school","f-course","f-fee"].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = "";
+  });
+  ["f-class","f-board","f-progtype"].forEach(id => {
+    const el = document.getElementById(id); if (el) el.selectedIndex = 0;
+  });
+  const dateEl = document.getElementById("f-date");
+  if (dateEl) dateEl.valueAsDate = new Date();
+  formSFList = [];
+  renderFormSFList();
+
+  toast("✓ " + name + " enrolled", "green");
 }
 
-// Total money owed including partial
-function totalOwed(s) {
-  const monthlyOwed = monthsOwed(s) * Number(s.fee) - partialPaid(s);
-  return Math.max(0, monthlyOwed) + sfOwed(s);
-}
-
-function totalCollected(s) {
-  return monthsPaid(s)*Number(s.fee) + partialPaid(s) + sfCollected(s);
-}
-
-// Slider: 0 to totalMonthsDue * fee (in rupees)
-// Current paid amount in rupees = monthsPaid * fee + partialPaid
-function totalPaidRupees(s) { return monthsPaid(s)*Number(s.fee) + partialPaid(s); }
-function totalDueRupees(s)  { return totalMonthsDue(s)*Number(s.fee); }
-
-function sliderColor(s) {
-  const owed = monthsOwed(s);
-  const partial = partialPaid(s);
-  const sf = sfOwed(s);
-  if (totalOwed(s)===0) return "green";
-  if ((owed===1 && partial===0) || (owed===0 && partial>0)) return "blue";
-  return "red";
-}
-
-// ── FORM SPECIAL FEES ──────────────────────────────────────
-window.formSpecialFees = [];
-
+// ─── Special fees (form) ────────────────────────────────────────────
 function addFormSF() {
   const n = document.getElementById("sf-name-inp")?.value.trim();
-  const a = parseFloat(document.getElementById("sf-amt-inp")?.value);
-  if (!n) { toast("Enter a label","yellow"); return; }
-  if (!a||a<=0) { toast("Enter a valid amount","yellow"); return; }
-  window.formSpecialFees.push({id:Date.now()+Math.random(),label:n,amount:a,paid:false});
-  document.getElementById("sf-name-inp").value="";
-  document.getElementById("sf-amt-inp").value="";
-  renderFormSF();
+  const a = Number(document.getElementById("sf-amt-inp")?.value);
+  if (!n || !a || a <= 0) { toast("Enter label and amount","red"); return; }
+  formSFList.push({ label: n, amount: a });
+  document.getElementById("sf-name-inp").value = "";
+  document.getElementById("sf-amt-inp").value  = "";
+  renderFormSFList();
 }
-function removeFormSF(id) { window.formSpecialFees=window.formSpecialFees.filter(s=>s.id!==id); renderFormSF(); }
-function renderFormSF() {
-  const el=document.getElementById("form-sf-list"); if(!el) return;
-  el.innerHTML=window.formSpecialFees.map(sf=>`
-    <div class="sfl-item">
-      <span class="sfl-name">${sf.label}</span>
-      <span class="sfl-amt">${fmt(sf.amount)}</span>
-      <button class="sfl-del" onclick="removeFormSF(${sf.id})">✕</button>
+
+function renderFormSFList() {
+  const el = document.getElementById("form-sf-list");
+  if (!el) return;
+  if (!formSFList.length) { el.innerHTML = ""; return; }
+  el.innerHTML = formSFList.map((sf, i) => `
+    <div class="sf-tag">
+      <span>${sf.label}</span>
+      <span class="sf-amt">₹${fmt(sf.amount)}</span>
+      <button onclick="formSFList.splice(${i},1);renderFormSFList()" class="sf-del">✕</button>
     </div>`).join("");
 }
 
-// ── ADD STUDENT ────────────────────────────────────────────
-function addStudent() {
-  const name   = document.getElementById("f-name")?.value.trim();
-  const phone  = document.getElementById("f-phone")?.value.trim();
-  const cls    = document.getElementById("f-class")?.value;
-  const board  = document.getElementById("f-board")?.value;
-  const school = document.getElementById("f-school")?.value.trim();
-  const course = document.getElementById("f-course")?.value.trim();
-  const date   = document.getElementById("f-date")?.value;
-  const fee    = parseFloat(document.getElementById("f-fee")?.value);
-  const progType = document.getElementById("f-progtype")?.value;
+// ─── Filter ─────────────────────────────────────────────────────────
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll(".ftab").forEach(b => b.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+  renderStudents();
+}
 
-  if (!name)       { toast("Enter student name","yellow"); return; }
-  if (!cls)        { toast("Select a class","yellow"); return; }
-  if (!board)      { toast("Select a board","yellow"); return; }
-  if (!date)       { toast("Select joining date","yellow"); return; }
-  if (!fee||fee<=0){ toast("Enter a valid monthly fee","yellow"); return; }
+// ─── Render student list ─────────────────────────────────────────────
+function renderStudents() {
+  const list    = document.getElementById("students-list");
+  const countEl = document.getElementById("list-count");
+  if (!list) return;
 
-  window.students.unshift({
-    id:Date.now(), name, phone, cls, board, school, course,
-    joinDate:date, fee, programType:progType,
-    monthPayments:[], partialAmount:0,
-    specialFees:window.formSpecialFees.map(sf=>({...sf}))
+  const q = (document.getElementById("search-inp")?.value || "").toLowerCase();
+
+  let filtered = window.students.filter(s => {
+    const matchSearch = !q ||
+      s.name.toLowerCase().includes(q)  ||
+      (s.class  || "").toLowerCase().includes(q) ||
+      (s.board  || "").toLowerCase().includes(q) ||
+      (s.school || "").toLowerCase().includes(q) ||
+      (s.course || "").toLowerCase().includes(q);
+    const status = getStudentFeeStatus(s);
+    const matchFilter = currentFilter === "all" || status === currentFilter;
+    return matchSearch && matchFilter;
   });
 
-  window.formSpecialFees=[];
-  renderFormSF();
-  ["f-name","f-phone","f-school","f-course","f-fee"].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.value="";
-  });
-  ["f-class","f-board","f-progtype"].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.value="";
-  });
-  const fd=document.getElementById("f-date"); if(fd) fd.valueAsDate=new Date();
+  if (countEl) countEl.textContent = filtered.length + " student" + (filtered.length !== 1 ? "s" : "");
 
-  saveLocal();
-  if (navigator.onLine && window._fbUser) saveCloud();
-  renderStudents(); updateStudentSummary();
-  toast(`${name} enrolled!`,"green");
-}
-
-// ── DELETE ─────────────────────────────────────────────────
-function deleteStudent(id) {
-  const s=window.students.find(x=>x.id===id); if(!s) return;
-  if (!confirm(`Remove ${s.name}? This cannot be undone.`)) return;
-  window.students=window.students.filter(x=>x.id!==id);
-  saveLocal();
-  if (navigator.onLine && window._fbUser) saveCloud();
-  renderStudents(); updateStudentSummary();
-  toast(`${s.name} removed`,"red");
-}
-
-// ── PAYMENT: AMOUNT INPUT BOX ──────────────────────────────
-// User types a rupee amount — system calculates months + partial
-function onAmountInput(id, val) {
-  const s=window.students.find(x=>x.id===id); if(!s) return;
-  const totalDue = totalDueRupees(s);
-  let paid = Math.max(0, Math.min(parseFloat(val)||0, totalDue));
-
-  const fullMonths = Math.floor(paid / Number(s.fee));
-  const remainder  = paid - fullMonths * Number(s.fee);
-
-  // Rebuild monthPayments
-  const start=new Date(s.joinDate);
-  s.monthPayments=[];
-  for (let i=0;i<fullMonths;i++) {
-    const d=new Date(start.getFullYear(),start.getMonth()+i,1);
-    s.monthPayments.push(monthKey(d.getFullYear(),d.getMonth()));
-  }
-  s.partialAmount = remainder > 0 ? Math.round(remainder) : 0;
-
-  saveLocal();
-  if (navigator.onLine && window._fbUser) saveCloud();
-  _refreshCard(id);
-}
-
-// ── PAYMENT: SLIDER ────────────────────────────────────────
-function onSliderChange(id, val) {
-  const s=window.students.find(x=>x.id===id); if(!s) return;
-  onAmountInput(id, parseFloat(val));
-  // sync amount box
-  const amtBox=document.getElementById(`amt-${id}`);
-  if (amtBox) amtBox.value=val;
-}
-
-// ── QUICK CARD REFRESH ─────────────────────────────────────
-function _refreshCard(id) {
-  const s=window.students.find(x=>x.id===id); if(!s) return;
-  const total=totalDueRupees(s);
-  const paid =totalPaidRupees(s);
-  const owed =totalOwed(s);
-  const color=sliderColor(s);
-
-  const sl  =document.getElementById(`sl-${id}`);
-  const slv =document.getElementById(`slv-${id}`);
-  const sct =document.getElementById(`sct-${id}`);
-  const card=document.getElementById(`sc-${id}`);
-  const bdg =document.getElementById(`badge-${id}`);
-  const amtB=document.getElementById(`amt-${id}`);
-
-  if (sl)  { sl.max=total; sl.value=paid; sl.className=`month-slider c-${color}`; }
-  if (slv) {
-    const rem = partialRemaining(s);
-    slv.textContent = owed===0
-      ? "All clear ✓"
-      : rem>0
-        ? `${fmt(rem)} remaining this month`
-        : `${monthsOwed(s)} month${monthsOwed(s)!==1?"s":""} overdue`;
-  }
-  if (sct) { sct.textContent=fmt(owed); sct.className=`sc-total ${color}`; }
-  if (card) card.className=`sc s-${color}`;
-  if (bdg) {
-    bdg.textContent=color==="green"?"All Paid":color==="blue"?"Partially Paid":"Overdue";
-    bdg.className=`badge badge-${color}`;
-  }
-  if (amtB) amtB.value=paid>0?paid:"";
-  updateStudentSummary();
-}
-
-// ── SPECIAL FEES ───────────────────────────────────────────
-function addSpecialFeeToStudent(studentId) {
-  const n=document.getElementById(`asf-name-${studentId}`)?.value.trim();
-  const a=parseFloat(document.getElementById(`asf-amt-${studentId}`)?.value);
-  if (!n) { toast("Enter a label","yellow"); return; }
-  if (!a||a<=0) { toast("Enter a valid amount","yellow"); return; }
-  const s=window.students.find(x=>x.id===studentId); if(!s) return;
-  if (!s.specialFees) s.specialFees=[];
-  s.specialFees.push({id:Date.now()+Math.random(),label:n,amount:a,paid:false});
-  document.getElementById(`asf-name-${studentId}`).value="";
-  document.getElementById(`asf-amt-${studentId}`).value="";
-  saveLocal();
-  if (navigator.onLine && window._fbUser) saveCloud();
-  toast(`Special fee added for ${s.name}`,"green");
-  const det=document.getElementById(`detail-${studentId}`);
-  if (det?.classList.contains("open")) { det.classList.remove("open"); toggleDetail(studentId); }
-}
-
-function paySpecialFee(studentId,sfId) {
-  const s=window.students.find(x=>x.id===studentId); if(!s) return;
-  const sf=(s.specialFees||[]).find(f=>f.id===sfId); if(!sf) return;
-  sf.paid=true;
-  saveLocal();
-  if (navigator.onLine && window._fbUser) saveCloud();
-  _refreshCard(studentId);
-  toast(`"${sf.label}" marked as paid!`,"green");
-  const det=document.getElementById(`detail-${studentId}`);
-  if (det?.classList.contains("open")) { det.classList.remove("open"); toggleDetail(studentId); }
-}
-
-// ── SUMMARY ────────────────────────────────────────────────
-function updateStudentSummary() {
-  document.getElementById("s-total").textContent     = window.students.length;
-  document.getElementById("s-collected").textContent = fmt(window.students.reduce((a,x)=>a+totalCollected(x),0));
-  document.getElementById("s-pending").textContent   = fmt(window.students.reduce((a,x)=>a+totalOwed(x),0));
-  document.getElementById("s-overdue").textContent   = window.students.filter(x=>monthsOwed(x)>=2||sfOwed(x)>0).length;
-}
-
-// ── WHATSAPP REMINDER ──────────────────────────────────────
-function sendWhatsApp(id) {
-  const s = window.students.find(x => x.id === id);
-  if (!s) return;
-
-  if (!s.phone) {
-    toast("No phone number saved for " + s.name, "yellow");
+  if (!filtered.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><p>No students match</p></div>`;
     return;
   }
 
-  // Clean phone number — remove spaces, dashes, brackets
-  let phone = s.phone.replace(/[\s\-\(\)]/g, "");
-  // If number starts with 0, replace with +91
-  if (phone.startsWith("0")) phone = "+91" + phone.slice(1);
-  // If number has no country code (10 digits), add +91
-  if (phone.length === 10 && !phone.startsWith("+")) phone = "+91" + phone;
-  // Remove the + for the wa.me URL
-  phone = phone.replace("+", "");
+  list.innerHTML = filtered.map(s => renderStudentCard(s)).join("");
+}
 
-  const owed     = totalOwed(s);
-  const months   = monthsOwed(s);
-  const partial  = partialRemaining(s);
-  const now      = new Date();
-  const monthName = MONTHS[now.getMonth()];
+// ─── Student card HTML ───────────────────────────────────────────────
+function renderStudentCard(s) {
+  const { totalDue, monthsOwed, monthlyFee, specialTotal, billStart, thisMonth } = calcTotalFeeDue(s);
+  const paid      = Number(s.paid) || 0;
+  const remaining = Math.max(0, totalDue - paid);
+  const status    = getStudentFeeStatus(s);
+  const pct       = totalDue > 0 ? Math.min(100, Math.round((paid / totalDue) * 100)) : 100;
 
-  // Build message based on how much is owed
-  let msg = "";
-  if (owed === 0) {
-    msg = `Hello ${s.name}, this is a reminder from your coaching centre. Your fees are all up to date. Thank you! 🙏`;
-  } else if (partial > 0 && months === 0) {
-    msg = `Hello ${s.name}, this is a friendly reminder from your coaching centre. You have a remaining balance of ${fmt(partial)} for ${monthName}. Kindly clear the dues at your earliest. Thank you! 🙏`;
-  } else if (months === 1) {
-    msg = `Hello ${s.name}, this is a friendly reminder from your coaching centre. Your fee of ${fmt(s.fee)} for ${monthName} is due. Kindly clear the dues at your earliest. Thank you! 🙏`;
-  } else {
-    msg = `Hello ${s.name}, this is a reminder from your coaching centre. You have ${months} months of pending fees totalling ${fmt(owed)}. Please clear your dues as soon as possible. Thank you! 🙏`;
+  const statusLabel = status === "green" ? "Paid" : status === "red" ? "Overdue" : "Partial";
+  const sliderMax   = Math.max(totalDue, paid) || 1;
+
+  // Last 3 payments
+  const recentLog = (s.paymentLog || []).slice(-3).reverse();
+  const logHtml   = recentLog.length
+    ? recentLog.map(p =>
+        `<div class="pay-log-row">
+          <span class="pay-log-date">${p.date}</span>
+          <span class="pay-log-amt">+₹${fmt(p.amount)}</span>
+         </div>`).join("")
+    : `<div class="pay-log-empty">No payments yet</div>`;
+
+  return `
+<div class="student-card status-${status}" id="student-card-${s.id}">
+
+  <!-- Header row -->
+  <div class="sc-header">
+    <div class="sc-avatar ${status}">${s.name[0].toUpperCase()}</div>
+    <div class="sc-info">
+      <div class="sc-name">${s.name}</div>
+      <div class="sc-meta">${s.class || "—"} · ${s.board || "—"}${s.course ? " · " + s.course : ""}</div>
+      <div class="sc-meta" style="font-size:11px;opacity:.7">
+        Enrolled ${billStart} · Billing: ${billStart} → ${thisMonth}
+      </div>
+    </div>
+    <div class="sc-badge-wrap">
+      <span class="fee-status fee-status-${status}" id="fee-status-${s.id}">${statusLabel}</span>
+      <button class="sc-delete-btn" onclick="deleteStudent('${s.id}')" title="Remove student">✕</button>
+    </div>
+  </div>
+
+  <!-- Fee breakdown -->
+  <div class="sc-fee-breakdown">
+    <div class="fbd-item">
+      <span class="fbd-label">Monthly fee</span>
+      <span class="fbd-val">₹${fmt(monthlyFee)}</span>
+    </div>
+    <div class="fbd-item">
+      <span class="fbd-label">Months owed</span>
+      <span class="fbd-val">${monthsOwed}</span>
+    </div>
+    ${specialTotal > 0 ? `
+    <div class="fbd-item">
+      <span class="fbd-label">Special fees</span>
+      <span class="fbd-val">₹${fmt(specialTotal)}</span>
+    </div>` : ""}
+    <div class="fbd-item">
+      <span class="fbd-label">Total due</span>
+      <span class="fbd-val" style="font-weight:700;color:var(--text)">₹${fmt(totalDue)}</span>
+    </div>
+  </div>
+
+  <!-- Slider -->
+  <div class="sc-slider-wrap">
+    <div class="sc-slider-labels">
+      <span id="fee-paid-${s.id}" class="sl-paid">₹${fmt(paid)} paid</span>
+      <span id="fee-rem-${s.id}"  class="sl-rem ${remaining > 0 ? "red" : "green"}">
+        ${remaining > 0 ? "−₹" + fmt(remaining) + " remaining" : "✓ Fully paid"}
+      </span>
+    </div>
+    <input
+      type="range"
+      class="fee-slider"
+      id="fee-slider-${s.id}"
+      min="0"
+      max="${sliderMax}"
+      value="${paid}"
+      step="1"
+      oninput="syncSliderLabel('${s.id}', this.value, ${totalDue})"
+      readonly
+      style="pointer-events:none"
+    >
+    <div class="sl-pct-label">${pct}% paid</div>
+  </div>
+
+  <!-- ═══ FEATURE 1: Fee input box ═══
+       Type amount → press Enter → amount recorded, box clears, slider updates -->
+  <div class="sc-fee-input-row">
+    <div class="fee-inp-wrap">
+      <span class="fee-inp-prefix">₹</span>
+      <input
+        type="number"
+        class="fee-inp"
+        id="fee-inp-${s.id}"
+        placeholder="Type amount & press Enter"
+        min="1"
+        onkeydown="handleFeeInput(event, '${s.id}', ${totalDue})"
+        autocomplete="off"
+      >
+    </div>
+    <button
+      class="btn-fee-quick"
+      onclick="quickPayFull('${s.id}', ${remaining})"
+      ${remaining <= 0 ? "disabled" : ""}
+      title="Pay full remaining amount"
+    >Pay ₹${fmt(remaining)}</button>
+  </div>
+
+  <!-- Payment log -->
+  <div class="sc-pay-log">
+    <div class="pay-log-title">Recent payments</div>
+    <div id="pay-log-${s.id}">${logHtml}</div>
+  </div>
+
+  <!-- WhatsApp -->
+  ${s.phone ? `
+  <div class="sc-actions">
+    <a class="btn-wa"
+       href="https://wa.me/${s.phone.replace(/\D/g,'')}?text=${encodeURIComponent(
+         "Hi " + s.name + ", your fee due is ₹" + fmt(remaining) +
+         " (" + monthsOwed + " month" + (monthsOwed !== 1 ? "s" : "") + "). Please pay at your earliest convenience. — FeeStacks"
+       )}"
+       target="_blank">💬 WhatsApp Reminder</a>
+  </div>` : ""}
+
+</div>`;
+}
+
+// ─── FEATURE 1: handleFeeInput ───────────────────────────────────────
+// Called on every keydown in the fee input box.
+// On Enter: record payment, CLEAR the box, update slider.
+function handleFeeInput(event, studentId, totalDue) {
+  if (event.key !== "Enter") return;
+  event.preventDefault();
+
+  const input  = document.getElementById("fee-inp-" + studentId);
+  if (!input) return;
+
+  const amount = parseFloat(input.value);
+  if (!amount || isNaN(amount) || amount <= 0) {
+    toast("Enter a valid amount", "red");
+    input.focus();
+    return;
   }
 
-  const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
-  window.open(url, "_blank");
-  toast(`Opening WhatsApp for ${s.name}…`, "green");
+  const idx = window.students.findIndex(s => s.id === studentId);
+  if (idx === -1) return;
+
+  const student   = window.students[idx];
+  const prevPaid  = Number(student.paid) || 0;
+  const newPaid   = prevPaid + amount;
+
+  // Persist
+  window.students[idx].paid = newPaid;
+  if (!window.students[idx].paymentLog) window.students[idx].paymentLog = [];
+  window.students[idx].paymentLog.push({
+    amount : amount,
+    date   : new Date().toLocaleDateString("en-IN"),
+    time   : new Date().toLocaleTimeString("en-IN", { hour:"2-digit", minute:"2-digit" }),
+  });
+  saveAll();
+
+  // ── FEATURE 1A: Clear the input immediately ──
+  input.value       = "";
+  input.placeholder = "Next payment…";
+
+  // ── FEATURE 1B: Move the slider ──
+  const slider = document.getElementById("fee-slider-" + studentId);
+  if (slider) {
+    slider.max   = Math.max(totalDue, newPaid);
+    slider.value = newPaid;
+  }
+
+  // ── FEATURE 1C: Update paid / remaining labels ──
+  const remaining = Math.max(0, totalDue - newPaid);
+  const paidLbl   = document.getElementById("fee-paid-" + studentId);
+  const remLbl    = document.getElementById("fee-rem-"  + studentId);
+  if (paidLbl) paidLbl.textContent = "₹" + fmt(newPaid) + " paid";
+  if (remLbl) {
+    remLbl.textContent  = remaining > 0 ? "−₹" + fmt(remaining) + " remaining" : "✓ Fully paid";
+    remLbl.className    = "sl-rem " + (remaining > 0 ? "red" : "green");
+  }
+
+  // ── FEATURE 1D: Update status badge + card border ──
+  const newStatus = getStudentFeeStatus(window.students[idx]);
+  const statusEl  = document.getElementById("fee-status-" + studentId);
+  const cardEl    = document.getElementById("student-card-" + studentId);
+  if (statusEl) {
+    statusEl.className   = "fee-status fee-status-" + newStatus;
+    statusEl.textContent = newStatus === "green" ? "Paid" : newStatus === "red" ? "Overdue" : "Partial";
+  }
+  if (cardEl) {
+    cardEl.className = cardEl.className.replace(/status-\w+/g, "") + " status-" + newStatus;
+  }
+
+  // ── FEATURE 1E: Update quick-pay button ──
+  const qBtn = input.closest(".sc-fee-input-row")?.querySelector(".btn-fee-quick");
+  if (qBtn) {
+    qBtn.textContent = "Pay ₹" + fmt(remaining);
+    qBtn.disabled    = remaining <= 0;
+    qBtn.onclick     = () => quickPayFull(studentId, remaining);
+  }
+
+  // ── FEATURE 1F: Refresh payment log ──
+  const logEl = document.getElementById("pay-log-" + studentId);
+  if (logEl) {
+    const recentLog = (window.students[idx].paymentLog || []).slice(-3).reverse();
+    logEl.innerHTML = recentLog.map(p =>
+      `<div class="pay-log-row">
+        <span class="pay-log-date">${p.date}</span>
+        <span class="pay-log-amt">+₹${fmt(p.amount)}</span>
+       </div>`).join("");
+  }
+
+  // ── FEATURE 1G: Update pct label ──
+  const pct    = totalDue > 0 ? Math.min(100, Math.round((newPaid / totalDue) * 100)) : 100;
+  const pctLbl = document.getElementById("fee-slider-" + studentId)
+                          ?.parentElement?.querySelector(".sl-pct-label");
+  if (pctLbl) pctLbl.textContent = pct + "% paid";
+
+  // Refresh summary strip totals
+  updateSummary();
+
+  toast("✓ ₹" + fmt(amount) + " recorded for " + student.name, "green");
+  input.focus();
+}
+
+// Sync slider label while dragging (read-only slider, so this is cosmetic only)
+function syncSliderLabel(studentId, value, totalDue) {
+  const paidLbl = document.getElementById("fee-paid-" + studentId);
+  if (paidLbl) paidLbl.textContent = "₹" + fmt(Number(value)) + " paid";
+}
+
+// Quick-pay full remaining
+function quickPayFull(studentId, remaining) {
+  if (remaining <= 0) return;
+  const input = document.getElementById("fee-inp-" + studentId);
+  if (!input) return;
+  input.value = remaining;
+  // Find totalDue for this student
+  const s = window.students.find(st => st.id === studentId);
+  const { totalDue } = calcTotalFeeDue(s);
+  handleFeeInput({ key: "Enter", preventDefault: () => {} }, studentId, totalDue);
+}
+
+// ─── Delete student ──────────────────────────────────────────────────
+function deleteStudent(studentId) {
+  if (!confirm("Remove this student? This cannot be undone.")) return;
+  window.students = window.students.filter(s => s.id !== studentId);
+  saveAll();
+  renderStudents();
+  updateSummary();
+  toast("Student removed", "red");
+}
+
+// ─── Summary strip ───────────────────────────────────────────────────
+function updateSummary() {
+  let collected = 0, pending = 0, overdue = 0;
+  for (const s of window.students) {
+    const { totalDue } = calcTotalFeeDue(s);
+    const paid         = Number(s.paid) || 0;
+    collected += paid;
+    pending   += Math.max(0, totalDue - paid);
+    if (getStudentFeeStatus(s) === "red") overdue++;
+  }
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set("s-total",     window.students.length);
+  set("s-collected", "₹" + fmt(collected));
+  set("s-pending",   "₹" + fmt(pending));
+  set("s-overdue",   overdue);
 }

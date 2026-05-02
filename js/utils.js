@@ -1,29 +1,48 @@
-// FeeStacks — js/utils.js
-const MONTHS = ["January","February","March","April","May","June",
-                "July","August","September","October","November","December"];
-const MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+// utils.js
 
-function fmt(n) { return "₹" + Number(n||0).toLocaleString("en-IN"); }
-function initials(name) { return name.split(" ").slice(0,2).map(w=>w[0]?.toUpperCase()||"").join(""); }
-function avColor(i) { return "av-"+(i%6); }
-function fmtDate(str) {
-  if (!str) return "—";
-  const d = new Date(str);
-  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
-}
-function monthKey(y, m) { return `${y}-${String(m+1).padStart(2,"0")}`; }
-function nowKey() { const d=new Date(); return monthKey(d.getFullYear(),d.getMonth()); }
-function monthsSince(joinDate) {
-  const d=new Date(joinDate), now=new Date();
-  return Math.max(0,(now.getFullYear()-d.getFullYear())*12+(now.getMonth()-d.getMonth())+1);
-}
-function toast(msg, type="green") {
-  const icons={green:"✅",red:"❌",yellow:"⚠️"};
-  const t=document.getElementById("toast");
+function fmt(n) { return Number(n||0).toLocaleString("en-IN"); }
+
+function toast(msg, type) {
+  const t  = document.getElementById("toast");
+  const ti = document.getElementById("toast-icon");
+  const tm = document.getElementById("toast-msg");
   if (!t) return;
-  document.getElementById("toast-icon").textContent = icons[type]||"ℹ️";
-  document.getElementById("toast-msg").textContent  = msg;
-  t.className = `toast t-${type} show`;
-  clearTimeout(t._timer);
-  t._timer = setTimeout(()=>{ t.className="toast"; }, 3200);
+  ti.textContent = type==="green" ? "✓" : type==="red" ? "✕" : "ℹ";
+  tm.textContent = msg;
+  t.className    = "toast show " + (type||"");
+  clearTimeout(window._tt);
+  window._tt = setTimeout(()=>t.classList.remove("show"), 3200);
 }
+
+function toggleTheme() {
+  const cur  = document.documentElement.getAttribute("data-theme")||"dark";
+  const next = cur==="dark"?"light":"dark";
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem("feestacks_theme", next);
+  const btn = document.getElementById("theme-toggle");
+  if (btn) btn.textContent = next==="dark"?"☀️":"🌙";
+}
+
+function loadTheme() {
+  const t = localStorage.getItem("feestacks_theme")||"dark";
+  document.documentElement.setAttribute("data-theme", t);
+  const btn = document.getElementById("theme-toggle");
+  if (btn) btn.textContent = t==="dark"?"☀️":"🌙";
+}
+
+function toggleSidebar() {
+  const sb = document.getElementById("sidebar");
+  const bd = document.getElementById("sidebar-backdrop");
+  if (!sb) return;
+  const open = sb.classList.contains("open");
+  sb.classList.toggle("open", !open);
+  if (bd) bd.style.display = open?"none":"block";
+}
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  const bd = document.getElementById("sidebar-backdrop");
+  if (bd) bd.addEventListener("click", ()=>{
+    document.getElementById("sidebar")?.classList.remove("open");
+    bd.style.display="none";
+  });
+});

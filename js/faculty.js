@@ -1,96 +1,102 @@
-// FeeStacks — js/faculty.js
+// faculty.js
+let facultySubjectTags = [];
 
-window.formFacultySubjects = [];
-
-// ── ADD FACULTY ────────────────────────────────────────────
-function addFaculty() {
-  const name    = document.getElementById("fac-name")?.value.trim();
-  const phone   = document.getElementById("fac-phone")?.value.trim();
-  const salary  = parseFloat(document.getElementById("fac-salary")?.value);
-  const date    = document.getElementById("fac-date")?.value;
-  const qual    = document.getElementById("fac-qual")?.value.trim();
-
-  if (!name)          { toast("Enter teacher name","yellow"); return; }
-  if (!salary||salary<=0) { toast("Enter a valid salary","yellow"); return; }
-  if (!date)          { toast("Select joining date","yellow"); return; }
-
-  window.faculty.unshift({
-    id:Date.now(), name, phone, salary, joinDate:date, qualification:qual,
-    subjects: window.formFacultySubjects.slice(),
-    monthsPaid: []   // array of "YYYY-MM" keys where salary was paid
-  });
-
-  window.formFacultySubjects=[];
+function addFacultySubject() {
+  const inp = document.getElementById("fac-subject-inp");
+  if (!inp || !inp.value.trim()) return;
+  facultySubjectTags.push(inp.value.trim());
+  inp.value = "";
   renderFacultySubjectTags();
+}
+
+function renderFacultySubjectTags() {
+  const el = document.getElementById("faculty-subject-tags");
+  if (!el) return;
+  el.innerHTML = facultySubjectTags.map((t,i)=>`
+    <span class="subj-tag">${t}
+      <button onclick="facultySubjectTags.splice(${i},1);renderFacultySubjectTags()">✕</button>
+    </span>`).join("");
+}
+
+function addFaculty() {
+  const name   = document.getElementById("fac-name")?.value.trim();
+  const phone  = document.getElementById("fac-phone")?.value.trim();
+  const salary = Number(document.getElementById("fac-salary")?.value);
+  const date   = document.getElementById("fac-date")?.value;
+  const qual   = document.getElementById("fac-qual")?.value.trim();
+  if (!name)   { toast("Enter teacher name","red"); return; }
+  if (!salary) { toast("Enter salary","red");       return; }
+  window.faculty.push({
+    id: Date.now().toString(36)+Math.random().toString(36).slice(2,5),
+    name, phone, salary, joinDate:date, qual,
+    subjects: [...facultySubjectTags],
+    salaryPaidMonths: [],
+    addedOn: new Date().toISOString(),
+  });
+  facultySubjectTags = [];
+  saveAll();
+  renderFaculty();
   ["fac-name","fac-phone","fac-salary","fac-qual"].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value="";
   });
-  const fd=document.getElementById("fac-date"); if(fd) fd.valueAsDate=new Date();
-
-  saveLocal();
-  if (navigator.onLine && window._fbUser) saveCloud();
-  renderFaculty(); updateFacultySummary();
-  toast(`${name} added to faculty!`,"green");
-}
-
-function deleteFaculty(id) {
-  const f=window.faculty.find(x=>x.id===id); if(!f) return;
-  if (!confirm(`Remove ${f.name} from faculty?`)) return;
-  window.faculty=window.faculty.filter(x=>x.id!==id);
-  saveLocal();
-  if (navigator.onLine && window._fbUser) saveCloud();
-  renderFaculty(); updateFacultySummary();
-  toast(`${f.name} removed`,"red");
-}
-
-// ── SUBJECT TAGS ───────────────────────────────────────────
-function addFacultySubject() {
-  const inp=document.getElementById("fac-subject-inp");
-  const val=inp?.value.trim();
-  if (!val) return;
-  if (!window.formFacultySubjects.includes(val)) window.formFacultySubjects.push(val);
-  if (inp) inp.value="";
   renderFacultySubjectTags();
-}
-function removeFacultySubject(s) {
-  window.formFacultySubjects=window.formFacultySubjects.filter(x=>x!==s);
-  renderFacultySubjectTags();
-}
-function renderFacultySubjectTags() {
-  const el=document.getElementById("faculty-subject-tags"); if(!el) return;
-  el.innerHTML=window.formFacultySubjects.map(s=>`
-    <span class="subject-tag">${s}<button onclick="removeFacultySubject('${s}')">✕</button></span>`).join("");
+  toast("✓ "+name+" added","green");
 }
 
-// ── SALARY TOGGLE ──────────────────────────────────────────
-function toggleSalary(id) {
-  const f=window.faculty.find(x=>x.id===id); if(!f) return;
-  const key=nowKey();
-  if (!f.monthsPaid) f.monthsPaid=[];
-  if (f.monthsPaid.includes(key)) {
-    f.monthsPaid=f.monthsPaid.filter(k=>k!==key);
-    toast(`${f.name} — salary marked unpaid`,"yellow");
-  } else {
-    f.monthsPaid.push(key);
-    toast(`${f.name} — salary paid!`,"green");
+function renderFaculty() {
+  const list = document.getElementById("faculty-list");
+  if (!list) return;
+  updateFacultySummary();
+  if (!window.faculty.length) {
+    list.innerHTML=`<div class="empty-state"><div class="empty-icon">👩‍🏫</div><p>No faculty added yet</p></div>`;
+    return;
   }
-  saveLocal();
-  if (navigator.onLine && window._fbUser) saveCloud();
-  renderFaculty(); updateFacultySummary();
+  list.innerHTML = window.faculty.map(f=>`
+    <div class="fac-card">
+      <div class="fac-avatar">${f.name[0]}</div>
+      <div class="fac-info">
+        <div class="fac-name">${f.name}</div>
+        <div class="fac-meta">${f.qual||"—"} · ₹${fmt(f.salary)}/mo${f.phone?" · "+f.phone:""}</div>
+        ${f.subjects?.length?`<div class="subj-tags-row">${f.subjects.map(s=>`<span class="subj-tag">${s}</span>`).join("")}</div>`:""}
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn-fa-pay ${isCurrentMonthPaid(f)?"paid":""}"
+          onclick="toggleFacultySalary('${f.id}')">
+          ${isCurrentMonthPaid(f)?"✓ Paid":"Mark Paid"}
+        </button>
+        <button class="sc-delete-btn" onclick="deleteFaculty('${f.id}')">✕</button>
+      </div>
+    </div>`).join("");
 }
 
-function isSalaryPaidThisMonth(f) {
-  return (f.monthsPaid||[]).includes(nowKey());
+function isCurrentMonthPaid(f) {
+  const m = new Date().toISOString().slice(0,7);
+  return (f.salaryPaidMonths||[]).includes(m);
 }
 
-// ── SUMMARY ────────────────────────────────────────────────
+function toggleFacultySalary(fid) {
+  const f = window.faculty.find(x=>x.id===fid);
+  if (!f) return;
+  const m = new Date().toISOString().slice(0,7);
+  if (!f.salaryPaidMonths) f.salaryPaidMonths=[];
+  if (f.salaryPaidMonths.includes(m)) f.salaryPaidMonths = f.salaryPaidMonths.filter(x=>x!==m);
+  else f.salaryPaidMonths.push(m);
+  saveAll(); renderFaculty();
+}
+
+function deleteFaculty(fid) {
+  if (!confirm("Remove this teacher?")) return;
+  window.faculty = window.faculty.filter(f=>f.id!==fid);
+  saveAll(); renderFaculty();
+  toast("Teacher removed","red");
+}
+
 function updateFacultySummary() {
   const total   = window.faculty.length;
-  const totalSal= window.faculty.reduce((a,f)=>a+Number(f.salary),0);
-  const paidSal = window.faculty.filter(f=>isSalaryPaidThisMonth(f)).reduce((a,f)=>a+Number(f.salary),0);
-  const dueSal  = totalSal - paidSal;
-  document.getElementById("fac-total").textContent = total;
-  document.getElementById("fac-total-sal").textContent = fmt(totalSal);
-  document.getElementById("fac-paid-sal").textContent  = fmt(paidSal);
-  document.getElementById("fac-due-sal").textContent   = fmt(dueSal);
+  const payroll = window.faculty.reduce((s,f)=>s+Number(f.salary||0),0);
+  const paid    = window.faculty.filter(f=>isCurrentMonthPaid(f)).reduce((s,f)=>s+Number(f.salary||0),0);
+  const due     = payroll-paid;
+  const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  s("fac-total",total); s("fac-total-sal","₹"+fmt(payroll));
+  s("fac-paid-sal","₹"+fmt(paid)); s("fac-due-sal","₹"+fmt(due));
 }

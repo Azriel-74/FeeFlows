@@ -1,88 +1,77 @@
-// FeeStacks — js/auth.js
-// FIX: onAuthStateChanged now properly hides auth screen and shows app
+// auth.js
 
-window._onAuthChange = async function(user) {
-  if (user) {
-    window._currentUser = user;
-    document.getElementById("user-email-label").textContent = user.displayName || user.email;
-    document.getElementById("user-chip").style.display = "flex";
-    await loadCloud();
-    _showApp();   // <-- this is what was missing before
-  }
-  // If no user, just stay on auth screen — do nothing
-};
+function waitForFirebase(cb) {
+  if (window._firebaseReady) { cb(); return; }
+  const t = setInterval(() => { if (window._firebaseReady) { clearInterval(t); cb(); } }, 80);
+}
 
 function switchAuthTab(tab, btn) {
-  document.querySelectorAll(".auth-tab").forEach(b=>b.classList.remove("active"));
-  btn.classList.add("active");
-  document.getElementById("auth-login").style.display  = tab==="login"  ? "block":"none";
-  document.getElementById("auth-signup").style.display = tab==="signup" ? "block":"none";
+  document.getElementById("auth-login").style.display  = tab === "login"  ? "" : "none";
+  document.getElementById("auth-signup").style.display = tab === "signup" ? "" : "none";
+  document.querySelectorAll(".auth-tab").forEach(b => b.classList.remove("active"));
+  if (btn) btn.classList.add("active");
 }
 
-async function doGoogleLogin() {
-  try {
-    const provider = new window._fb.GoogleAuthProvider();
-    await window._fb.signInWithPopup(window._fb.auth, provider);
-    // _onAuthChange fires automatically — no need to call _showApp() here
-  } catch(err) {
-    if (err.code !== "auth/popup-closed-by-user")
-      toast("Google sign-in failed: "+err.message, "red");
-  }
+function doGoogleLogin() {
+  waitForFirebase(() => {
+    const { auth, signInWithPopup, GoogleAuthProvider } = window._fb;
+    signInWithPopup(auth, new GoogleAuthProvider())
+      .then(r => onUserLoggedIn(r.user))
+      .catch(e => toast(e.message, "red"));
+  });
 }
 
-async function doLogin() {
+function doLogin() {
   const email = document.getElementById("login-email").value.trim();
   const pass  = document.getElementById("login-pass").value;
-  if (!email||!pass) { toast("Enter email and password","yellow"); return; }
-  try {
-    await window._fb.signInWithEmailAndPassword(window._fb.auth, email, pass);
-    // _onAuthChange fires automatically
-  } catch(err) { toast("Sign in failed: "+_authMsg(err.code),"red"); }
+  if (!email || !pass) { toast("Fill in email and password","red"); return; }
+  waitForFirebase(() => {
+    window._fb.signInWithEmailAndPassword(window._fb.auth, email, pass)
+      .then(r => onUserLoggedIn(r.user))
+      .catch(e => toast(e.message.replace("Firebase:","").trim(), "red"));
+  });
 }
 
-async function doSignup() {
+function doSignup() {
   const email = document.getElementById("signup-email").value.trim();
   const pass  = document.getElementById("signup-pass").value;
-  if (!email||!pass) { toast("Enter email and password","yellow"); return; }
-  if (pass.length<6) { toast("Password must be at least 6 characters","yellow"); return; }
-  try {
-    await window._fb.createUserWithEmailAndPassword(window._fb.auth, email, pass);
-    // _onAuthChange fires automatically
-  } catch(err) { toast("Sign up failed: "+_authMsg(err.code),"red"); }
-}
-
-async function doLogout() {
-  try { await window._fb.signOut(window._fb.auth); } catch(_) {}
-  window._currentUser = null;
-  window._fbUser      = null;
-  window.students = []; window.faculty = []; window.programs = [];
-  document.getElementById("app-screen").style.display  = "none";
-  document.getElementById("auth-screen").style.display = "flex";
-  document.getElementById("user-chip").style.display   = "none";
-  setSyncStatus("offline");
+  if (!email || !pass) { toast("Fill in email and password","red"); return; }
+  if (pass.length < 6) { toast("Password must be at least 6 characters","red"); return; }
+  waitForFirebase(() => {
+    window._fb.createUserWithEmailAndPassword(window._fb.auth, email, pass)
+      .then(r => onUserLoggedIn(r.user))
+      .catch(e => toast(e.message.replace("Firebase:","").trim(), "red"));
+  });
 }
 
 function goOffline() {
-  window._currentUser = null;
-  loadLocal();
-  _showApp();
-}
-
-function _showApp() {
   document.getElementById("auth-screen").style.display = "none";
   document.getElementById("app-screen").style.display  = "flex";
-  setSyncStatus(navigator.onLine && window._fbUser ? "online" : "offline");
-  loadTheme();
-  navigateTo("students");
+  setSyncStatus("offline");
+  loadAll();
+  initApp();
 }
 
-function _authMsg(code) {
-  const map = {
-    "auth/user-not-found":       "No account with that email.",
-    "auth/wrong-password":       "Incorrect password.",
-    "auth/email-already-in-use": "Email already registered.",
-    "auth/invalid-email":        "Invalid email address.",
-    "auth/invalid-credential":   "Incorrect email or password.",
-  };
-  return map[code] || code;
+function doLogout() {
+  if (window._fb?.auth) {
+    window._fb.signOut(window._fb.auth).then(() => location.reload());
+  } else {
+    location.reload();
+  }
 }
+
+function onUserLoggedIn(user) {
+  window._fbUser = user;
+  document.getElementById("auth-screen").style.display = "none";
+  document.getElementById("app-screen").style.display  = "flex";
+  const chip  = document.getElementById("user-chip");
+  const label = document.getElementById("user-email-label");
+  if (chip)  chip.style.display  = "flex";
+  if (label) label.textContent   = user.email || user.displayName || "User";
+  loadAll();
+  cloudLoad().then(() => initApp());
+}
+
+window._onAuthChange = function(user) {
+  if (user) onUserLoggedIn(user);
+};
