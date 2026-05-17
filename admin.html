@@ -1,715 +1,18 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EduStack — Admin Panel</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-/* =========================================================
-   DESIGN TOKENS
-========================================================= */
-:root {
-  --bg:       #0a0c10;
-  --surf:     #111420;
-  --surf2:    #171b28;
-  --surf3:    #1c2133;
-  --border:   #232840;
-  --border2:  #2c3455;
-  --accent:   #3b82f6;
-  --indigo:   #6366f1;
-  --green:    #22c55e;
-  --red:      #ef4444;
-  --yellow:   #f59e0b;
-  --text:     #e2e8f0;
-  --muted:    #64748b;
-  --muted2:   #94a3b8;
-  --font-d:   'Syne', sans-serif;
-  --font-b:   'Karla', sans-serif;
-  --rad:      14px;
-  --rad-sm:   9px;
-  --shadow:   0 8px 32px rgba(0,0,0,.45);
-  --shadow-sm:0 2px 8px rgba(0,0,0,.25);
-}
-[data-theme="light"] {
-  --bg:#f0f4f8; --surf:#ffffff; --surf2:#f8fafc; --surf3:#f0f4f8;
-  --border:#e2e8f0; --border2:#cbd5e1;
-  --text:#0f172a; --muted:#64748b; --muted2:#475569;
-  --shadow:0 8px 32px rgba(0,0,0,.1); --shadow-sm:0 2px 8px rgba(0,0,0,.07);
-}
-
-/* =========================================================
-   RESET & BASE
-========================================================= */
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-html { height:100%; }
-body {
-  background:var(--bg); color:var(--text);
-  font-family:var(--font-b); font-size:14px;
-  min-height:100%; overflow-x:hidden;
-  -webkit-font-smoothing:antialiased;
-}
-button { font-family:var(--font-b); cursor:pointer; }
-input, select, textarea { font-family:var(--font-b); }
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button { -webkit-appearance:none; }
-input[type="number"] { -moz-appearance:textfield; }
-a { text-decoration:none; color:inherit; }
-label {
-  display:block; font-size:11px; font-weight:700;
-  text-transform:uppercase; letter-spacing:.06em;
-  color:var(--muted); margin-bottom:5px;
-}
-hr { border:none; border-top:1px solid var(--border); }
-
-/* =========================================================
-   SHARED FORM ELEMENTS
-========================================================= */
-.fi {
-  width:100%; padding:9px 12px;
-  background:var(--surf2); border:1.5px solid var(--border);
-  border-radius:var(--rad-sm); color:var(--text);
-  font-size:13px; font-weight:500;
-  transition:border-color .2s, box-shadow .2s; outline:none;
-}
-.fi:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(59,130,246,.15); }
-.fi option { background:var(--surf); }
-.fg { margin-bottom:14px; }
-.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-.pfx-wrap { position:relative; }
-.pfx { position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--muted); font-weight:700; font-size:13px; pointer-events:none; }
-.pfx-input { padding-left:25px !important; }
-.section-sep {
-  font-size:10px; font-weight:700; text-transform:uppercase;
-  letter-spacing:.08em; color:var(--muted);
-  padding:16px 0 10px; border-top:1px solid var(--border); margin-top:8px;
-}
-
-/* =========================================================
-   BUTTONS
-========================================================= */
-.btn-primary {
-  width:100%; padding:11px 16px;
-  background:linear-gradient(135deg, var(--accent), var(--indigo));
-  color:#fff; border:none; border-radius:var(--rad-sm);
-  font-size:14px; font-weight:700; font-family:var(--font-d);
-  letter-spacing:.02em; transition:opacity .2s, transform .1s;
-}
-.btn-primary:hover { opacity:.88; }
-.btn-primary:active { transform:scale(.98); }
-
-.btn-sm {
-  padding:5px 11px; border-radius:6px; font-size:11px; font-weight:700;
-  border:1.5px solid var(--border); background:var(--surf3);
-  color:var(--muted2); transition:all .18s;
-}
-.btn-sm:hover { border-color:var(--accent); color:var(--accent); background:rgba(59,130,246,.06); }
-.btn-sm.danger:hover { border-color:var(--red); color:var(--red); background:rgba(239,68,68,.06); }
-.btn-sm.wa { border-color:rgba(34,197,94,.3); color:var(--green); }
-.btn-sm.wa:hover { background:rgba(34,197,94,.08); border-color:var(--green); }
-
-.btn-icon {
-  width:32px; height:32px; border-radius:8px; border:1.5px solid var(--border);
-  background:var(--surf2); display:flex; align-items:center; justify-content:center;
-  font-size:15px; transition:all .18s;
-}
-.btn-icon:hover { border-color:var(--border2); }
-
-.btn-logout {
-  background:rgba(239,68,68,.1); border:1.5px solid rgba(239,68,68,.22);
-  border-radius:var(--rad-sm); color:var(--red);
-  font-size:12px; font-weight:700; padding:6px 14px; transition:background .18s;
-}
-.btn-logout:hover { background:rgba(239,68,68,.18); }
-
-.btn-offline {
-  width:100%; padding:11px; border:1.5px dashed var(--border);
-  border-radius:10px; background:none; color:var(--muted);
-  font-size:13px; font-weight:600; transition:all .2s;
-}
-.btn-offline:hover { border-color:var(--muted2); color:var(--text); }
-
-.btn-google {
-  width:100%; padding:11px 16px; border:1.5px solid var(--border);
-  border-radius:10px; background:var(--surf2); color:var(--text);
-  font-size:14px; font-weight:600; display:flex; align-items:center;
-  justify-content:center; gap:10px; transition:all .2s; margin-bottom:4px;
-}
-.btn-google:hover { border-color:var(--accent); background:var(--surf3); }
-.btn-google img { width:18px; height:18px; }
-
-.btn-msg {
-  padding:8px 14px; border-radius:var(--rad-sm); border:1.5px solid var(--border);
-  background:var(--surf3); color:var(--muted2); font-size:12px; font-weight:700;
-  transition:all .2s;
-}
-.btn-msg:hover { border-color:var(--green); color:var(--green); }
-.btn-msg.dues:hover { border-color:var(--yellow); color:var(--yellow); }
-
-.btn-add-sf {
-  background:var(--surf3); border:1.5px solid var(--border); border-radius:8px;
-  color:var(--muted2); font-size:12px; font-weight:700; padding:8px 12px;
-  transition:all .2s; white-space:nowrap; flex-shrink:0;
-}
-.btn-add-sf:hover { border-color:var(--accent); color:var(--accent); }
-
-/* =========================================================
-   AUTH SCREEN
-========================================================= */
-#auth-screen {
-  min-height:100vh; display:flex; align-items:center; justify-content:center;
-  padding:24px;
-  background:
-    radial-gradient(ellipse 70% 55% at 15% 20%, rgba(59,130,246,.13), transparent),
-    radial-gradient(ellipse 60% 45% at 85% 75%, rgba(99,102,241,.1), transparent),
-    var(--bg);
-}
-.auth-card {
-  background:var(--surf); border:1.5px solid var(--border);
-  border-radius:20px; padding:36px 32px;
-  width:100%; max-width:420px; box-shadow:var(--shadow);
-}
-.auth-logo { display:flex; align-items:center; gap:14px; margin-bottom:28px; }
-.auth-logo-icon {
-  width:46px; height:46px; border-radius:12px; flex-shrink:0;
-  background:linear-gradient(135deg, var(--accent), var(--indigo));
-  display:flex; align-items:center; justify-content:center; font-size:22px;
-}
-.auth-logo-name { font-family:var(--font-d); font-size:22px; font-weight:800; }
-.auth-logo-sub { font-size:12px; color:var(--muted); margin-top:1px; }
-
-.auth-tabs {
-  display:flex; gap:4px; background:var(--surf2); border-radius:10px;
-  padding:4px; margin-bottom:18px;
-}
-.auth-tab {
-  flex:1; padding:8px; border:none; background:none; border-radius:7px;
-  font-size:13px; font-weight:600; color:var(--muted); transition:all .2s;
-}
-.auth-tab.active { background:var(--surf); color:var(--text); box-shadow:0 1px 4px rgba(0,0,0,.18); }
-
-.auth-divider {
-  display:flex; align-items:center; gap:10px;
-  color:var(--muted); font-size:12px; margin:16px 0;
-}
-.auth-divider::before, .auth-divider::after { content:''; flex:1; height:1px; background:var(--border); }
-.auth-note { font-size:11px; color:var(--muted); text-align:center; margin-top:14px; line-height:1.7; }
-
-/* =========================================================
-   APP SHELL
-========================================================= */
-#app-screen { display:none; }
-#app-layout { display:flex; height:100vh; overflow:hidden; }
-
-/* SIDEBAR */
-#sidebar {
-  width:224px; flex-shrink:0; background:var(--surf);
-  border-right:1px solid var(--border);
-  display:flex; flex-direction:column;
-  height:100vh; overflow-y:auto; overflow-x:hidden;
-  z-index:300; transition:transform .28s cubic-bezier(.4,0,.2,1);
-}
-.sidebar-logo {
-  display:flex; align-items:center; gap:11px;
-  padding:18px 16px; border-bottom:1px solid var(--border); flex-shrink:0;
-}
-.sidebar-logo-icon {
-  width:34px; height:34px; border-radius:9px; flex-shrink:0;
-  background:linear-gradient(135deg, var(--accent), var(--indigo));
-  display:flex; align-items:center; justify-content:center; font-size:16px;
-}
-.sidebar-logo-name { font-family:var(--font-d); font-size:17px; font-weight:800; }
-.sidebar-nav { padding:10px 8px; flex:1; }
-
-.nav-item {
-  display:flex; align-items:center; gap:10px; width:100%;
-  padding:9px 12px; border:none; background:none;
-  border-radius:var(--rad-sm); color:var(--muted);
-  font-size:13px; font-weight:600; text-align:left;
-  transition:all .18s; margin-bottom:2px; cursor:pointer;
-}
-.nav-item:hover { background:var(--surf2); color:var(--text); }
-.nav-item.active { background:rgba(59,130,246,.13); color:var(--accent); }
-.nav-icon { font-size:16px; flex-shrink:0; width:20px; text-align:center; }
-.nav-label { flex:1; }
-
-/* SIDEBAR BACKDROP (mobile) */
-#sidebar-backdrop {
-  display:none; position:fixed; inset:0;
-  background:rgba(0,0,0,.6); z-index:290;
-  backdrop-filter:blur(3px);
-}
-#sidebar-backdrop.open { display:block; }
-
-/* TOP NAV */
-.app-main { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; }
-#top-nav {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:10px 20px; background:var(--surf); border-bottom:1px solid var(--border);
-  flex-shrink:0; z-index:200; gap:10px;
-}
-.nav-left { display:flex; align-items:center; gap:10px; }
-.nav-right { display:flex; align-items:center; gap:8px; flex-shrink:0; }
-#page-title { font-family:var(--font-d); font-size:15px; font-weight:700; color:var(--muted2); }
-#mobile-menu-btn {
-  background:var(--surf2); border:1.5px solid var(--border2); border-radius:9px;
-  font-size:17px; color:var(--text); padding:5px 9px; display:flex;
-  align-items:center; justify-content:center; min-width:36px; height:36px;
-}
-#theme-toggle {
-  background:var(--surf2); border:1.5px solid var(--border); border-radius:8px;
-  width:34px; height:34px; font-size:15px;
-  display:flex; align-items:center; justify-content:center; transition:border-color .2s;
-}
-#theme-toggle:hover { border-color:var(--border2); }
-.sync-pill {
-  display:flex; align-items:center; gap:6px;
-  background:var(--surf2); border:1px solid var(--border);
-  border-radius:20px; padding:4px 10px; font-size:11px; color:var(--muted); font-weight:600;
-}
-.sync-dot { width:7px; height:7px; border-radius:50%; background:var(--muted); flex-shrink:0; }
-.sync-dot.online { background:var(--green); box-shadow:0 0 5px rgba(34,197,94,.5); }
-.user-chip {
-  display:flex; align-items:center; gap:6px; background:var(--surf2);
-  border:1px solid var(--border); border-radius:20px;
-  padding:4px 10px 4px 6px; font-size:12px; color:var(--muted2);
-}
-
-/* PAGE CONTENT */
-.page-wrap { flex:1; overflow-y:auto; padding:22px 20px; }
-.page { display:none; }
-.page.active { display:block; }
-
-/* =========================================================
-   PANELS
-========================================================= */
-.panel {
-  background:var(--surf); border:1px solid var(--border);
-  border-radius:var(--rad); overflow:hidden; margin-bottom:20px;
-}
-.panel-head {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:14px 20px; border-bottom:1px solid var(--border);
-}
-.panel-title { font-family:var(--font-d); font-size:14px; font-weight:700; }
-.panel-body { padding:18px 20px; }
-.panel-body.tight { padding:14px 16px; }
-
-/* =========================================================
-   LAYOUT GRIDS
-========================================================= */
-.two-col { display:grid; grid-template-columns:1fr 380px; gap:20px; align-items:start; }
-.sticky-col { position:sticky; top:72px; }
-
-/* =========================================================
-   SUMMARY STRIP
-========================================================= */
-.sum-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:22px; }
-.sum-card {
-  background:var(--surf); border:1px solid var(--border);
-  border-radius:var(--rad); padding:16px 18px;
-  animation:fadeUp .4s ease both;
-}
-@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
-.sum-card:nth-child(1){animation-delay:.04s}
-.sum-card:nth-child(2){animation-delay:.08s}
-.sum-card:nth-child(3){animation-delay:.12s}
-.sum-card:nth-child(4){animation-delay:.16s}
-.sum-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin-bottom:6px; }
-.sum-val { font-family:var(--font-d); font-size:24px; font-weight:800; margin-bottom:3px; line-height:1; }
-.sum-val.g { color:var(--green); }
-.sum-val.r { color:var(--red); }
-.sum-val.y { color:var(--yellow); }
-.sum-sub { font-size:11px; color:var(--muted); }
-
-/* =========================================================
-   SEARCH + FILTERS
-========================================================= */
-.controls-bar { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
-.search-wrap {
-  display:flex; align-items:center; gap:8px;
-  background:var(--surf2); border:1.5px solid var(--border);
-  border-radius:var(--rad-sm); padding:7px 12px;
-  transition:border-color .2s;
-}
-.search-wrap:focus-within { border-color:var(--accent); }
-.search-wrap input { flex:1; background:none; border:none; color:var(--text); font-size:13px; outline:none; }
-.search-wrap input::placeholder { color:var(--muted); }
-.filter-tabs { display:flex; gap:6px; flex-wrap:wrap; }
-.ftab {
-  padding:5px 13px; border-radius:20px; border:1.5px solid var(--border);
-  background:var(--surf2); color:var(--muted); font-size:12px; font-weight:600;
-  transition:all .18s;
-}
-.ftab.active { border-color:var(--accent); background:rgba(59,130,246,.12); color:var(--accent); }
-.ftab:hover:not(.active) { border-color:var(--border2); color:var(--text); }
-.list-count { font-size:12px; color:var(--muted); font-weight:600; }
-.msg-all-bar { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
-
-/* =========================================================
-   STUDENT CARDS
-========================================================= */
-.students-list { display:flex; flex-direction:column; gap:10px; }
-.student-card {
-  background:var(--surf2); border:1.5px solid var(--border);
-  border-radius:12px; padding:14px 16px;
-  transition:box-shadow .2s, border-color .2s;
-  animation:fadeUp .28s ease both;
-}
-.student-card:hover { box-shadow:var(--shadow-sm); border-color:var(--border2); }
-.student-card.s-red   { border-left:3px solid var(--red); }
-.student-card.s-blue  { border-left:3px solid var(--accent); }
-.student-card.s-green { border-left:3px solid var(--green); }
-.card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:10px; }
-.card-name { font-family:var(--font-d); font-size:15px; font-weight:700; }
-.card-meta { font-size:12px; color:var(--muted); margin-top:2px; }
-.card-badge { font-size:10px; font-weight:700; padding:3px 9px; border-radius:20px; white-space:nowrap; flex-shrink:0; }
-.b-red   { background:rgba(239,68,68,.12); color:var(--red);   border:1px solid rgba(239,68,68,.2); }
-.b-blue  { background:rgba(59,130,246,.12); color:#60a5fa;     border:1px solid rgba(59,130,246,.2); }
-.b-green { background:rgba(34,197,94,.12);  color:var(--green); border:1px solid rgba(34,197,94,.2); }
-.b-yellow{ background:rgba(245,158,11,.12); color:var(--yellow);border:1px solid rgba(245,158,11,.2); }
-.card-actions { display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
-.empty-state { text-align:center; padding:40px 20px; color:var(--muted); }
-.empty-icon { font-size:38px; margin-bottom:10px; }
-.empty-state p { font-size:14px; font-weight:600; margin-bottom:4px; color:var(--muted2); }
-.empty-state small { font-size:12px; }
-
-/* =========================================================
-   FEATURE 1 — PAYMENT ROW (slider + input box)
-========================================================= */
-.payment-row {
-  display:flex; align-items:center; gap:8px;
-  margin:8px 0 4px;
-}
-.payment-slider {
-  flex:1; height:5px; accent-color:var(--accent);
-  cursor:default; pointer-events:none; opacity:.65;
-  border-radius:999px;
-}
-.pay-prefix { font-size:12px; color:var(--muted); font-weight:700; flex-shrink:0; }
-.payment-input {
-  width:92px; flex-shrink:0;
-  background:var(--surf3); border:1.5px solid var(--border);
-  border-radius:8px; color:var(--text);
-  font-size:13px; font-weight:600; padding:5px 9px; text-align:right;
-  outline:none; transition:border-color .2s, box-shadow .2s, background .3s;
-}
-.payment-input::placeholder { color:var(--muted); font-weight:400; font-size:12px; }
-.payment-input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(59,130,246,.18); }
-.payment-input.flash {
-  border-color:var(--green) !important;
-  animation:payflash .55s ease forwards;
-}
-@keyframes payflash {
-  0%   { background:rgba(34,197,94,.22); }
-  100% { background:var(--surf3); }
-}
-.pay-hint { font-size:11px; color:var(--muted); margin-bottom:4px; line-height:1.4; }
-
-/* =========================================================
-   FEATURE 2 — FEE CYCLE TOGGLE
-========================================================= */
-.fee-cycle-wrap {
-  background:var(--surf3); border:1px solid var(--border);
-  border-radius:10px; padding:12px 14px; margin-top:4px;
-}
-.fee-cycle-label { font-size:11px; color:var(--muted); font-weight:600; margin-bottom:9px; }
-.fee-cycle-btns { display:flex; gap:7px; }
-.fc-btn {
-  flex:1; padding:9px 7px; border-radius:8px;
-  border:1.5px solid var(--border); background:var(--surf2);
-  color:var(--muted); font-family:var(--font-b); font-size:12px; font-weight:600;
-  text-align:center; line-height:1.45; transition:all .2s; cursor:pointer;
-}
-.fc-btn:hover { border-color:var(--border2); color:var(--text); }
-.fc-btn.active { border-color:var(--accent); background:rgba(59,130,246,.11); color:var(--accent); }
-.fc-hint {
-  font-size:11px; color:var(--muted2); margin-top:9px;
-  padding:7px 9px; background:var(--surf2); border-radius:6px; line-height:1.65;
-}
-
-/* =========================================================
-   FEATURE 3 — FILE ATTACHMENTS
-========================================================= */
-.drop-zone {
-  border:2px dashed var(--border); border-radius:10px;
-  padding:20px 16px; text-align:center; cursor:pointer;
-  transition:all .2s; background:var(--surf2); margin-top:4px;
-}
-.drop-zone:hover, .drop-zone.over {
-  border-color:var(--accent); background:rgba(59,130,246,.06);
-}
-.drop-zone input { display:none; }
-.dz-icon { font-size:28px; margin-bottom:6px; line-height:1; }
-.dz-text { font-size:13px; color:var(--muted); }
-.dz-text strong { color:var(--accent); }
-.dz-limit { font-size:11px; color:var(--muted); margin-top:4px; }
-
-.staged-list { display:flex; flex-direction:column; gap:5px; margin-top:8px; }
-.staged-item {
-  display:flex; align-items:center; gap:8px;
-  background:var(--surf2); border:1px solid var(--border);
-  border-radius:8px; padding:7px 10px;
-}
-.fi-icon { font-size:15px; flex-shrink:0; }
-.fi-name { flex:1; font-size:12px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.fi-size { font-size:11px; color:var(--muted); flex-shrink:0; }
-.fi-rm { background:none; border:none; color:var(--red); font-size:14px; cursor:pointer; padding:2px 4px; border-radius:4px; flex-shrink:0; transition:background .15s; }
-.fi-rm:hover { background:rgba(239,68,68,.12); }
-
-.att-section { margin-top:14px; padding-top:14px; border-top:1px solid var(--border); }
-.att-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin-bottom:8px; }
-.att-row {
-  display:flex; align-items:center; gap:8px;
-  padding:7px 10px; border-radius:8px;
-  border:1px solid var(--border); background:var(--surf2);
-  margin-bottom:5px;
-}
-.att-row:last-child { margin-bottom:0; }
-.att-icon { font-size:14px; flex-shrink:0; }
-.att-name { flex:1; font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.att-size { font-size:11px; color:var(--muted); flex-shrink:0; }
-.att-dl {
-  background:rgba(59,130,246,.12); border:1px solid rgba(59,130,246,.2);
-  border-radius:6px; color:var(--accent); font-size:11px; font-weight:700;
-  padding:3px 9px; cursor:pointer; text-decoration:none; flex-shrink:0;
-  transition:background .15s;
-}
-.att-dl:hover { background:rgba(59,130,246,.22); }
-.att-del { background:none; border:none; color:var(--red); cursor:pointer; font-size:13px; padding:2px 5px; border-radius:4px; flex-shrink:0; transition:background .15s; }
-.att-del:hover { background:rgba(239,68,68,.12); }
-
-/* =========================================================
-   SPECIAL FEES
-========================================================= */
-.sf-add-row { display:flex; gap:8px; align-items:center; }
-.sf-name-inp { flex:1; }
-.sf-amt-inp { width:90px !important; flex:none !important; }
-.sf-item {
-  display:flex; align-items:center; justify-content:space-between;
-  background:var(--surf2); border:1px solid var(--border);
-  border-radius:7px; padding:7px 10px; margin-bottom:6px; font-size:12px;
-}
-.sf-item-name { font-weight:600; }
-.sf-item-amt { color:var(--green); font-weight:700; }
-.sf-item-del { background:none; border:none; color:var(--red); cursor:pointer; font-size:13px; padding:1px 3px; }
-
-/* =========================================================
-   FACULTY
-========================================================= */
-.faculty-card {
-  background:var(--surf2); border:1.5px solid var(--border);
-  border-radius:12px; padding:14px 16px; margin-bottom:10px;
-  animation:fadeUp .28s ease both;
-}
-.subject-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; min-height:10px; }
-.stag {
-  display:flex; align-items:center; gap:5px;
-  background:rgba(59,130,246,.12); border:1px solid rgba(59,130,246,.2);
-  border-radius:20px; padding:3px 10px; font-size:12px; color:#60a5fa;
-}
-.stag button { background:none; border:none; color:var(--red); cursor:pointer; font-size:12px; padding:0 2px; line-height:1; }
-.subj-row { display:flex; gap:8px; }
-.subj-row button { background:var(--surf3); border:1.5px solid var(--border); border-radius:8px; color:var(--muted2); font-size:12px; font-weight:700; padding:8px 12px; transition:all .2s; white-space:nowrap; }
-.subj-row button:hover { border-color:var(--accent); color:var(--accent); }
-
-/* =========================================================
-   PROGRAMS
-========================================================= */
-.program-card {
-  background:var(--surf2); border:1.5px solid var(--border);
-  border-radius:12px; padding:14px 16px; margin-bottom:10px;
-  animation:fadeUp .28s ease both;
-}
-
-/* =========================================================
-   ATTENDANCE
-========================================================= */
-.att-top-bar {
-  display:flex; align-items:center; justify-content:space-between;
-  margin-bottom:16px; flex-wrap:wrap; gap:10px;
-}
-.date-nav { display:flex; align-items:center; gap:10px; }
-.date-nav-btn {
-  width:32px; height:32px; border-radius:8px;
-  border:1.5px solid var(--border); background:var(--surf2); font-size:14px;
-  display:flex; align-items:center; justify-content:center; transition:all .18s;
-}
-.date-nav-btn:hover { border-color:var(--accent); }
-#att-date-lbl { font-family:var(--font-d); font-size:15px; font-weight:700; }
-.date-picker-inp {
-  background:var(--surf2); border:1.5px solid var(--border);
-  border-radius:8px; color:var(--text); padding:6px 10px; font-size:13px; outline:none;
-}
-.date-picker-inp:focus { border-color:var(--accent); }
-
-.att-chips { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
-.att-chip { padding:5px 14px; border-radius:8px; font-size:12px; font-weight:700; }
-.att-chip.p { background:rgba(34,197,94,.12); color:var(--green); }
-.att-chip.a { background:rgba(239,68,68,.12); color:var(--red); }
-.att-chip.u { background:var(--surf2); color:var(--muted); border:1px solid var(--border); }
-
-.cls-filter { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
-.cls-btn { padding:5px 12px; border-radius:20px; border:1.5px solid var(--border); background:var(--surf2); color:var(--muted); font-size:12px; font-weight:600; transition:all .18s; }
-.cls-btn.active { border-color:var(--accent); background:rgba(59,130,246,.12); color:var(--accent); }
-
-.att-row2 {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:10px 0; border-bottom:1px solid var(--border);
-}
-.att-row2:last-child { border:none; }
-.att-s-name { font-weight:600; font-size:13px; }
-.att-s-class { font-size:11px; color:var(--muted); margin-top:1px; }
-.att-action-btns { display:flex; gap:6px; }
-.att-btn2 {
-  padding:5px 12px; border-radius:6px; font-size:12px; font-weight:700;
-  border:1.5px solid var(--border); background:var(--surf2); color:var(--muted); transition:all .18s;
-}
-.att-btn2:hover { border-color:var(--border2); }
-.att-btn2.present { border-color:var(--green); background:rgba(34,197,94,.1); color:var(--green); }
-.att-btn2.absent  { border-color:var(--red);   background:rgba(239,68,68,.1); color:var(--red); }
-
-/* =========================================================
-   TIMETABLE
-========================================================= */
-.tt-panel {
-  background:var(--surf); border:1px solid var(--border);
-  border-radius:var(--rad); padding:18px 20px; margin-bottom:16px;
-}
-.tt-panel-title { font-family:var(--font-d); font-size:14px; font-weight:700; margin-bottom:12px; }
-.day-chips { display:flex; gap:8px; flex-wrap:wrap; }
-.day-chip { padding:7px 14px; border-radius:8px; border:1.5px solid var(--border); background:var(--surf2); color:var(--muted); font-size:13px; font-weight:600; transition:all .18s; }
-.day-chip.active { border-color:var(--accent); background:rgba(59,130,246,.12); color:var(--accent); }
-.day-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
-.day-tab { padding:8px 16px; border-radius:8px; border:1.5px solid var(--border); background:var(--surf2); color:var(--muted); font-size:13px; font-weight:600; transition:all .18s; }
-.day-tab.active { border-color:var(--accent); background:rgba(59,130,246,.12); color:var(--accent); }
-.slot-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
-.slot-row:last-child { border:none; }
-.slot-time { font-size:12px; color:var(--muted); font-weight:700; width:72px; flex-shrink:0; }
-.slot-subj { font-size:13px; font-weight:600; flex:1; }
-
-/* =========================================================
-   GRAPH
-========================================================= */
-.graph-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
-.graph-tab { padding:8px 18px; border-radius:8px; border:1.5px solid var(--border); background:var(--surf2); color:var(--muted); font-size:13px; font-weight:600; transition:all .18s; }
-.graph-tab.active { border-color:var(--accent); background:rgba(59,130,246,.12); color:var(--accent); }
-.graph-wrap {
-  background:var(--surf); border:1px solid var(--border);
-  border-radius:var(--rad); padding:24px 20px; overflow:hidden;
-}
-#revenue-chart { max-width:100%; display:block; }
-
-/* =========================================================
-   PAYMENTS PAGE
-========================================================= */
-.pay-student-block { margin-bottom:26px; }
-.pay-student-name { font-family:var(--font-d); font-size:15px; font-weight:700; margin-bottom:10px; }
-.pay-student-sub { font-size:12px; color:var(--muted); font-weight:400; margin-left:6px; }
-.month-card { background:var(--surf2); border:1px solid var(--border); border-radius:10px; padding:11px 14px; margin-bottom:7px; display:flex; align-items:center; justify-content:space-between; }
-.month-card-label { font-family:var(--font-d); font-size:13px; font-weight:700; }
-.month-card-sub { font-size:11px; color:var(--muted); margin-top:2px; }
-.mpill { font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; }
-.mpill.paid    { background:rgba(34,197,94,.12);  color:var(--green); border:1px solid rgba(34,197,94,.2); }
-.mpill.partial { background:rgba(59,130,246,.12); color:#60a5fa;      border:1px solid rgba(59,130,246,.2); }
-.mpill.due     { background:rgba(239,68,68,.1);   color:var(--red);   border:1px solid rgba(239,68,68,.18); }
-
-/* =========================================================
-   MODAL
-========================================================= */
-.modal-overlay {
-  display:none; position:fixed; inset:0; z-index:600;
-  background:rgba(0,0,0,.68); backdrop-filter:blur(5px);
-  align-items:center; justify-content:center; padding:20px;
-}
-.modal-overlay.open { display:flex; }
-.modal-box {
-  background:var(--surf); border:1.5px solid var(--border);
-  border-radius:20px; padding:26px; width:100%; max-width:520px;
-  max-height:90vh; overflow-y:auto; box-shadow:var(--shadow);
-  animation:fadeUp .25s ease;
-}
-.modal-hd { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
-.modal-title { font-family:var(--font-d); font-size:18px; font-weight:800; }
-.modal-close { background:var(--surf2); border:1.5px solid var(--border); border-radius:8px; width:32px; height:32px; font-size:16px; display:flex; align-items:center; justify-content:center; transition:all .18s; }
-.modal-close:hover { border-color:var(--red); color:var(--red); }
-.detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:16px; }
-.detail-item { background:var(--surf2); border-radius:8px; padding:10px 12px; }
-.detail-lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin-bottom:3px; }
-.detail-val { font-size:13px; font-weight:600; }
-.hist-row {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:9px 0; border-bottom:1px solid var(--border);
-}
-.hist-row:last-child { border:none; }
-.hist-month { font-size:13px; font-weight:600; }
-.hist-right { display:flex; align-items:center; gap:10px; }
-.hist-amt { font-size:12px; color:var(--muted); }
-
-/* =========================================================
-   SETTINGS
-========================================================= */
-.settings-section-title {
-  font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em;
-  color:var(--muted); margin-bottom:12px; padding-bottom:8px;
-  border-bottom:1px solid var(--border);
-}
-.settings-row {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:14px 0; border-bottom:1px solid var(--border);
-}
-.settings-row:last-child { border:none; padding-bottom:0; }
-.settings-row-label { font-weight:600; font-size:14px; margin-bottom:3px; }
-.settings-row-sub { font-size:12px; color:var(--muted); }
-
-/* =========================================================
-   TOAST
-========================================================= */
-.toast {
-  position:fixed; bottom:24px; right:24px; z-index:9999;
-  background:var(--surf); border:1.5px solid var(--border);
-  border-radius:12px; padding:11px 16px;
-  font-size:13px; font-weight:600;
-  display:flex; align-items:center; gap:8px;
-  box-shadow:var(--shadow); max-width:320px;
-  opacity:0; transform:translateY(12px); pointer-events:none;
-  transition:all .28s cubic-bezier(.34,1.56,.64,1);
-}
-.toast.show { opacity:1; transform:none; pointer-events:auto; }
-.toast.green { border-color:rgba(34,197,94,.4);  background:rgba(34,197,94,.07); }
-.toast.red   { border-color:rgba(239,68,68,.4);  background:rgba(239,68,68,.07); }
-.toast.yellow{ border-color:rgba(245,158,11,.4); background:rgba(245,158,11,.07); }
-
-/* =========================================================
-   RESPONSIVE
-========================================================= */
-@media (max-width:960px) {
-  .two-col { grid-template-columns:1fr; }
-  .sticky-col { position:static; }
-  .sum-strip { grid-template-columns:1fr 1fr; }
-}
-@media (max-width:600px) {
-  #sidebar { position:fixed; left:0; top:0; height:100%; transform:translateX(-100%); }
-  #sidebar.open { transform:none; }
-  .sum-strip { grid-template-columns:1fr 1fr; }
-  .form-row { grid-template-columns:1fr; }
-  .page-wrap { padding:14px; }
-  .panel-body { padding:14px; }
-  .two-col { gap:14px; }
-}
-@media (min-width:601px) {
-  #mobile-menu-btn { display:none; }
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduStack — Admin Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
 
-<!-- ═══════════════════════════
-     AUTH SCREEN
-═══════════════════════════ -->
-<div id="sidebar-backdrop" onclick="closeSidebar()"></div>
-
-<div id="auth-screen">
+<!-- ════════════ AUTH SCREEN ════════════ -->
+<div id="admin-auth" class="auth-screen">
   <div class="auth-card">
     <div class="auth-logo">
       <div class="auth-logo-icon">🎓</div>
@@ -723,7 +26,6 @@ hr { border:none; border-top:1px solid var(--border); }
       <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
       Continue with Google
     </button>
-
     <div class="auth-divider"><span>or use email</span></div>
 
     <div class="auth-tabs">
@@ -748,63 +50,59 @@ hr { border:none; border-top:1px solid var(--border); }
   </div>
 </div>
 
-<!-- ═══════════════════════════
-     APP SCREEN
-═══════════════════════════ -->
-<div id="app-screen">
-<div id="app-layout">
+<!-- ════════════ APP ════════════ -->
+<div id="admin-app" style="display:none">
+
+  <div id="admin-backdrop" onclick="closeAdminSidebar()"></div>
 
   <!-- SIDEBAR -->
-  <nav id="sidebar">
+  <nav id="admin-sidebar">
     <div class="sidebar-logo">
       <div class="sidebar-logo-icon">🎓</div>
       <div class="sidebar-logo-name">EduStack</div>
     </div>
     <div class="sidebar-nav">
-      <button class="nav-item active" data-page="students"   onclick="goTo('students')"><span class="nav-icon">👨‍🎓</span><span class="nav-label">Students</span></button>
-      <button class="nav-item"        data-page="payments"   onclick="goTo('payments')"><span class="nav-icon">💳</span><span class="nav-label">Payments</span></button>
-      <button class="nav-item"        data-page="faculty"    onclick="goTo('faculty')"><span class="nav-icon">👩‍🏫</span><span class="nav-label">Faculty</span></button>
-      <button class="nav-item"        data-page="attendance" onclick="goTo('attendance')"><span class="nav-icon">📝</span><span class="nav-label">Attendance</span></button>
-      <button class="nav-item"        data-page="timetable"  onclick="goTo('timetable')"><span class="nav-icon">📅</span><span class="nav-label">Timetable</span></button>
-      <button class="nav-item"        data-page="programs"   onclick="goTo('programs')"><span class="nav-icon">🎓</span><span class="nav-label">Special Programs</span></button>
-      <button class="nav-item"        data-page="graph"      onclick="goTo('graph')"><span class="nav-icon">📊</span><span class="nav-label">Graph</span></button>
-      <button class="nav-item"        data-page="settings"   onclick="goTo('settings')"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></button>
+      <button class="nav-item active" data-page="students"   onclick="goTo('students')"><span class="nav-icon">👨‍🎓</span><span>Students</span></button>
+      <button class="nav-item"        data-page="payments"   onclick="goTo('payments')"><span class="nav-icon">💳</span><span>Payments</span></button>
+      <button class="nav-item"        data-page="faculty"    onclick="goTo('faculty')"><span class="nav-icon">👩‍🏫</span><span>Faculty</span></button>
+      <button class="nav-item"        data-page="attendance" onclick="goTo('attendance')"><span class="nav-icon">📝</span><span>Attendance</span></button>
+      <button class="nav-item"        data-page="timetable"  onclick="goTo('timetable')"><span class="nav-icon">📅</span><span>Timetable</span></button>
+      <button class="nav-item"        data-page="programs"   onclick="goTo('programs')"><span class="nav-icon">🎓</span><span>Special Programs</span></button>
+      <button class="nav-item"        data-page="graph"      onclick="goTo('graph')"><span class="nav-icon">📊</span><span>Graph</span></button>
+      <button class="nav-item"        data-page="settings"   onclick="goTo('settings')"><span class="nav-icon">⚙️</span><span>Settings</span></button>
     </div>
   </nav>
 
   <!-- MAIN -->
-  <div class="app-main">
+  <div class="admin-main">
 
     <!-- TOP NAV -->
-    <header id="top-nav">
-      <div class="nav-left">
-        <button id="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
-        <span id="page-title">Students</span>
+    <header id="admin-topnav">
+      <div class="topnav-left">
+        <button id="admin-menu-btn" onclick="toggleAdminSidebar()">☰</button>
+        <span id="admin-page-title">Students</span>
       </div>
-      <div class="nav-right">
-        <button id="theme-toggle" onclick="toggleTheme()" title="Toggle theme">☀️</button>
+      <div class="topnav-right">
+        <button id="admin-theme-btn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
         <div class="sync-pill">
           <div class="sync-dot" id="sync-dot"></div>
           <span id="sync-lbl">Offline</span>
-        </div>
-        <div class="user-chip" id="user-chip" style="display:none">
-          <span>👤</span><span id="user-email-lbl"></span>
         </div>
         <button class="btn-logout" onclick="doLogout()">Sign Out</button>
       </div>
     </header>
 
-    <div class="page-wrap">
+    <!-- PAGES -->
+    <div class="admin-page-wrap">
 
-      <!-- ══════ STUDENTS ══════ -->
-      <div id="page-students" class="page active">
+      <!-- STUDENTS -->
+      <div id="admin-page-students" class="admin-page active">
         <div class="sum-strip">
           <div class="sum-card"><div class="sum-label">Total Students</div><div class="sum-val" id="s-total">0</div><div class="sum-sub">enrolled</div></div>
           <div class="sum-card"><div class="sum-label">Collected</div><div class="sum-val g" id="s-coll">₹0</div><div class="sum-sub">all time</div></div>
           <div class="sum-card"><div class="sum-label">Outstanding</div><div class="sum-val r" id="s-out">₹0</div><div class="sum-sub">fees due</div></div>
           <div class="sum-card"><div class="sum-label">Overdue</div><div class="sum-val y" id="s-over">0</div><div class="sum-sub">2+ months</div></div>
         </div>
-
         <div class="two-col">
           <!-- LIST -->
           <div>
@@ -831,11 +129,7 @@ hr { border:none; border-top:1px solid var(--border); }
                   </div>
                 </div>
                 <div class="students-list" id="students-list">
-                  <div class="empty-state">
-                    <div class="empty-icon">📋</div>
-                    <p>No students yet</p>
-                    <small>Add a student using the form →</small>
-                  </div>
+                  <div class="empty-state"><div class="empty-icon">📋</div><p>No students yet</p><small>Add a student using the form →</small></div>
                 </div>
               </div>
             </div>
@@ -846,7 +140,6 @@ hr { border:none; border-top:1px solid var(--border); }
             <div class="panel">
               <div class="panel-head"><div class="panel-title">Enroll New Student</div></div>
               <div class="panel-body">
-
                 <div class="form-row">
                   <div class="fg"><label>Full Name *</label><input class="fi" type="text" id="f-name" placeholder="e.g. Rahul Sharma"></div>
                   <div class="fg"><label>Phone / Parent</label><input class="fi" type="text" id="f-phone" placeholder="+91 98765 43210"></div>
@@ -888,12 +181,10 @@ hr { border:none; border-top:1px solid var(--border); }
                     <div class="fee-cycle-label">Student enrolled mid-month — when should fees begin?</div>
                     <div class="fee-cycle-btns">
                       <button class="fc-btn active" id="fcb-include" onclick="setFC('include')">
-                        📅 Count this month<br>
-                        <span style="font-size:10px;font-weight:400">Fee from enrollment month</span>
+                        📅 Count this month<br><span style="font-size:10px;font-weight:400">Fee from enrollment month</span>
                       </button>
                       <button class="fc-btn" id="fcb-skip" onclick="setFC('skip')">
-                        ⏭ Start next month<br>
-                        <span style="font-size:10px;font-weight:400">First fee 1st of next month</span>
+                        ⏭ Start next month<br><span style="font-size:10px;font-weight:400">First fee on 1st of next month</span>
                       </button>
                     </div>
                     <div class="fc-hint" id="fc-hint">Fee counted from 1st of enrollment month.</div>
@@ -937,19 +228,19 @@ hr { border:none; border-top:1px solid var(--border); }
         </div>
       </div>
 
-      <!-- ══════ PAYMENTS ══════ -->
-      <div id="page-payments" class="page">
+      <!-- PAYMENTS -->
+      <div id="admin-page-payments" class="admin-page">
         <div class="panel">
           <div class="panel-head"><div class="panel-title">💳 Payment History — All Students</div></div>
-          <div class="panel-body" id="payments-body">
+          <div class="panel-body" id="pay-body">
             <div class="empty-state"><div class="empty-icon">💳</div><p>No students enrolled yet</p></div>
           </div>
         </div>
       </div>
 
-      <!-- ══════ FACULTY ══════ -->
-      <div id="page-faculty" class="page">
-        <div class="sum-strip" id="fac-strip">
+      <!-- FACULTY -->
+      <div id="admin-page-faculty" class="admin-page">
+        <div class="sum-strip">
           <div class="sum-card"><div class="sum-label">Total Teachers</div><div class="sum-val" id="fac-total">0</div><div class="sum-sub">faculty</div></div>
           <div class="sum-card"><div class="sum-label">Monthly Payroll</div><div class="sum-val y" id="fac-payroll">₹0</div><div class="sum-sub">total</div></div>
           <div class="sum-card"><div class="sum-label">Paid This Month</div><div class="sum-val g" id="fac-paid">₹0</div><div class="sum-sub">paid</div></div>
@@ -960,7 +251,7 @@ hr { border:none; border-top:1px solid var(--border); }
             <div class="panel">
               <div class="panel-head"><div class="panel-title">Faculty</div></div>
               <div class="panel-body" id="faculty-list">
-                <div class="empty-state"><div class="empty-icon">👩‍🏫</div><p>No faculty added yet</p><small>Add teachers using the form →</small></div>
+                <div class="empty-state"><div class="empty-icon">👩‍🏫</div><p>No faculty yet</p><small>Add teachers →</small></div>
               </div>
             </div>
           </div>
@@ -991,8 +282,8 @@ hr { border:none; border-top:1px solid var(--border); }
         </div>
       </div>
 
-      <!-- ══════ ATTENDANCE ══════ -->
-      <div id="page-attendance" class="page">
+      <!-- ATTENDANCE -->
+      <div id="admin-page-attendance" class="admin-page">
         <div class="att-top-bar">
           <div class="date-nav">
             <button class="date-nav-btn" onclick="shiftDate(-1)">◀</button>
@@ -1010,8 +301,8 @@ hr { border:none; border-top:1px solid var(--border); }
         </div>
       </div>
 
-      <!-- ══════ TIMETABLE ══════ -->
-      <div id="page-timetable" class="page">
+      <!-- TIMETABLE -->
+      <div id="admin-page-timetable" class="admin-page">
         <div class="tt-panel">
           <div class="tt-panel-title">⚙️ Working Days</div>
           <div class="day-chips" id="day-chips"></div>
@@ -1024,14 +315,14 @@ hr { border:none; border-top:1px solid var(--border); }
         </div>
       </div>
 
-      <!-- ══════ PROGRAMS ══════ -->
-      <div id="page-programs" class="page">
+      <!-- PROGRAMS -->
+      <div id="admin-page-programs" class="admin-page">
         <div class="two-col">
           <div>
             <div class="panel">
               <div class="panel-head"><div class="panel-title">Special Programs</div></div>
               <div class="panel-body" id="programs-list">
-                <div class="empty-state"><div class="empty-icon">🎓</div><p>No programs yet</p><small>Create a program using the form →</small></div>
+                <div class="empty-state"><div class="empty-icon">🎓</div><p>No programs yet</p><small>Create one →</small></div>
               </div>
             </div>
           </div>
@@ -1043,32 +334,18 @@ hr { border:none; border-top:1px solid var(--border); }
                 <div class="fg"><label>Program Fee (₹) *</label><div class="pfx-wrap"><span class="pfx">₹</span><input class="fi pfx-input" type="number" id="prog-fee" placeholder="e.g. 5000" min="0"></div></div>
                 <div class="section-sep">Program Duration</div>
                 <div class="form-row">
-                  <div class="fg">
-                    <label>Start Month</label>
-                    <select class="fi" id="prog-sm">
-                      <option value="">Month</option>
-                      <option value="1">January</option><option value="2">February</option><option value="3">March</option>
-                      <option value="4">April</option><option value="5">May</option><option value="6">June</option>
-                      <option value="7">July</option><option value="8">August</option><option value="9">September</option>
-                      <option value="10">October</option><option value="11">November</option><option value="12">December</option>
-                    </select>
+                  <div class="fg"><label>Start Month</label>
+                    <select class="fi" id="prog-sm"><option value="">Month</option><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select>
                   </div>
                   <div class="fg"><label>Start Year</label><input class="fi" type="number" id="prog-sy" placeholder="2025" min="2020" max="2040"></div>
                 </div>
                 <div class="form-row">
-                  <div class="fg">
-                    <label>End Month</label>
-                    <select class="fi" id="prog-em">
-                      <option value="">Month</option>
-                      <option value="1">January</option><option value="2">February</option><option value="3">March</option>
-                      <option value="4">April</option><option value="5">May</option><option value="6">June</option>
-                      <option value="7">July</option><option value="8">August</option><option value="9">September</option>
-                      <option value="10">October</option><option value="11">November</option><option value="12">December</option>
-                    </select>
+                  <div class="fg"><label>End Month</label>
+                    <select class="fi" id="prog-em"><option value="">Month</option><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select>
                   </div>
                   <div class="fg"><label>End Year</label><input class="fi" type="number" id="prog-ey" placeholder="2025" min="2020" max="2040"></div>
                 </div>
-                <div class="fg"><label>Description (optional)</label><input class="fi" type="text" id="prog-desc" placeholder="Brief description…"></div>
+                <div class="fg"><label>Description</label><input class="fi" type="text" id="prog-desc" placeholder="Brief description…"></div>
                 <button class="btn-primary" style="margin-top:8px" onclick="addProgram()">+ Create Program</button>
               </div>
             </div>
@@ -1076,57 +353,44 @@ hr { border:none; border-top:1px solid var(--border); }
         </div>
       </div>
 
-      <!-- ══════ GRAPH ══════ -->
-      <div id="page-graph" class="page">
+      <!-- GRAPH -->
+      <div id="admin-page-graph" class="admin-page">
         <div class="graph-tabs">
           <button class="graph-tab active" onclick="setGraph('current',this)">This Month</button>
           <button class="graph-tab" onclick="setGraph('3months',this)">Last 3 Months</button>
           <button class="graph-tab" onclick="setGraph('6months',this)">Last 6 Months</button>
           <button class="graph-tab" onclick="setGraph('year',this)">Last 12 Months</button>
         </div>
-        <div class="graph-wrap">
-          <canvas id="revenue-chart" height="300"></canvas>
-        </div>
+        <div class="graph-wrap"><canvas id="revenue-chart" height="300"></canvas></div>
       </div>
 
-      <!-- ══════ SETTINGS ══════ -->
-      <div id="page-settings" class="page">
+      <!-- SETTINGS -->
+      <div id="admin-page-settings" class="admin-page">
         <div class="panel" style="max-width:500px">
           <div class="panel-head"><div class="panel-title">Settings</div></div>
           <div class="panel-body">
-
             <div class="settings-section-title">Account</div>
             <div class="detail-grid" id="settings-info" style="margin-bottom:20px"></div>
-
-            <div class="settings-section-title" style="margin-top:4px">Appearance</div>
+            <div class="settings-section-title">Appearance</div>
             <div class="settings-row">
-              <div>
-                <div class="settings-row-label">Theme</div>
-                <div class="settings-row-sub">Switch between dark and light mode</div>
-              </div>
+              <div><div class="settings-row-label">Theme</div><div class="settings-row-sub">Dark / Light mode</div></div>
               <button onclick="toggleTheme()" style="background:var(--surf2);border:1.5px solid var(--border2);border-radius:8px;padding:8px 16px;font-family:var(--font-b);font-size:13px;color:var(--text)">Toggle Theme</button>
             </div>
-
             <div class="settings-section-title" style="margin-top:4px">Data</div>
             <div class="settings-row">
-              <div>
-                <div class="settings-row-label" style="color:var(--red)">Clear All Data</div>
-                <div class="settings-row-sub">Permanently delete all students, faculty and programs</div>
-              </div>
-              <button onclick="clearAll()" style="background:rgba(239,68,68,.1);border:1.5px solid rgba(239,68,68,.3);border-radius:8px;padding:8px 14px;color:var(--red);font-family:var(--font-b);font-size:13px;cursor:pointer;">Delete All</button>
+              <div><div class="settings-row-label" style="color:var(--red)">Clear All Data</div><div class="settings-row-sub">Permanently delete all students, faculty, and programs</div></div>
+              <button onclick="clearAllData()" style="background:rgba(239,68,68,.1);border:1.5px solid rgba(239,68,68,.3);border-radius:8px;padding:8px 14px;color:var(--red);font-family:var(--font-b);font-size:13px;cursor:pointer;">Delete All</button>
             </div>
             <div style="margin-top:18px">
               <button class="btn-logout" style="width:100%;padding:12px;border-radius:var(--rad-sm)" onclick="doLogout()">Sign Out</button>
             </div>
-
           </div>
         </div>
       </div>
 
-    </div><!-- /page-wrap -->
-  </div><!-- /app-main -->
-</div><!-- /app-layout -->
-</div><!-- /app-screen -->
+    </div><!-- /admin-page-wrap -->
+  </div><!-- /admin-main -->
+</div><!-- /admin-app -->
 
 <!-- STUDENT DETAIL MODAL -->
 <div class="modal-overlay" id="student-modal" onclick="if(event.target===this)closeModal()">
@@ -1142,953 +406,40 @@ hr { border:none; border-top:1px solid var(--border); }
 <!-- TOAST -->
 <div class="toast" id="toast"><span id="toast-icon"></span><span id="toast-msg"></span></div>
 
-<!-- ═══════════════════════════════════════════════════
-     JAVASCRIPT — ALL LOGIC SELF-CONTAINED
-═══════════════════════════════════════════════════ -->
+<!-- SCRIPTS — order matters -->
+<script src="js/utils.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/fee_cycle.js"></script>
+<script src="js/students.js"></script>
+<script src="js/faculty.js"></script>
+<script src="js/admin_modules.js"></script>
+
 <script>
-'use strict';
-
-/* ── DATA ── */
-let students   = [];
-let faculty    = [];
-let programs   = [];
-let attendance = {};   // { 'YYYY-MM-DD': { id: 'present'|'absent' } }
-let timetable  = {};   // { 'Monday': [{time, subject}] }
-
-/* ── TEMP STATE ── */
-let _sfs        = [];  // staged special fees
-let _files      = [];  // staged file attachments
-let _facSubjs   = [];  // staged faculty subjects
-let _fcMode     = 'include'; // fee cycle mode
-let _filter     = 'all';
-let _attDate    = new Date();
-let _attClass   = 'all';
-let _ttDay      = 'Monday';
-let _workDays   = new Set(['Monday','Tuesday','Wednesday','Thursday','Friday']);
-let _graphMode  = 'current';
-
-/* ── CONSTANTS ── */
-const MN   = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-const PAGE_TITLES = {
-  students:'Students', payments:'Payments', faculty:'Faculty',
-  attendance:'Attendance', timetable:'Timetable', programs:'Special Programs',
-  graph:'Revenue Graph', settings:'Settings'
-};
-
-/* ═══════════════════════
-   THEME
-═══════════════════════ */
-function loadTheme() {
-  const t = localStorage.getItem('es_theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', t);
-  const b = document.getElementById('theme-toggle');
-  if (b) b.textContent = t === 'dark' ? '☀️' : '🌙';
-}
-function toggleTheme() {
-  const cur = document.documentElement.getAttribute('data-theme') || 'dark';
-  const next = cur === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('es_theme', next);
-  const b = document.getElementById('theme-toggle');
-  if (b) b.textContent = next === 'dark' ? '☀️' : '🌙';
-}
-
-/* ═══════════════════════
-   TOAST
-═══════════════════════ */
-let _toastT;
-function toast(msg, type = 'green', icon = '') {
-  const el = document.getElementById('toast');
-  el.className = `toast ${type} show`;
-  document.getElementById('toast-icon').textContent = icon || (type==='green'?'✅':type==='red'?'❌':'⚠️');
-  document.getElementById('toast-msg').textContent  = msg;
-  clearTimeout(_toastT);
-  _toastT = setTimeout(() => el.classList.remove('show'), 3000);
-}
-
-/* ═══════════════════════
-   STORAGE
-═══════════════════════ */
-function saveAll() {
-  try {
-    localStorage.setItem('es_students',   JSON.stringify(students));
-    localStorage.setItem('es_faculty',    JSON.stringify(faculty));
-    localStorage.setItem('es_programs',   JSON.stringify(programs));
-    localStorage.setItem('es_attendance', JSON.stringify(attendance));
-    localStorage.setItem('es_timetable',  JSON.stringify(timetable));
-  } catch (e) {
-    toast('Storage full — some data may not have saved', 'yellow');
-  }
-}
-function loadAll() {
-  try {
-    students   = JSON.parse(localStorage.getItem('es_students')   || '[]');
-    faculty    = JSON.parse(localStorage.getItem('es_faculty')    || '[]');
-    programs   = JSON.parse(localStorage.getItem('es_programs')   || '[]');
-    attendance = JSON.parse(localStorage.getItem('es_attendance') || '{}');
-    timetable  = JSON.parse(localStorage.getItem('es_timetable')  || '{}');
-    const wd   = localStorage.getItem('es_workdays');
-    if (wd) _workDays = new Set(JSON.parse(wd));
-  } catch (e) {
-    students=[];faculty=[];programs=[];attendance={};timetable={};
-  }
-}
-function clearAll() {
-  if (!confirm('Delete ALL data permanently? This cannot be undone.')) return;
-  students=[]; faculty=[]; programs=[]; attendance={}; timetable={};
-  saveAll();
-  renderStudents(); renderFaculty(); renderPrograms(); updateStrip();
-  toast('All data cleared', 'red');
-}
-
-/* ═══════════════════════
-   AUTH
-═══════════════════════ */
-function goOffline() {
-  document.getElementById('auth-screen').style.display = 'none';
-  document.getElementById('app-screen').style.display  = 'block';
-  loadAll();
-  document.getElementById('f-date').valueAsDate   = new Date();
-  document.getElementById('fac-date').valueAsDate = new Date();
-  renderStudents(); updateStrip();
-  renderFaculty(); renderFacStrip();
-  renderPrograms();
-  initAtt(); initTT();
+/* ── Auth wrappers ── */
+function switchAuthTab(tab, btn) {
+  document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('auth-login').style.display  = tab==='login'  ? 'block':'none';
+  document.getElementById('auth-signup').style.display = tab==='signup' ? 'block':'none';
 }
 function doLogin()       { goOffline(); toast('Signed in (demo mode)', 'green'); }
 function doSignup()      { goOffline(); toast('Account created (demo mode)', 'green'); }
 function doGoogleLogin() { goOffline(); toast('Google sign-in (demo mode)', 'green'); }
+
+function goOffline() {
+  document.getElementById('admin-auth').style.display = 'none';
+  document.getElementById('admin-app').style.display  = 'flex';
+  adminInit();
+}
 function doLogout() {
-  document.getElementById('app-screen').style.display  = 'none';
-  document.getElementById('auth-screen').style.display = 'flex';
-}
-function switchAuthTab(tab, btn) {
-  document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('auth-login').style.display  = tab === 'login'  ? 'block' : 'none';
-  document.getElementById('auth-signup').style.display = tab === 'signup' ? 'block' : 'none';
+  document.getElementById('admin-app').style.display  = 'none';
+  document.getElementById('admin-auth').style.display = 'flex';
 }
 
-/* ═══════════════════════
-   NAVIGATION
-═══════════════════════ */
-function goTo(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const pageEl = document.getElementById(`page-${page}`);
-  const navEl  = document.querySelector(`[data-page="${page}"]`);
-  if (pageEl) pageEl.classList.add('active');
-  if (navEl)  navEl.classList.add('active');
-  document.getElementById('page-title').textContent = PAGE_TITLES[page] || page;
-  closeSidebar();
-  if (page === 'attendance') renderAtt();
-  if (page === 'timetable')  renderTT();
-  if (page === 'graph')      renderGraph();
-  if (page === 'payments')   renderPayments();
-  if (page === 'settings')   renderSettings();
-  if (page === 'faculty') { renderFaculty(); renderFacStrip(); }
-}
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebar-backdrop').classList.toggle('open');
-}
-function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebar-backdrop').classList.remove('open');
-}
-
-/* ═══════════════════════
-   HELPERS
-═══════════════════════ */
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
-function rp(n) { return '₹' + Number(n||0).toLocaleString('en-IN'); }
-function dStr(d) { return d.toISOString().split('T')[0]; }
-
-/* ═══════════════════════════════════════════
-   FEATURE 2 — FEE CYCLE TOGGLE
-═══════════════════════════════════════════ */
-function setFC(mode) {
-  _fcMode = mode;
-  document.getElementById('fcb-include').classList.toggle('active', mode === 'include');
-  document.getElementById('fcb-skip').classList.toggle('active', mode === 'skip');
-  updateFCHint();
-}
-function updateFCHint() {
-  const v = document.getElementById('f-date').value;
-  const h = document.getElementById('fc-hint');
-  if (!v || !h) return;
-  const d = new Date(v);
-  if (_fcMode === 'include') {
-    h.textContent = `Fees counted from 1 ${MN[d.getMonth()]} ${d.getFullYear()}. First month charged in full.`;
-  } else {
-    const nx = new Date(d.getFullYear(), d.getMonth() + 1, 1);
-    h.textContent = `${MN[d.getMonth()]} skipped. First fee due 1 ${MN[nx.getMonth()]} ${nx.getFullYear()}.`;
-  }
-}
-function onDateChange() {
-  const v   = document.getElementById('f-date').value;
-  const sec = document.getElementById('fee-cycle-sec');
-  if (!v) { sec.style.display = 'none'; return; }
-  const day = new Date(v).getDate();
-  sec.style.display = day !== 1 ? 'block' : 'none';
-  if (day !== 1) updateFCHint();
-}
-function feeStartDate(joiningDate, mode) {
-  const d = new Date(joiningDate);
-  return mode === 'skip'
-    ? new Date(d.getFullYear(), d.getMonth() + 1, 1)
-    : new Date(d.getFullYear(), d.getMonth(), 1);
-}
-function buildSchedule(s) {
-  const jd = s.joiningDate || s.date;
-  if (!jd) return [];
-  const start  = feeStartDate(jd, s.feeCycleMode || 'include');
-  const today  = new Date();
-  const months = [];
-  let cur = new Date(start.getFullYear(), start.getMonth(), 1);
-  while (cur <= today) {
-    const key  = `${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}`;
-    const due  = Number(s.monthlyFee || s.fee || 0);
-    const paid = (s.monthPayments && s.monthPayments[key]) || 0;
-    const stat = paid >= due ? 'paid' : paid > 0 ? 'partial' : 'due';
-    months.push({ key, label:`${MN[cur.getMonth()]} ${cur.getFullYear()}`, due, paid, stat });
-    cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
-  }
-  return months;
-}
-function getStatus(s) {
-  const sc = buildSchedule(s);
-  if (!sc.length) return 'green';
-  if (sc.every(m => m.stat === 'paid')) return 'green';
-  if (sc.filter(m => m.stat === 'due').length >= 2) return 'red';
-  return 'blue';
-}
-
-/* ═══════════════════════════════════════════
-   FEATURE 1 — PAYMENT ROW + INPUT BOX
-═══════════════════════════════════════════ */
-function payRowHTML(s) {
-  const sc       = buildSchedule(s);
-  const totalDue = sc.reduce((t,m) => t+m.due, 0);
-  const totalPd  = sc.reduce((t,m) => t+m.paid, 0);
-  const pct      = totalDue > 0 ? Math.min(100, Math.round(totalPd/totalDue*100)) : 0;
-  return `
-    <div class="payment-row">
-      <input type="range" min="0" max="${totalDue||1}" value="${totalPd}"
-        class="payment-slider" id="sl-${s.id}" tabindex="-1"
-        title="${pct}% of fees paid">
-      <span class="pay-prefix">₹</span>
-      <input type="number" class="payment-input" id="pb-${s.id}"
-        placeholder="Enter amount" min="1"
-        title="Type payment amount, press Enter to apply"
-        onkeydown="if(event.key==='Enter'){applyPayment('${s.id}',this);event.preventDefault();}"
-        onfocus="this.select()">
-    </div>
-    <div class="pay-hint">${rp(totalPd)} paid &nbsp;·&nbsp; ${rp(Math.max(0,totalDue-totalPd))} outstanding &nbsp;·&nbsp; ${pct}%</div>`;
-}
-
-function applyPayment(sid, inp) {
-  const amount = parseFloat(inp.value);
-  if (!amount || amount <= 0) { inp.value = ''; return; }
-
-  const s = students.find(x => x.id === sid);
-  if (!s) { toast('Student not found', 'red'); return; }
-
-  if (!s.monthPayments) s.monthPayments = {};
-
-  /* Distribute to earliest unpaid months */
-  let rem = amount;
-  for (const m of buildSchedule(s)) {
-    if (rem <= 0) break;
-    const already = s.monthPayments[m.key] || 0;
-    const gap     = Math.max(0, m.due - already);
-    if (!gap) continue;
-    const credit  = Math.min(gap, rem);
-    s.monthPayments[m.key] = already + credit;
-    rem -= credit;
-  }
-  if (rem > 0) {
-    s.monthPayments['advance'] = (s.monthPayments['advance'] || 0) + rem;
-  }
-
-  saveAll();
-
-  /* Flash green */
-  inp.classList.add('flash');
-  setTimeout(() => inp.classList.remove('flash'), 600);
-  inp.value = '';
-
-  /* Update slider live */
-  const sc2    = buildSchedule(s);
-  const newPd  = sc2.reduce((t,m) => t+m.paid, 0);
-  const newDue = sc2.reduce((t,m) => t+m.due, 0);
-  const sl = document.getElementById(`sl-${sid}`);
-  if (sl) { sl.max = newDue || 1; sl.value = newPd; }
-
-  toast(`${rp(amount)} recorded for ${s.name}`, 'green');
-  updateStrip();
-  renderStudents();
-}
-
-/* ═══════════════════════
-   STUDENTS — CRUD
-═══════════════════════ */
-function addSF() {
-  const n = document.getElementById('sf-name').value.trim();
-  const a = parseFloat(document.getElementById('sf-amt').value);
-  if (!n || !a) { toast('Enter label and amount', 'yellow'); return; }
-  _sfs.push({ name:n, amt:a });
-  document.getElementById('sf-name').value = '';
-  document.getElementById('sf-amt').value  = '';
-  renderSFList();
-}
-function renderSFList() {
-  document.getElementById('sf-list').innerHTML = _sfs.map((sf,i) => `
-    <div class="sf-item">
-      <span class="sf-item-name">${sf.name}</span>
-      <span style="display:flex;align-items:center;gap:8px">
-        <span class="sf-item-amt">${rp(sf.amt)}</span>
-        <button class="sf-item-del" onclick="_sfs.splice(${i},1);renderSFList()">✕</button>
-      </span>
-    </div>`).join('');
-}
-
-function addStudent() {
-  const name  = document.getElementById('f-name').value.trim();
-  const klass = document.getElementById('f-class').value;
-  const board = document.getElementById('f-board').value;
-  const date  = document.getElementById('f-date').value;
-  const fee   = parseFloat(document.getElementById('f-fee').value);
-
-  if (!name || !klass || !board || !date || !fee) {
-    toast('Please fill all required fields (*)', 'yellow'); return;
-  }
-
-  const day  = new Date(date).getDate();
-  const mode = day === 1 ? 'include' : _fcMode;
-
-  const student = {
-    id           : uid(),
-    name, klass, board, date,
-    joiningDate  : date,
-    phone        : document.getElementById('f-phone').value.trim(),
-    school       : document.getElementById('f-school').value.trim(),
-    course       : document.getElementById('f-course').value.trim(),
-    monthlyFee   : fee,
-    fee,
-    progtype     : document.getElementById('f-type').value,
-    feeCycleMode : mode,
-    specialFees  : [..._sfs],
-    monthPayments: {},
-    attachments  : [..._files],
-    createdAt    : Date.now(),
-  };
-  students.push(student);
-  saveAll();
-
-  /* Reset form */
-  ['f-name','f-phone','f-school','f-course','f-fee'].forEach(id => { document.getElementById(id).value = ''; });
-  document.getElementById('f-class').value   = '';
-  document.getElementById('f-board').value   = '';
-  document.getElementById('f-type').value    = 'regular';
-  document.getElementById('f-date').valueAsDate = new Date();
-  document.getElementById('fee-cycle-sec').style.display = 'none';
-  _sfs = []; renderSFList();
-  _files = []; renderStagedFiles();
-  _fcMode = 'include';
-  document.getElementById('fcb-include').classList.add('active');
-  document.getElementById('fcb-skip').classList.remove('active');
-
-  renderStudents();
-  updateStrip();
-  toast(`${name} enrolled successfully!`, 'green', '🎓');
-}
-
-function deleteStudent(id) {
-  if (!confirm('Remove this student?')) return;
-  students = students.filter(s => s.id !== id);
-  saveAll(); renderStudents(); updateStrip();
-  toast('Student removed', 'red');
-}
-
-function setFilter(f, btn) {
-  _filter = f;
-  document.querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderStudents();
-}
-
-function renderStudents() {
-  const q    = (document.getElementById('search-inp')?.value || '').toLowerCase();
-  const list = document.getElementById('students-list');
-  const cnt  = document.getElementById('list-count');
-
-  let shown = students.filter(s => {
-    if (q && !`${s.name} ${s.klass} ${s.board} ${s.course||''}`.toLowerCase().includes(q)) return false;
-    if (_filter !== 'all' && getStatus(s) !== _filter) return false;
-    return true;
-  });
-
-  cnt.textContent = `${shown.length} student${shown.length !== 1 ? 's' : ''}`;
-
-  if (!shown.length) {
-    list.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><p>No students found</p><small>Try a different search or filter</small></div>`;
-    return;
-  }
-
-  list.innerHTML = shown.map(s => {
-    const st  = getStatus(s);
-    const sc  = buildSchedule(s);
-    const badge = st === 'green'
-      ? `<span class="card-badge b-green">✓ Paid</span>`
-      : st === 'red'
-      ? `<span class="card-badge b-red">⚠ Overdue</span>`
-      : `<span class="card-badge b-blue">◑ Partial</span>`;
-    const fileBadge = s.attachments?.length
-      ? `<span style="font-size:11px;color:var(--muted);margin-left:5px">📎${s.attachments.length}</span>` : '';
-    return `
-      <div class="student-card s-${st}">
-        <div class="card-top">
-          <div>
-            <div class="card-name">${s.name}${fileBadge}</div>
-            <div class="card-meta">${s.klass} · ${s.board}${s.course ? ' · '+s.course : ''}</div>
-          </div>
-          ${badge}
-        </div>
-        ${payRowHTML(s)}
-        <div class="card-actions">
-          <button class="btn-sm" onclick="openModal('${s.id}')">👁 Details</button>
-          ${s.phone ? `<button class="btn-sm wa" onclick="openWA('${s.phone}','${s.name}')">💬 WhatsApp</button>` : ''}
-          <button class="btn-sm danger" onclick="deleteStudent('${s.id}')">🗑 Remove</button>
-        </div>
-      </div>`;
-  }).join('');
-}
-
-function updateStrip() {
-  let coll = 0, out = 0, over = 0;
-  students.forEach(s => {
-    const sc = buildSchedule(s);
-    coll += sc.reduce((t,m) => t+m.paid, 0);
-    out  += sc.reduce((t,m) => t+Math.max(0,m.due-m.paid), 0);
-    if (sc.filter(m => m.stat === 'due').length >= 2) over++;
-  });
-  document.getElementById('s-total').textContent = students.length;
-  document.getElementById('s-coll').textContent  = rp(coll);
-  document.getElementById('s-out').textContent   = rp(out);
-  document.getElementById('s-over').textContent  = over;
-}
-
-/* ── WhatsApp ── */
-function openWA(phone, name, msg) {
-  const m = msg || `Hi, this is a reminder regarding ${name}'s fees. Please contact us. Thank you!`;
-  window.open(`https://wa.me/${phone.replace(/\D/g,'')}?text=${encodeURIComponent(m)}`, '_blank');
-}
-function msgAll(type) {
-  const targets = type === 'dues'
-    ? students.filter(s => getStatus(s) !== 'green')
-    : students;
-  if (!targets.length) { toast('No students to message', 'yellow'); return; }
-  targets.filter(s => s.phone).forEach(s => {
-    const sc  = buildSchedule(s);
-    const due = sc.reduce((t,m) => t+Math.max(0,m.due-m.paid), 0);
-    openWA(s.phone, s.name, due > 0
-      ? `Hi, ${s.name}'s outstanding fee is ${rp(due)}. Please pay at the earliest.`
-      : `Hi, ${s.name}'s fees are all cleared. Thank you!`);
-  });
-  toast(`Opened WhatsApp for ${targets.filter(s=>s.phone).length} students`, 'green');
-}
-
-/* ═══════════════════════
-   STUDENT MODAL
-═══════════════════════ */
-function openModal(id) {
-  const s = students.find(s => s.id === id);
-  if (!s) return;
-  const sc = buildSchedule(s);
-  document.getElementById('modal-name').textContent = s.name;
-
-  const mrows = sc.length
-    ? sc.map(m => `
-        <div class="hist-row">
-          <span class="hist-month">${m.label}</span>
-          <div class="hist-right">
-            <span class="hist-amt">${rp(m.paid)} / ${rp(m.due)}</span>
-            <span class="mpill ${m.stat}">${m.stat==='paid'?'✓ Paid':m.stat==='partial'?'◑ Partial':'✗ Due'}</span>
-          </div>
-        </div>`).join('')
-    : '<p style="font-size:13px;color:var(--muted)">No months recorded yet</p>';
-
-  document.getElementById('modal-body').innerHTML = `
-    <div class="detail-grid">
-      <div class="detail-item"><div class="detail-lbl">Class</div><div class="detail-val">${s.klass}</div></div>
-      <div class="detail-item"><div class="detail-lbl">Board</div><div class="detail-val">${s.board}</div></div>
-      <div class="detail-item"><div class="detail-lbl">Monthly Fee</div><div class="detail-val">${rp(s.monthlyFee)}</div></div>
-      <div class="detail-item"><div class="detail-lbl">Joined</div><div class="detail-val">${s.joiningDate}</div></div>
-      ${s.phone  ? `<div class="detail-item"><div class="detail-lbl">Phone</div><div class="detail-val">${s.phone}</div></div>` : ''}
-      ${s.school ? `<div class="detail-item"><div class="detail-lbl">School</div><div class="detail-val">${s.school}</div></div>` : ''}
-      ${s.course ? `<div class="detail-item"><div class="detail-lbl">Course</div><div class="detail-val">${s.course}</div></div>` : ''}
-      <div class="detail-item"><div class="detail-lbl">Fee Start</div><div class="detail-val">${s.feeCycleMode==='skip'?'From next month':'From enrollment month'}</div></div>
-    </div>
-    <div style="font-family:var(--font-d);font-size:13px;font-weight:700;margin-bottom:8px">📅 Monthly Fee History</div>
-    ${mrows}
-    ${buildAttHTML(s)}`;
-
-  document.getElementById('student-modal').classList.add('open');
-}
-function closeModal() {
-  document.getElementById('student-modal').classList.remove('open');
-}
-
-/* ═══════════════════════════════════════════
-   FEATURE 3 — FILE ATTACHMENTS
-═══════════════════════════════════════════ */
-function fileIcon(name) {
-  const e = (name.split('.').pop()||'').toLowerCase();
-  return { pdf:'📄',jpg:'🖼️',jpeg:'🖼️',png:'🖼️',gif:'🖼️',webp:'🖼️',svg:'🖼️',
-    doc:'📝',docx:'📝',xls:'📊',xlsx:'📊',ppt:'📋',pptx:'📋',
-    mp4:'🎬',mov:'🎬',mp3:'🎵',zip:'🗜️',rar:'🗜️',csv:'📊' }[e] || '📁';
-}
-function fileSize(b) {
-  return b < 1024 ? `${b}B` : b < 1048576 ? `${(b/1024).toFixed(1)}KB` : `${(b/1048576).toFixed(1)}MB`;
-}
-function onDragOver(e) {
-  e.preventDefault();
-  document.getElementById('drop-zone').classList.add('over');
-}
-function onDragLeave() {
-  document.getElementById('drop-zone').classList.remove('over');
-}
-function onDrop(e) {
-  e.preventDefault(); onDragLeave();
-  processFiles([...e.dataTransfer.files]);
-}
-function onFilePick(e) {
-  processFiles([...e.target.files]);
-  e.target.value = '';
-}
-function processFiles(files) {
-  const rem = 4 - _files.length;
-  if (rem <= 0) { toast('Maximum 4 files allowed', 'red'); return; }
-  if (files.length > rem) toast(`Only ${rem} more file(s) can be added`, 'yellow');
-  files.slice(0, rem).forEach(f => {
-    if (f.size > 10 * 1024 * 1024) { toast(`${f.name} exceeds 10 MB limit`, 'red'); return; }
-    const r = new FileReader();
-    r.onload = ev => {
-      _files.push({ name:f.name, size:f.size, type:f.type, base64:ev.target.result, addedAt:Date.now() });
-      renderStagedFiles();
-    };
-    r.readAsDataURL(f);
-  });
-}
-function renderStagedFiles() {
-  document.getElementById('staged-list').innerHTML = _files.map((f,i) => `
-    <div class="staged-item">
-      <span class="fi-icon">${fileIcon(f.name)}</span>
-      <span class="fi-name" title="${f.name}">${f.name}</span>
-      <span class="fi-size">${fileSize(f.size)}</span>
-      <button class="fi-rm" onclick="_files.splice(${i},1);renderStagedFiles()" title="Remove">✕</button>
-    </div>`).join('');
-}
-function buildAttHTML(s) {
-  if (!s.attachments?.length) return '';
-  return `
-    <div class="att-section">
-      <div class="att-title">📎 Attached Files (${s.attachments.length})</div>
-      ${s.attachments.map((f,i) => `
-        <div class="att-row">
-          <span class="att-icon">${fileIcon(f.name)}</span>
-          <span class="att-name" title="${f.name}">${f.name}</span>
-          <span class="att-size">${fileSize(f.size)}</span>
-          ${f.base64 ? `<a class="att-dl" href="${f.base64}" download="${f.name}">⬇ Download</a>` : ''}
-          <button class="att-del" onclick="deleteAtt('${s.id}',${i})" title="Delete file">🗑</button>
-        </div>`).join('')}
-    </div>`;
-}
-function deleteAtt(sid, idx) {
-  if (!confirm('Delete this file permanently?')) return;
-  const s = students.find(s => s.id === sid);
-  if (!s || !s.attachments) return;
-  s.attachments.splice(idx, 1);
-  saveAll();
-  openModal(sid);   /* refresh modal */
-  toast('File deleted', 'red');
-}
-
-/* ═══════════════════════
-   FACULTY
-═══════════════════════ */
-function addFacSubj() {
-  const v = document.getElementById('fac-subj-inp').value.trim();
-  if (!v) return;
-  _facSubjs.push(v);
-  document.getElementById('fac-subj-inp').value = '';
-  renderFacSubjTags();
-}
-function renderFacSubjTags() {
-  document.getElementById('fac-subj-tags').innerHTML = _facSubjs.map((s,i) => `
-    <span class="stag">${s}
-      <button onclick="_facSubjs.splice(${i},1);renderFacSubjTags()" title="Remove">✕</button>
-    </span>`).join('');
-}
-function addFaculty() {
-  const name = document.getElementById('fac-name').value.trim();
-  const sal  = parseFloat(document.getElementById('fac-sal').value);
-  const date = document.getElementById('fac-date').value;
-  if (!name || !sal || !date) { toast('Fill required fields', 'yellow'); return; }
-  faculty.push({
-    id:uid(), name, salary:sal, date,
-    phone    : document.getElementById('fac-phone').value.trim(),
-    qual     : document.getElementById('fac-qual').value.trim(),
-    subjects : [..._facSubjs],
-    paidMonths:{}, createdAt:Date.now(),
-  });
-  saveAll();
-  ['fac-name','fac-phone','fac-sal','fac-qual'].forEach(id => { document.getElementById(id).value = ''; });
-  document.getElementById('fac-date').valueAsDate = new Date();
-  _facSubjs = []; renderFacSubjTags();
-  renderFaculty(); renderFacStrip();
-  toast(`${name} added`, 'green');
-}
-function deleteFaculty(id) {
-  if (!confirm('Remove this teacher?')) return;
-  faculty = faculty.filter(f => f.id !== id);
-  saveAll(); renderFaculty(); renderFacStrip();
-  toast('Teacher removed', 'red');
-}
-function renderFaculty() {
-  const el = document.getElementById('faculty-list');
-  if (!faculty.length) {
-    el.innerHTML = '<div class="empty-state"><div class="empty-icon">👩‍🏫</div><p>No faculty yet</p><small>Add teachers using the form →</small></div>'; return;
-  }
-  el.innerHTML = faculty.map(f => `
-    <div class="faculty-card">
-      <div class="card-top">
-        <div>
-          <div class="card-name">${f.name}</div>
-          <div class="card-meta">${f.qual||'—'} · Joined ${f.date}</div>
-        </div>
-        <span class="card-badge b-blue">${rp(f.salary)}/mo</span>
-      </div>
-      ${f.subjects.length
-        ? `<div style="display:flex;flex-wrap:wrap;gap:5px;margin:8px 0">${f.subjects.map(s=>`<span class="stag">${s}</span>`).join('')}</div>`
-        : ''}
-      <div class="card-actions">
-        ${f.phone ? `<button class="btn-sm wa" onclick="openWA('${f.phone}','${f.name}')">💬 WhatsApp</button>` : ''}
-        <button class="btn-sm danger" onclick="deleteFaculty('${f.id}')">🗑 Remove</button>
-      </div>
-    </div>`).join('');
-}
-function renderFacStrip() {
-  const now     = new Date();
-  const key     = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  const payroll = faculty.reduce((t,f) => t+f.salary, 0);
-  const paid    = faculty.reduce((t,f) => t+(f.paidMonths?.[key] ? f.salary : 0), 0);
-  document.getElementById('fac-total').textContent   = faculty.length;
-  document.getElementById('fac-payroll').textContent = rp(payroll);
-  document.getElementById('fac-paid').textContent    = rp(paid);
-  document.getElementById('fac-due').textContent     = rp(payroll - paid);
-}
-
-/* ═══════════════════════
-   PROGRAMS
-═══════════════════════ */
-const PMN = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-function addProgram() {
-  const name = document.getElementById('prog-name').value.trim();
-  const fee  = parseFloat(document.getElementById('prog-fee').value);
-  if (!name || !fee) { toast('Fill required fields', 'yellow'); return; }
-  programs.push({
-    id:uid(), name, fee,
-    startMonth:document.getElementById('prog-sm').value,
-    startYear :document.getElementById('prog-sy').value,
-    endMonth  :document.getElementById('prog-em').value,
-    endYear   :document.getElementById('prog-ey').value,
-    desc      :document.getElementById('prog-desc').value.trim(),
-    createdAt :Date.now(),
-  });
-  saveAll();
-  ['prog-name','prog-fee','prog-sy','prog-ey','prog-desc'].forEach(id => { document.getElementById(id).value=''; });
-  document.getElementById('prog-sm').value = '';
-  document.getElementById('prog-em').value = '';
-  renderPrograms();
-  toast(`${name} created`, 'green');
-}
-function deleteProgram(id) {
-  if (!confirm('Delete this program?')) return;
-  programs = programs.filter(p => p.id !== id);
-  saveAll(); renderPrograms(); toast('Program deleted', 'red');
-}
-function renderPrograms() {
-  const el = document.getElementById('programs-list');
-  if (!programs.length) {
-    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🎓</div><p>No programs yet</p></div>'; return;
-  }
-  el.innerHTML = programs.map(p => `
-    <div class="program-card">
-      <div class="card-top">
-        <div>
-          <div class="card-name">${p.name}</div>
-          <div class="card-meta">${PMN[p.startMonth]||'?'} ${p.startYear} → ${PMN[p.endMonth]||'?'} ${p.endYear}</div>
-        </div>
-        <span class="card-badge b-blue">${rp(p.fee)}</span>
-      </div>
-      ${p.desc ? `<div style="font-size:12px;color:var(--muted);margin-top:6px">${p.desc}</div>` : ''}
-      <div class="card-actions">
-        <button class="btn-sm danger" onclick="deleteProgram('${p.id}')">🗑 Delete</button>
-      </div>
-    </div>`).join('');
-}
-
-/* ═══════════════════════
-   PAYMENTS PAGE
-═══════════════════════ */
-function renderPayments() {
-  const el = document.getElementById('payments-body');
-  if (!students.length) {
-    el.innerHTML = '<div class="empty-state"><div class="empty-icon">💳</div><p>No students enrolled yet</p></div>'; return;
-  }
-  el.innerHTML = students.map(s => {
-    const sc = buildSchedule(s);
-    return `
-      <div class="pay-student-block">
-        <div class="pay-student-name">${s.name}<span class="pay-student-sub">${s.klass} · ${s.board}</span></div>
-        ${sc.length
-          ? sc.map(m => `
-              <div class="month-card">
-                <div>
-                  <div class="month-card-label">${m.label}</div>
-                  <div class="month-card-sub">${rp(m.paid)} paid of ${rp(m.due)}</div>
-                </div>
-                <span class="mpill ${m.stat}">${m.stat==='paid'?'✓ Paid':m.stat==='partial'?'◑ Partial':'✗ Due'}</span>
-              </div>`).join('')
-          : '<p style="font-size:13px;color:var(--muted)">No months yet</p>'}
-      </div>`;
-  }).join('<hr style="margin:6px 0 20px">');
-}
-
-/* ═══════════════════════
-   ATTENDANCE
-═══════════════════════ */
-function initAtt() { renderAtt(); }
-function shiftDate(d) { _attDate.setDate(_attDate.getDate() + d); renderAtt(); }
-function jumpDate(v)  { _attDate = new Date(v); renderAtt(); }
-
-function renderAtt() {
-  const key = dStr(_attDate);
-  document.getElementById('att-date-inp').value = key;
-  document.getElementById('att-date-lbl').textContent =
-    _attDate.toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-
-  if (!attendance[key]) attendance[key] = {};
-  const rec = attendance[key];
-
-  /* Class filter */
-  const classes = ['all', ...new Set(students.map(s => s.klass))];
-  document.getElementById('cls-filter').innerHTML = classes.map(c => `
-    <button class="cls-btn${_attClass===c?' active':''}" onclick="_attClass='${c}';renderAtt()">
-      ${c === 'all' ? 'All Classes' : c}
-    </button>`).join('');
-
-  const filt = students.filter(s => _attClass === 'all' || s.klass === _attClass);
-  const pres = filt.filter(s => rec[s.id] === 'present').length;
-  const abs  = filt.filter(s => rec[s.id] === 'absent').length;
-
-  document.getElementById('att-chips').innerHTML = `
-    <div class="att-chip p">✓ Present: ${pres}</div>
-    <div class="att-chip a">✗ Absent: ${abs}</div>
-    <div class="att-chip u">— Unmarked: ${filt.length - pres - abs}</div>`;
-
-  document.getElementById('att-list').innerHTML = !filt.length
-    ? '<div class="empty-state"><div class="empty-icon">📝</div><p>No students in this class</p></div>'
-    : `<div>${filt.map(s => `
-        <div class="att-row2">
-          <div>
-            <div class="att-s-name">${s.name}</div>
-            <div class="att-s-class">${s.klass} · ${s.board}</div>
-          </div>
-          <div class="att-action-btns">
-            <button class="att-btn2${rec[s.id]==='present'?' present':''}" onclick="markAtt('${s.id}','present')">✓ Present</button>
-            <button class="att-btn2${rec[s.id]==='absent'?' absent':''}" onclick="markAtt('${s.id}','absent')">✗ Absent</button>
-            ${s.phone && rec[s.id]==='absent' ? `<button class="btn-sm wa" onclick="openWA('${s.phone}','${s.name}')">💬</button>` : ''}
-          </div>
-        </div>`).join('')}</div>`;
-}
-function markAtt(sid, status) {
-  const key = dStr(_attDate);
-  if (!attendance[key]) attendance[key] = {};
-  attendance[key][sid] = status;
-  saveAll(); renderAtt();
-}
-
-/* ═══════════════════════
-   TIMETABLE
-═══════════════════════ */
-function initTT() { renderTT(); }
-function toggleWorkDay(d) {
-  _workDays.has(d) ? _workDays.delete(d) : _workDays.add(d);
-  localStorage.setItem('es_workdays', JSON.stringify([..._workDays]));
-  renderTT();
-}
-function renderTT() {
-  /* Working day chips */
-  document.getElementById('day-chips').innerHTML = DAYS.map(d => `
-    <button class="day-chip${_workDays.has(d)?' active':''}" onclick="toggleWorkDay('${d}')">${d}</button>`).join('');
-
-  const active = DAYS.filter(d => _workDays.has(d));
-  if (active.length && !active.includes(_ttDay)) _ttDay = active[0];
-
-  /* Day tabs */
-  document.getElementById('day-tabs').innerHTML = active.map(d => `
-    <button class="day-tab${_ttDay===d?' active':''}" onclick="_ttDay='${d}';renderTT()">${d}</button>`).join('');
-
-  if (!active.length) {
-    document.getElementById('tt-slot-panel').style.display = 'none';
-    document.getElementById('tt-grid').innerHTML = '<p style="color:var(--muted);font-size:13px">Select working days above</p>';
-    return;
-  }
-
-  if (!timetable[_ttDay]) timetable[_ttDay] = [];
-
-  /* Add-slot panel */
-  const sp = document.getElementById('tt-slot-panel');
-  sp.style.display = 'block';
-  sp.innerHTML = `
-    <div class="tt-panel-title">${_ttDay} — Add Slot</div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
-      <div class="fg" style="margin:0"><label>Time</label><input class="fi" type="time" id="tt-time" style="width:130px"></div>
-      <div class="fg" style="margin:0;flex:1"><label>Subject / Class</label><input class="fi" type="text" id="tt-subj" placeholder="e.g. Class 9 Physics"></div>
-      <button class="btn-primary" style="width:auto;padding:9px 18px" onclick="addSlot()">+ Add</button>
-    </div>`;
-
-  const slots = timetable[_ttDay];
-  document.getElementById('tt-grid').innerHTML = !slots.length
-    ? '<p style="color:var(--muted);font-size:13px">No slots added for this day yet</p>'
-    : slots.map((sl,i) => `
-        <div class="slot-row">
-          <span class="slot-time">🕐 ${sl.time}</span>
-          <span class="slot-subj">${sl.subject}</span>
-          <button class="btn-sm danger" onclick="removeSlot(${i})">✕</button>
-        </div>`).join('');
-}
-function addSlot() {
-  const t = document.getElementById('tt-time')?.value;
-  const s = document.getElementById('tt-subj')?.value.trim();
-  if (!t || !s) { toast('Enter time and subject', 'yellow'); return; }
-  if (!timetable[_ttDay]) timetable[_ttDay] = [];
-  timetable[_ttDay].push({ time:t, subject:s });
-  timetable[_ttDay].sort((a,b) => a.time.localeCompare(b.time));
-  saveAll(); renderTT();
-}
-function removeSlot(i) {
-  timetable[_ttDay].splice(i, 1);
-  saveAll(); renderTT();
-}
-
-/* ═══════════════════════
-   REVENUE GRAPH
-═══════════════════════ */
-function setGraph(mode, btn) {
-  _graphMode = mode;
-  document.querySelectorAll('.graph-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderGraph();
-}
-function renderGraph() {
-  const canvas = document.getElementById('revenue-chart');
-  if (!canvas) return;
-
-  const now    = new Date();
-  const labels = [], data = [];
-  const count  = _graphMode==='3months' ? 3 : _graphMode==='6months' ? 6 : _graphMode==='year' ? 12 : 1;
-
-  for (let i = count-1; i >= 0; i--) {
-    const d   = new Date(now.getFullYear(), now.getMonth()-i, 1);
-    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-    labels.push(`${MN[d.getMonth()]} ${String(d.getFullYear()).slice(2)}`);
-    let amt = 0;
-    students.forEach(s => { amt += (s.monthPayments?.[key]) || 0; });
-    data.push(amt);
-  }
-
-  const ctx   = canvas.getContext('2d');
-  const W     = canvas.parentElement.clientWidth - 40 || 600;
-  const H     = 300;
-  canvas.width  = W;
-  canvas.height = H;
-  ctx.clearRect(0, 0, W, H);
-
-  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-  const tc   = dark ? '#64748b' : '#94a3b8';
-  const gc   = dark ? '#232840' : '#e2e8f0';
-  const maxV = Math.max(...data, 1);
-  const pL=60, pR=20, pT=24, pB=52;
-  const cW=W-pL-pR, cH=H-pT-pB;
-  const bW=Math.min(44, (cW/labels.length)*0.58);
-  const gap=cW/labels.length;
-
-  /* Grid lines + Y labels */
-  for (let i = 0; i <= 4; i++) {
-    const y = pT + cH*(1-i/4);
-    ctx.strokeStyle = gc; ctx.lineWidth = 1;
-    ctx.setLineDash([4,4]);
-    ctx.beginPath(); ctx.moveTo(pL,y); ctx.lineTo(W-pR,y); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle=tc; ctx.font='11px Karla,sans-serif';
-    ctx.textAlign='right';
-    const lv = Math.round(maxV*i/4);
-    ctx.fillText(lv>=1000 ? '₹'+Math.round(lv/1000)+'k' : '₹'+lv, pL-8, y+4);
-  }
-
-  /* Bars */
-  data.forEach((val, i) => {
-    const x = pL + gap*i + gap/2 - bW/2;
-    const h = Math.max(2, (val/maxV)*cH);
-    const y = pT + cH - h;
-
-    const grad = ctx.createLinearGradient(0, y, 0, y+h);
-    grad.addColorStop(0, '#6366f1');
-    grad.addColorStop(1, '#3b82f6');
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    if (ctx.roundRect) ctx.roundRect(x, y, bW, h, [5,5,0,0]);
-    else { ctx.rect(x, y, bW, h); }
-    ctx.fill();
-
-    /* X label */
-    ctx.fillStyle = tc;
-    ctx.font = '11px Karla,sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(labels[i], pL + gap*i + gap/2, H - pB + 18);
-
-    /* Value label */
-    if (val > 0) {
-      ctx.fillStyle = dark ? '#e2e8f0' : '#0f172a';
-      ctx.font = '10px Karla,sans-serif';
-      const lbl = val >= 1000 ? '₹'+Math.round(val/1000)+'k' : '₹'+val;
-      ctx.fillText(lbl, pL + gap*i + gap/2, y - 6);
-    }
-  });
-}
-
-/* ═══════════════════════
-   SETTINGS
-═══════════════════════ */
-function renderSettings() {
-  document.getElementById('settings-info').innerHTML = `
-    <div class="detail-item"><div class="detail-lbl">Mode</div><div class="detail-val">Offline / Demo</div></div>
-    <div class="detail-item"><div class="detail-lbl">Students</div><div class="detail-val">${students.length}</div></div>
-    <div class="detail-item"><div class="detail-lbl">Faculty</div><div class="detail-val">${faculty.length}</div></div>
-    <div class="detail-item"><div class="detail-lbl">Programs</div><div class="detail-val">${programs.length}</div></div>`;
-}
-
-/* ═══════════════════════
-   INIT
-═══════════════════════ */
+/* ── Init ── */
 document.addEventListener('DOMContentLoaded', () => {
   loadTheme();
-  goOffline();   /* auto-start in offline/demo mode */
+  goOffline(); // auto-start in offline/demo mode
 });
 </script>
 </body>

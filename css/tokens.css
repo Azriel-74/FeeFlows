@@ -1,0 +1,78 @@
+/* ============================================================
+   EDUSTACK — Design Tokens & Reset
+   tokens.css
+============================================================ */
+:root {
+  --bg:      #0a0c10;
+  --surf:    #111420;
+  --surf2:   #171b28;
+  --surf3:   #1c2133;
+  --border:  #232840;
+  --border2: #2c3455;
+  --accent:  #3b82f6;
+  --indigo:  #6366f1;
+  --green:   #22c55e;
+  --red:     #ef4444;
+  --yellow:  #f59e0b;
+  --text:    #e2e8f0;
+  --muted:   #64748b;
+  --muted2:  #94a3b8;
+  --font-d:  'Syne', sans-serif;
+  --font-b:  'Karla', sans-serif;
+  --grad:    linear-gradient(135deg, #3b82f6, #6366f1);
+  --rad:     14px;
+  --rad-sm:  9px;
+  --shadow:  0 8px 32px rgba(0,0,0,.45);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,.25);
+}
+[data-theme="light"] {
+  --bg:      #f0f4f8;
+  --surf:    #ffffff;
+  --surf2:   #f8fafc;
+  --surf3:   #f0f4f8;
+  --border:  #e2e8f0;
+  --border2: #cbd5e1;
+  --text:    #0f172a;
+  --muted:   #64748b;
+  --muted2:  #475569;
+  --shadow:  0 8px 32px rgba(0,0,0,.1);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,.07);
+}
+
+/* ── Reset ── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-b);
+  min-height: 100%;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  font-size: 14px;
+}
+button { font-family: var(--font-b); cursor: pointer; }
+input, select, textarea { font-family: var(--font-b); }
+a { text-decoration: none; color: inherit; }
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+input[type="number"] { -moz-appearance: textfield; }
+label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+
+/* ── Shared animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
