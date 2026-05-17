@@ -4,154 +4,218 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EduStack — Smart Learning & Fee Management</title>
+  <meta name="description" content="EduStack — Fee management, attendance, timetabling, and a full student learning portal for modern coaching centres.">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg:      #0a0c10;
-      --surf:    #12151c;
-      --surf2:   #181c26;
-      --border:  #252836;
+      --surf:    #111420;
+      --surf2:   #171b28;
+      --border:  #232840;
       --accent:  #3b82f6;
-      --accent-g:linear-gradient(135deg,#3b82f6,#6366f1);
+      --indigo:  #6366f1;
       --green:   #22c55e;
       --text:    #e2e8f0;
       --muted:   #64748b;
       --muted2:  #94a3b8;
-      --font-d: 'Syne', sans-serif;
-      --font-b: 'Karla', sans-serif;
+      --font-d:  'Syne', sans-serif;
+      --font-b:  'Karla', sans-serif;
+      --grad:    linear-gradient(135deg, #3b82f6, #6366f1);
     }
     [data-theme="light"] {
-      --bg:#f1f5f9; --surf:#fff; --surf2:#f8fafc;
+      --bg:#f0f4f8; --surf:#ffffff; --surf2:#f8fafc;
       --border:#e2e8f0; --text:#0f172a; --muted:#64748b; --muted2:#475569;
     }
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body { background:var(--bg); color:var(--text); font-family:var(--font-b); min-height:100vh; overflow-x:hidden; }
-
-    /* Animated background */
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:var(--bg); color:var(--text);
+      font-family:var(--font-b); min-height:100vh; overflow-x:hidden;
+      -webkit-font-smoothing:antialiased;
+    }
     body::before {
-      content:''; position:fixed; inset:0; pointer-events:none;
+      content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
       background:
-        radial-gradient(ellipse 70% 50% at 15% 10%, rgba(59,130,246,0.12), transparent),
-        radial-gradient(ellipse 60% 40% at 85% 90%, rgba(99,102,241,0.1), transparent),
-        radial-gradient(ellipse 40% 30% at 50% 50%, rgba(34,197,94,0.04), transparent);
+        radial-gradient(ellipse 70% 50% at 15% 10%, rgba(59,130,246,.12), transparent),
+        radial-gradient(ellipse 60% 40% at 85% 90%, rgba(99,102,241,.1), transparent),
+        radial-gradient(ellipse 40% 30% at 50% 50%, rgba(34,197,94,.04), transparent);
     }
 
-    /* NAV */
+    /* ─── NAV ─── */
     nav {
       display:flex; align-items:center; justify-content:space-between;
-      padding:20px 48px; position:sticky; top:0; z-index:100;
-      background:rgba(10,12,16,.8); backdrop-filter:blur(16px);
+      padding:18px 48px; position:sticky; top:0; z-index:100;
+      background:rgba(10,12,16,.82); backdrop-filter:blur(18px);
       border-bottom:1px solid var(--border);
     }
+    [data-theme="light"] nav { background:rgba(240,244,248,.88); }
     .nav-logo { display:flex; align-items:center; gap:12px; }
-    .nav-logo-icon { width:38px; height:38px; border-radius:10px; background:var(--accent-g); display:flex; align-items:center; justify-content:center; font-size:18px; }
+    .nav-logo-icon {
+      width:38px; height:38px; border-radius:10px; background:var(--grad);
+      display:flex; align-items:center; justify-content:center; font-size:18px;
+    }
     .nav-logo-name { font-family:var(--font-d); font-size:20px; font-weight:800; }
     .nav-links { display:flex; gap:28px; }
-    .nav-link { color:var(--muted); font-size:14px; text-decoration:none; transition:color .2s; cursor:pointer; }
+    .nav-link { color:var(--muted); font-size:14px; text-decoration:none; transition:color .2s; }
     .nav-link:hover { color:var(--text); }
+    .nav-actions { display:flex; align-items:center; gap:10px; }
+    .theme-btn {
+      background:var(--surf2); border:1.5px solid var(--border);
+      border-radius:8px; width:36px; height:36px; cursor:pointer;
+      font-size:16px; display:flex; align-items:center; justify-content:center;
+    }
     .nav-cta {
-      background:var(--accent-g); color:#fff; border:none; border-radius:9px;
-      padding:9px 20px; font-family:var(--font-b); font-size:14px; font-weight:600;
-      cursor:pointer; transition:opacity .2s;
+      background:var(--grad); color:#fff; border:none; border-radius:9px;
+      padding:9px 20px; font-family:var(--font-b); font-size:14px;
+      font-weight:600; cursor:pointer; transition:opacity .2s;
     }
     .nav-cta:hover { opacity:.88; }
 
-    /* HERO */
+    /* ─── HERO ─── */
     .hero {
-      text-align:center; padding:100px 24px 80px;
+      text-align:center; padding:110px 24px 90px;
       position:relative; z-index:1;
     }
     .hero-badge {
       display:inline-flex; align-items:center; gap:8px;
       background:rgba(59,130,246,.1); border:1px solid rgba(59,130,246,.3);
-      border-radius:100px; padding:6px 16px; font-size:13px; color:var(--accent);
-      font-weight:600; margin-bottom:24px;
+      border-radius:100px; padding:6px 18px; font-size:13px;
+      color:var(--accent); font-weight:600; margin-bottom:26px;
+      animation:fadeUp .6s ease both;
     }
     .hero-title {
-      font-family:var(--font-d); font-size:clamp(36px,6vw,72px); font-weight:800;
-      line-height:1.1; margin-bottom:20px; letter-spacing:-1px;
+      font-family:var(--font-d); font-size:clamp(38px,6vw,74px);
+      font-weight:800; line-height:1.1; margin-bottom:22px;
+      letter-spacing:-1.5px; animation:fadeUp .6s ease .08s both;
     }
     .hero-title .grad {
-      background:var(--accent-g); -webkit-background-clip:text;
+      background:var(--grad); -webkit-background-clip:text;
       -webkit-text-fill-color:transparent; background-clip:text;
     }
     .hero-sub {
-      font-size:18px; color:var(--muted2); max-width:560px; margin:0 auto 40px;
-      line-height:1.7;
+      font-size:18px; color:var(--muted2); max-width:560px;
+      margin:0 auto 44px; line-height:1.75;
+      animation:fadeUp .6s ease .16s both;
     }
+    .hero-cta { animation:fadeUp .6s ease .22s both; display:inline-block; }
+    .hero-cta button {
+      background:var(--grad); color:#fff; border:none; border-radius:10px;
+      padding:14px 36px; font-family:var(--font-d); font-size:16px;
+      font-weight:700; cursor:pointer; transition:opacity .2s, transform .15s;
+    }
+    .hero-cta button:hover { opacity:.88; transform:translateY(-2px); }
+    .hero-stats {
+      display:flex; align-items:center; justify-content:center; gap:36px;
+      margin-top:56px; flex-wrap:wrap; animation:fadeUp .6s ease .3s both;
+    }
+    .hero-stat { text-align:center; }
+    .hero-stat-num { font-family:var(--font-d); font-size:28px; font-weight:800; color:var(--accent); }
+    .hero-stat-lbl { font-size:12px; color:var(--muted); margin-top:2px; }
+    .stat-sep { width:1px; height:40px; background:var(--border); }
 
-    /* ROLE CARDS */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:none} }
+
+    /* ─── ROLE CARDS ─── */
     .role-section {
-      padding:0 24px 100px; position:relative; z-index:1;
-      max-width:800px; margin:0 auto;
+      padding:20px 24px 100px; position:relative; z-index:1;
+      max-width:840px; margin:0 auto;
     }
-    .role-title { text-align:center; font-family:var(--font-d); font-size:22px; font-weight:700; margin-bottom:10px; }
-    .role-sub { text-align:center; font-size:15px; color:var(--muted); margin-bottom:36px; }
-    .role-cards { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    .section-badge {
+      display:flex; align-items:center; justify-content:center;
+      gap:8px; margin-bottom:14px;
+    }
+    .section-badge span {
+      font-size:12px; font-weight:700; text-transform:uppercase;
+      letter-spacing:.1em; color:var(--accent);
+    }
+    .section-title {
+      text-align:center; font-family:var(--font-d);
+      font-size:clamp(22px,3vw,30px); font-weight:800; margin-bottom:8px;
+    }
+    .section-sub { text-align:center; font-size:15px; color:var(--muted); margin-bottom:40px; }
+    .role-cards { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
 
     .role-card {
       background:var(--surf); border:1.5px solid var(--border);
-      border-radius:20px; padding:36px 28px; cursor:pointer;
-      transition:all .3s; text-align:center; text-decoration:none; color:var(--text);
+      border-radius:22px; padding:36px 28px; cursor:pointer;
+      transition:all .3s cubic-bezier(.4,0,.2,1);
+      text-align:center; text-decoration:none; color:var(--text);
       display:block; position:relative; overflow:hidden;
     }
-    .role-card::before {
-      content:''; position:absolute; inset:0; opacity:0;
-      transition:opacity .3s;
+    .role-card::after {
+      content:''; position:absolute; inset:0; opacity:0; transition:opacity .3s;
     }
-    .role-card.admin::before { background:linear-gradient(135deg,rgba(59,130,246,.08),rgba(99,102,241,.08)); }
-    .role-card.student::before { background:linear-gradient(135deg,rgba(34,197,94,.08),rgba(56,189,248,.08)); }
-    .role-card:hover { transform:translateY(-4px); }
-    .role-card.admin:hover  { border-color:rgba(59,130,246,.5); }
-    .role-card.student:hover { border-color:rgba(34,197,94,.5); }
-    .role-card:hover::before { opacity:1; }
+    .role-card.admin::after  { background:linear-gradient(135deg, rgba(59,130,246,.07), rgba(99,102,241,.07)); }
+    .role-card.student::after{ background:linear-gradient(135deg, rgba(34,197,94,.07), rgba(56,189,248,.07)); }
+    .role-card:hover { transform:translateY(-5px); box-shadow:0 16px 48px rgba(0,0,0,.3); }
+    .role-card.admin:hover   { border-color:rgba(59,130,246,.55); }
+    .role-card.student:hover { border-color:rgba(34,197,94,.55); }
+    .role-card:hover::after  { opacity:1; }
 
-    .role-icon { font-size:48px; margin-bottom:16px; display:block; }
-    .role-name { font-family:var(--font-d); font-size:22px; font-weight:800; margin-bottom:8px; }
-    .role-desc { font-size:14px; color:var(--muted2); line-height:1.6; margin-bottom:24px; }
-    .role-features { list-style:none; text-align:left; display:flex; flex-direction:column; gap:8px; margin-bottom:28px; }
-    .role-features li { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted2); }
+    .role-icon { font-size:52px; margin-bottom:18px; display:block; }
+    .role-name { font-family:var(--font-d); font-size:22px; font-weight:800; margin-bottom:10px; }
+    .role-desc { font-size:14px; color:var(--muted2); line-height:1.65; margin-bottom:24px; }
+    .role-features { list-style:none; text-align:left; display:flex; flex-direction:column; gap:9px; margin-bottom:28px; }
+    .role-features li { display:flex; align-items:center; gap:9px; font-size:13px; color:var(--muted2); }
     .role-features li::before { content:'✓'; color:var(--green); font-weight:700; flex-shrink:0; }
     .role-btn {
-      display:block; width:100%; padding:13px; border-radius:10px;
+      display:block; width:100%; padding:13px; border-radius:11px;
       font-family:var(--font-d); font-size:14px; font-weight:700;
-      border:none; cursor:pointer; transition:opacity .2s;
+      border:none; cursor:pointer; transition:opacity .2s, transform .15s;
+      position:relative; z-index:1;
     }
-    .role-btn.admin-btn { background:var(--accent-g); color:#fff; }
-    .role-btn.student-btn { background:linear-gradient(135deg,#22c55e,#16a34a); color:#fff; }
-    .role-btn:hover { opacity:.88; }
+    .role-btn:hover { opacity:.88; transform:translateY(-1px); }
+    .admin-btn   { background:var(--grad); color:#fff; }
+    .student-btn { background:linear-gradient(135deg,#22c55e,#16a34a); color:#fff; }
 
-    /* FEATURES SECTION */
-    .features { padding:80px 24px; position:relative; z-index:1; }
-    .features-inner { max-width:1000px; margin:0 auto; }
-    .features-title { text-align:center; font-family:var(--font-d); font-size:32px; font-weight:800; margin-bottom:10px; }
-    .features-sub { text-align:center; color:var(--muted); margin-bottom:48px; font-size:15px; }
-    .features-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
-    .feat-card { background:var(--surf); border:1px solid var(--border); border-radius:16px; padding:24px; }
-    .feat-icon { font-size:28px; margin-bottom:12px; }
-    .feat-name { font-family:var(--font-d); font-size:16px; font-weight:700; margin-bottom:6px; }
-    .feat-desc { font-size:13px; color:var(--muted2); line-height:1.6; }
+    /* ─── FEATURES ─── */
+    .features {
+      padding:80px 24px 100px; position:relative; z-index:1;
+      background:var(--surf); border-top:1px solid var(--border);
+      border-bottom:1px solid var(--border);
+    }
+    .features-inner { max-width:1040px; margin:0 auto; }
+    .features-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin-top:48px; }
+    .feat-card {
+      background:var(--bg); border:1px solid var(--border);
+      border-radius:16px; padding:24px;
+      transition:border-color .2s, transform .2s;
+    }
+    .feat-card:hover { border-color:var(--border2, #2c3455); transform:translateY(-2px); }
+    .feat-icon { font-size:30px; margin-bottom:14px; }
+    .feat-name { font-family:var(--font-d); font-size:16px; font-weight:700; margin-bottom:7px; }
+    .feat-desc { font-size:13px; color:var(--muted2); line-height:1.65; }
 
-    /* FOOTER */
-    footer { border-top:1px solid var(--border); padding:32px 48px; display:flex; align-items:center; justify-content:space-between; position:relative; z-index:1; }
-    .footer-logo { font-family:var(--font-d); font-size:16px; font-weight:800; }
-    .footer-right { font-size:13px; color:var(--muted); }
+    /* ─── FOOTER ─── */
+    footer {
+      border-top:1px solid var(--border); padding:28px 48px;
+      display:flex; align-items:center; justify-content:space-between;
+      position:relative; z-index:1;
+    }
+    .footer-logo { font-family:var(--font-d); font-size:16px; font-weight:800; display:flex; align-items:center; gap:8px; }
+    .footer-links { display:flex; gap:20px; }
+    .footer-link { font-size:13px; color:var(--muted); text-decoration:none; transition:color .2s; }
+    .footer-link:hover { color:var(--text); }
+    .footer-copy { font-size:12px; color:var(--muted); }
 
-    /* Theme toggle */
-    .theme-btn { background:var(--surf2); border:1.5px solid var(--border); border-radius:8px; width:36px; height:36px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; }
-
-    @media(max-width:600px) {
-      nav { padding:16px 20px; }
+    @media(max-width:768px) {
+      nav { padding:14px 20px; }
       .nav-links { display:none; }
-      .hero { padding:60px 20px 50px; }
+      .hero { padding:70px 20px 60px; }
+      .hero-stats { gap:20px; }
+      .stat-sep { display:none; }
       .role-cards { grid-template-columns:1fr; }
+      .features-grid { grid-template-columns:1fr 1fr; }
+      footer { flex-direction:column; gap:14px; text-align:center; padding:24px 20px; }
+      .footer-links { justify-content:center; }
+    }
+    @media(max-width:480px) {
       .features-grid { grid-template-columns:1fr; }
-      footer { flex-direction:column; gap:12px; text-align:center; }
     }
   </style>
 </head>
 <body>
 
+<!-- NAV -->
 <nav>
   <div class="nav-logo">
     <div class="nav-logo-icon">🎓</div>
@@ -161,8 +225,8 @@
     <a class="nav-link" href="#features">Features</a>
     <a class="nav-link" href="#roles">Get Started</a>
   </div>
-  <div style="display:flex;gap:10px;align-items:center">
-    <button class="theme-btn" id="theme-btn" onclick="toggleLandingTheme()">☀️</button>
+  <div class="nav-actions">
+    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">☀️</button>
     <button class="nav-cta" onclick="document.getElementById('roles').scrollIntoView({behavior:'smooth'})">Get Started</button>
   </div>
 </nav>
@@ -170,46 +234,69 @@
 <!-- HERO -->
 <div class="hero">
   <div class="hero-badge">🚀 Smart Education Management Platform</div>
-  <h1 class="hero-title">Manage your institute.<br><span class="grad">Empower your students.</span></h1>
-  <p class="hero-sub">EduStack combines fee management, attendance tracking, timetabling, and a full student learning portal — all in one platform.</p>
-  <button class="nav-cta" style="padding:14px 32px;font-size:16px" onclick="document.getElementById('roles').scrollIntoView({behavior:'smooth'})">
-    Get Started — It's Free ↓
-  </button>
+  <h1 class="hero-title">
+    Manage your institute.<br>
+    <span class="grad">Empower your students.</span>
+  </h1>
+  <p class="hero-sub">
+    EduStack combines fee management, attendance tracking, timetabling,
+    and a full student learning portal — all in one platform, free forever.
+  </p>
+  <div class="hero-cta">
+    <button onclick="document.getElementById('roles').scrollIntoView({behavior:'smooth'})">
+      Get Started — It's Free ↓
+    </button>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-num">8</div>
+      <div class="hero-stat-lbl">Admin modules</div>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">100%</div>
+      <div class="hero-stat-lbl">Offline-capable</div>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">Free</div>
+      <div class="hero-stat-lbl">Forever</div>
+    </div>
+  </div>
 </div>
 
 <!-- ROLE CARDS -->
 <div class="role-section" id="roles">
-  <div class="role-title">Who are you?</div>
-  <div class="role-sub">Choose your role to continue</div>
+  <div class="section-badge"><span>▸ Choose your role</span></div>
+  <div class="section-title">Who are you?</div>
+  <div class="section-sub">Select your role to continue to your dashboard</div>
   <div class="role-cards">
 
-    <!-- ADMIN -->
     <a class="role-card admin" href="admin.html">
       <span class="role-icon">🏫</span>
       <div class="role-name">Admin / Teacher</div>
       <p class="role-desc">Manage your coaching centre or school. Track fees, attendance, faculty, and student progress.</p>
       <ul class="role-features">
-        <li>Fee tracking with cloud sync</li>
-        <li>Attendance management</li>
+        <li>Fee tracking with payment history</li>
+        <li>Attendance management + WhatsApp</li>
         <li>Faculty & salary management</li>
         <li>Timetable builder</li>
-        <li>WhatsApp reminders</li>
+        <li>File attachments per student</li>
         <li>Income graphs & reports</li>
       </ul>
       <button class="role-btn admin-btn">Enter Admin Panel →</button>
     </a>
 
-    <!-- STUDENT -->
     <a class="role-card student" href="student.html">
       <span class="role-icon">👨‍🎓</span>
       <div class="role-name">Student</div>
       <p class="role-desc">Access your personalised learning portal. Practice questions, view attendance, and track your progress.</p>
       <ul class="role-features">
-        <li>Chapter-wise questions</li>
+        <li>Chapter-wise question bank</li>
         <li>Theory & key notes</li>
         <li>Timed & practice quiz modes</li>
         <li>View your attendance</li>
-        <li>Assignments & homework</li>
+        <li>Fee payment history</li>
         <li>CBSE, ICSE, State Board</li>
       </ul>
       <button class="role-btn student-btn">Enter Student Portal →</button>
@@ -221,36 +308,71 @@
 <!-- FEATURES -->
 <div class="features" id="features">
   <div class="features-inner">
-    <div class="features-title">Everything you need</div>
-    <div class="features-sub">Built for modern coaching centres and schools</div>
+    <div class="section-badge"><span>▸ Platform features</span></div>
+    <div class="section-title">Everything your institute needs</div>
+    <div class="section-sub">Built for modern coaching centres and schools across India</div>
     <div class="features-grid">
-      <div class="feat-card"><div class="feat-icon">💸</div><div class="feat-name">Fee Management</div><div class="feat-desc">Track monthly fees, partial payments, special fees. Colour-coded sliders show who's paid, who's due, who's overdue.</div></div>
-      <div class="feat-card"><div class="feat-icon">☁️</div><div class="feat-name">Cloud Sync</div><div class="feat-desc">All data syncs instantly to Firebase. Access your institute data from any device, anywhere.</div></div>
-      <div class="feat-card"><div class="feat-icon">📝</div><div class="feat-name">Attendance</div><div class="feat-desc">Mark attendance daily with one tap. View full history. Send absent notifications directly via WhatsApp.</div></div>
-      <div class="feat-card"><div class="feat-icon">📚</div><div class="feat-name">Question Bank</div><div class="feat-desc">Chapter-wise MCQs with theory, formulae, and detailed explanations for CBSE, ICSE, and State Board students.</div></div>
-      <div class="feat-card"><div class="feat-icon">📊</div><div class="feat-name">Analytics</div><div class="feat-desc">Income bar graphs by class, month, and year. See which classes generate the most revenue at a glance.</div></div>
-      <div class="feat-card"><div class="feat-icon">💬</div><div class="feat-name">WhatsApp Integration</div><div class="feat-desc">Send fee reminders, absent notifications, and bulk messages to all parents directly through WhatsApp.</div></div>
+      <div class="feat-card">
+        <div class="feat-icon">💸</div>
+        <div class="feat-name">Smart Fee Management</div>
+        <div class="feat-desc">Track monthly fees, partial payments, special one-time fees. Sliders + direct payment entry. Colour-coded by status. Monthly history per student.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📎</div>
+        <div class="feat-name">Document Attachments</div>
+        <div class="feat-desc">Attach receipts, ID cards, or any documents to each student profile. Drag & drop upload, download or delete anytime.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📝</div>
+        <div class="feat-name">Attendance Tracking</div>
+        <div class="feat-desc">Mark attendance daily with one tap. Filter by class. View present / absent / unmarked summary. Send WhatsApp absent notifications.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📚</div>
+        <div class="feat-name">Question Bank</div>
+        <div class="feat-desc">Chapter-wise MCQs with theory, formulae, and detailed explanations for CBSE, ICSE, and State Board students up to Class 12.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📊</div>
+        <div class="feat-name">Revenue Analytics</div>
+        <div class="feat-desc">Income bar graphs by month. View 1, 3, 6, or 12 month windows. Instantly see outstanding fees and collection rates.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">💬</div>
+        <div class="feat-name">WhatsApp Integration</div>
+        <div class="feat-desc">Send fee reminders, absent notifications, and bulk messages to all parents or only those with dues — directly through WhatsApp.</div>
+      </div>
     </div>
   </div>
 </div>
 
+<!-- FOOTER -->
 <footer>
   <div class="footer-logo">🎓 EduStack</div>
-  <div class="footer-right">Built with ❤️ for Indian coaching centres</div>
+  <div class="footer-links">
+    <a class="footer-link" href="admin.html">Admin Panel</a>
+    <a class="footer-link" href="student.html">Student Portal</a>
+  </div>
+  <div class="footer-copy">Built with ❤️ for Indian coaching centres</div>
 </footer>
 
 <script>
-function toggleLandingTheme() {
-  const cur = document.documentElement.getAttribute("data-theme")||"dark";
-  const next = cur==="dark"?"light":"dark";
-  document.documentElement.setAttribute("data-theme", next);
-  localStorage.setItem("feestacks_theme", next);
-  document.getElementById("theme-btn").textContent = next==="dark"?"☀️":"🌙";
-}
-// Apply saved theme
-const t = localStorage.getItem("feestacks_theme")||"dark";
-document.documentElement.setAttribute("data-theme", t);
-document.getElementById("theme-btn").textContent = t==="dark"?"☀️":"🌙";
+  function toggleTheme() {
+    const cur  = document.documentElement.getAttribute('data-theme') || 'dark';
+    const next = cur === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('es_theme', next);
+    document.getElementById('theme-btn').textContent = next === 'dark' ? '☀️' : '🌙';
+  }
+  // Restore theme
+  (function() {
+    const t = localStorage.getItem('es_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', t);
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('theme-btn');
+      if (btn) btn.textContent = t === 'dark' ? '☀️' : '🌙';
+    });
+  })();
 </script>
 </body>
 </html>

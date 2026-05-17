@@ -5,17 +5,232 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EduStack — Student Portal</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/components.css">
-  <link rel="stylesheet" href="css/student.css">
+  <style>
+/* ─── TOKENS ─── */
+:root {
+  --bg:#0a0c10; --surf:#111420; --surf2:#171b28; --surf3:#1c2133;
+  --border:#232840; --border2:#2c3455;
+  --accent:#3b82f6; --indigo:#6366f1;
+  --green:#22c55e; --red:#ef4444; --yellow:#f59e0b;
+  --text:#e2e8f0; --muted:#64748b; --muted2:#94a3b8;
+  --font-d:'Syne',sans-serif; --font-b:'Karla',sans-serif;
+  --grad:linear-gradient(135deg,#3b82f6,#6366f1);
+  --rad:14px; --rad-sm:9px;
+  --shadow:0 8px 32px rgba(0,0,0,.45);
+}
+[data-theme="light"] {
+  --bg:#f0f4f8; --surf:#fff; --surf2:#f8fafc; --surf3:#f0f4f8;
+  --border:#e2e8f0; --border2:#cbd5e1;
+  --text:#0f172a; --muted:#64748b; --muted2:#475569;
+  --shadow:0 8px 32px rgba(0,0,0,.1);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{height:100%;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height:100%;-webkit-font-smoothing:antialiased;}
+button{font-family:var(--font-b);cursor:pointer;}
+input,select{font-family:var(--font-b);}
+label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px;}
+
+/* ─── SHARED FORM ─── */
+.fi{width:100%;padding:9px 12px;background:var(--surf2);border:1.5px solid var(--border);border-radius:var(--rad-sm);color:var(--text);font-size:13px;font-weight:500;transition:border-color .2s,box-shadow .2s;outline:none;}
+.fi:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.15);}
+.fi option{background:var(--surf);}
+.fg{margin-bottom:14px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.btn-primary{width:100%;padding:11px;background:var(--grad);color:#fff;border:none;border-radius:var(--rad-sm);font-size:14px;font-weight:700;font-family:var(--font-d);transition:opacity .2s;}
+.btn-primary:hover{opacity:.88;}
+
+/* ─── AUTH SCREEN ─── */
+#s-auth{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:
+    radial-gradient(ellipse 70% 55% at 15% 20%,rgba(59,130,246,.12),transparent),
+    radial-gradient(ellipse 60% 45% at 85% 75%,rgba(99,102,241,.1),transparent),
+    var(--bg);
+}
+.auth-card{background:var(--surf);border:1.5px solid var(--border);border-radius:20px;padding:34px 30px;width:100%;max-width:460px;box-shadow:var(--shadow);}
+.auth-logo{display:flex;align-items:center;gap:13px;margin-bottom:26px;}
+.auth-logo-icon{width:44px;height:44px;border-radius:11px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.auth-logo-name{font-family:var(--font-d);font-size:20px;font-weight:800;}
+.auth-logo-sub{font-size:12px;color:var(--muted);}
+.auth-tabs{display:flex;gap:4px;background:var(--surf2);border-radius:10px;padding:4px;margin-bottom:18px;}
+.auth-tab{flex:1;padding:8px;border:none;background:none;border-radius:7px;font-size:13px;font-weight:600;color:var(--muted);transition:all .2s;}
+.auth-tab.active{background:var(--surf);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.18);}
+.auth-back{display:block;text-align:center;margin-top:16px;font-size:13px;color:var(--muted);text-decoration:none;}
+.auth-back:hover{color:var(--text);}
+.inst-id-hint{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.6;}
+
+/* ─── APP LAYOUT ─── */
+#s-app{display:none;}
+#s-layout{display:flex;height:100vh;overflow:hidden;}
+
+/* SIDEBAR */
+#s-sidebar{
+  width:224px;flex-shrink:0;background:var(--surf);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;height:100vh;overflow-y:auto;
+  z-index:300;transition:transform .28s cubic-bezier(.4,0,.2,1);
+}
+.s-sidebar-top{padding:18px 16px;border-bottom:1px solid var(--border);}
+.s-logo{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.s-logo-icon{width:32px;height:32px;border-radius:8px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.s-logo-name{font-family:var(--font-d);font-size:16px;font-weight:800;}
+.s-student-info{display:flex;align-items:center;gap:10px;}
+.s-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--indigo));display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:15px;font-weight:700;color:#fff;flex-shrink:0;}
+.s-student-name{font-family:var(--font-d);font-size:13px;font-weight:700;}
+.s-student-class{font-size:11px;color:var(--muted);margin-top:1px;}
+.s-nav{padding:10px 8px;flex:1;}
+.s-nav-item{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border:none;background:none;border-radius:var(--rad-sm);color:var(--muted);font-size:13px;font-weight:600;text-align:left;transition:all .18s;margin-bottom:2px;cursor:pointer;}
+.s-nav-item:hover{background:var(--surf2);color:var(--text);}
+.s-nav-item.active{background:rgba(59,130,246,.12);color:var(--accent);}
+.s-nav-icon{font-size:15px;flex-shrink:0;width:20px;text-align:center;}
+.s-nav-sep{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:14px 12px 6px;}
+.s-sidebar-bottom{padding:10px 8px;border-top:1px solid var(--border);}
+
+/* BACKDROP (mobile) */
+#s-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:290;backdrop-filter:blur(3px);}
+#s-backdrop.open{display:block;}
+
+/* MAIN */
+.s-main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.s-topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:var(--surf);border-bottom:1px solid var(--border);flex-shrink:0;gap:10px;}
+.s-topbar-left{display:flex;align-items:center;gap:10px;}
+.s-page-title{font-family:var(--font-d);font-size:15px;font-weight:700;color:var(--muted2);}
+#s-menu-btn{background:var(--surf2);border:1.5px solid var(--border2);border-radius:9px;font-size:17px;color:var(--text);padding:5px 9px;display:flex;align-items:center;justify-content:center;min-width:36px;height:36px;}
+#s-theme-btn{background:var(--surf2);border:1.5px solid var(--border);border-radius:8px;width:34px;height:34px;font-size:15px;display:flex;align-items:center;justify-content:center;transition:border-color .2s;}
+
+.s-content{flex:1;overflow-y:auto;padding:22px 20px;}
+.s-page{display:none;}
+.s-page.active{display:block;}
+
+/* PANELS */
+.panel{background:var(--surf);border:1px solid var(--border);border-radius:var(--rad);overflow:hidden;margin-bottom:18px;}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);}
+.panel-title{font-family:var(--font-d);font-size:14px;font-weight:700;}
+.panel-body{padding:18px;}
+
+/* CARDS */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+.info-card{background:var(--surf2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;}
+.info-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:4px;}
+.info-val{font-family:var(--font-d);font-size:18px;font-weight:800;}
+.info-val.green{color:var(--green);}
+.info-val.red{color:var(--red);}
+.info-val.yellow{color:var(--yellow);}
+.info-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+
+/* SUBJECT CARDS */
+.subject-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;}
+.subject-card{background:var(--surf2);border:1.5px solid var(--border);border-radius:14px;padding:20px 16px;cursor:pointer;transition:all .2s;text-align:center;}
+.subject-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.25);border-color:var(--border2);}
+.subj-icon{font-size:36px;margin-bottom:10px;}
+.subj-name{font-family:var(--font-d);font-size:14px;font-weight:700;margin-bottom:4px;}
+.subj-chapters{font-size:12px;color:var(--muted);}
+
+/* CHAPTER LIST */
+.chapter-list{display:flex;flex-direction:column;gap:8px;}
+.chapter-item{display:flex;align-items:center;justify-content:space-between;background:var(--surf2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;cursor:pointer;transition:all .2s;}
+.chapter-item:hover{border-color:var(--accent);background:rgba(59,130,246,.05);}
+.chap-name{font-weight:600;font-size:14px;}
+.chap-meta{font-size:12px;color:var(--muted);margin-top:2px;}
+.chap-arrow{color:var(--muted);font-size:16px;}
+
+/* QUIZ */
+.quiz-modes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+.quiz-mode-btn{background:var(--surf2);border:1.5px solid var(--border);border-radius:12px;padding:18px;cursor:pointer;text-align:center;transition:all .2s;}
+.quiz-mode-btn:hover{border-color:var(--accent);background:rgba(59,130,246,.06);}
+.qm-icon{font-size:28px;margin-bottom:8px;}
+.qm-name{font-family:var(--font-d);font-size:14px;font-weight:700;}
+.qm-desc{font-size:12px;color:var(--muted);margin-top:4px;}
+
+.quiz-q-wrap{background:var(--surf2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;}
+.quiz-q-num{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:10px;}
+.quiz-q-text{font-size:15px;font-weight:600;line-height:1.55;margin-bottom:18px;}
+.quiz-options{display:flex;flex-direction:column;gap:9px;}
+.quiz-opt{background:var(--surf3);border:1.5px solid var(--border);border-radius:9px;padding:11px 14px;cursor:pointer;font-size:13px;font-weight:500;text-align:left;transition:all .2s;width:100%;}
+.quiz-opt:hover:not(:disabled){border-color:var(--accent);background:rgba(59,130,246,.08);}
+.quiz-opt.correct{border-color:var(--green)!important;background:rgba(34,197,94,.1)!important;color:var(--green)!important;}
+.quiz-opt.wrong{border-color:var(--red)!important;background:rgba(239,68,68,.1)!important;color:var(--red)!important;}
+.quiz-opt:disabled{cursor:default;}
+.quiz-explain{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:9px;padding:12px 14px;font-size:13px;line-height:1.6;margin-top:12px;color:var(--muted2);}
+.quiz-controls{display:flex;justify-content:space-between;align-items:center;margin-top:16px;}
+.btn-quiz{padding:9px 20px;border-radius:8px;font-size:13px;font-weight:700;font-family:var(--font-b);border:none;cursor:pointer;transition:all .18s;}
+.btn-quiz.primary{background:var(--grad);color:#fff;}
+.btn-quiz.secondary{background:var(--surf2);border:1.5px solid var(--border);color:var(--muted2);}
+.btn-quiz.secondary:hover{border-color:var(--accent);color:var(--accent);}
+.quiz-score-card{text-align:center;padding:32px 20px;background:var(--surf2);border:1px solid var(--border);border-radius:14px;}
+.qs-emoji{font-size:56px;margin-bottom:12px;}
+.qs-score{font-family:var(--font-d);font-size:42px;font-weight:800;margin-bottom:4px;}
+.qs-label{font-size:14px;color:var(--muted);margin-bottom:20px;}
+
+/* THEORY */
+.theory-block{background:var(--surf2);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px;}
+.theory-title{font-family:var(--font-d);font-size:15px;font-weight:700;margin-bottom:10px;}
+.theory-body{font-size:13px;color:var(--muted2);line-height:1.75;}
+.theory-body p{margin-bottom:8px;}
+.key-points{list-style:none;display:flex;flex-direction:column;gap:7px;margin-top:10px;}
+.key-points li{display:flex;gap:8px;font-size:13px;color:var(--muted2);}
+.key-points li::before{content:'→';color:var(--accent);font-weight:700;flex-shrink:0;}
+
+/* ATTENDANCE VIEW */
+.att-summary-chips{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+.att-chip{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:700;}
+.att-chip.p{background:rgba(34,197,94,.12);color:var(--green);}
+.att-chip.a{background:rgba(239,68,68,.12);color:var(--red);}
+.att-chip.pct{background:var(--surf2);color:var(--muted2);border:1px solid var(--border);}
+.att-log{display:flex;flex-direction:column;gap:6px;}
+.att-log-row{display:flex;align-items:center;justify-content:space-between;background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:9px 14px;font-size:13px;}
+.att-status{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;}
+.att-status.p{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.2);}
+.att-status.a{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.18);}
+
+/* PAYMENTS VIEW */
+.pay-log{display:flex;flex-direction:column;gap:8px;}
+.pay-log-row{display:flex;align-items:center;justify-content:space-between;background:var(--surf2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;}
+.pay-month{font-family:var(--font-d);font-size:13px;font-weight:700;}
+.pay-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.mpill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;}
+.mpill.paid{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.2);}
+.mpill.partial{background:rgba(59,130,246,.12);color:#60a5fa;border:1px solid rgba(59,130,246,.2);}
+.mpill.due{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.18);}
+
+/* BACK BUTTON */
+.back-btn{display:flex;align-items:center;gap:7px;background:var(--surf2);border:1.5px solid var(--border);border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;color:var(--muted2);margin-bottom:18px;transition:all .18s;}
+.back-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);}
+.empty-icon{font-size:40px;margin-bottom:12px;}
+.empty-state p{font-size:14px;font-weight:600;color:var(--muted2);margin-bottom:4px;}
+
+/* TIMER */
+.quiz-timer{font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--yellow);}
+.quiz-timer.danger{color:var(--red);}
+.quiz-progress{height:3px;background:var(--border);border-radius:999px;margin-bottom:16px;}
+.quiz-progress-bar{height:100%;background:var(--grad);border-radius:999px;transition:width .3s;}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;z-index:9999;background:var(--surf);border:1.5px solid var(--border);border-radius:12px;padding:11px 16px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:var(--shadow);max-width:300px;opacity:0;transform:translateY(10px);pointer-events:none;transition:all .28s cubic-bezier(.34,1.56,.64,1);}
+.toast.show{opacity:1;transform:none;}
+.toast.green{border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.07);}
+.toast.red{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.07);}
+.toast.yellow{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.07);}
+
+@media(max-width:600px){
+  #s-sidebar{position:fixed;left:0;top:0;height:100%;transform:translateX(-100%);}
+  #s-sidebar.open{transform:none;}
+  .info-grid{grid-template-columns:1fr 1fr;}
+  .quiz-modes{grid-template-columns:1fr;}
+  .form-row{grid-template-columns:1fr;}
+  .s-content{padding:14px;}
+}
+@media(min-width:601px){#s-menu-btn{display:none;}}
+  </style>
 </head>
 <body>
 
-<!-- ═══ STUDENT AUTH ═══ -->
-<div id="s-auth-screen">
-  <div class="auth-card" style="max-width:440px">
-
-    <!-- Logo -->
+<!-- ══════════ STUDENT AUTH ══════════ -->
+<div id="s-auth">
+  <div class="auth-card">
     <div class="auth-logo">
       <div class="auth-logo-icon">🎓</div>
       <div>
@@ -24,7 +239,6 @@
       </div>
     </div>
 
-    <!-- Tabs -->
     <div class="auth-tabs">
       <button class="auth-tab active" onclick="switchSTab('login',this)">Sign In</button>
       <button class="auth-tab" onclick="switchSTab('register',this)">Register</button>
@@ -32,237 +246,762 @@
 
     <!-- LOGIN -->
     <div id="s-login-form">
-      <div class="fg">
-        <label>Email</label>
-        <input class="fi" type="email" id="sl-email" placeholder="your@email.com">
-      </div>
-      <div class="fg">
-        <label>Password</label>
-        <input class="fi" type="password" id="sl-pass" placeholder="••••••••">
-      </div>
-      <button class="btn-primary" onclick="doStudentLogin()" style="margin-top:4px">Sign In →</button>
+      <div class="fg"><label>Email</label><input class="fi" type="email" id="sl-email" placeholder="your@email.com"></div>
+      <div class="fg"><label>Password</label><input class="fi" type="password" id="sl-pass" placeholder="••••••••"></div>
+      <button class="btn-primary" onclick="doLogin()" style="margin-top:4px">Sign In →</button>
+      <button onclick="demoLogin()" style="width:100%;margin-top:10px;padding:10px;border:1.5px dashed var(--border);border-radius:var(--rad-sm);background:none;color:var(--muted);font-size:13px;font-weight:600;transition:all .2s;" onmouseover="this.style.borderColor='var(--muted2)'" onmouseout="this.style.borderColor='var(--border)'">Continue as Demo Student</button>
     </div>
 
     <!-- REGISTER -->
     <div id="s-register-form" style="display:none">
       <div class="form-row">
-        <div class="fg">
-          <label>Full Name *</label>
-          <input class="fi" type="text" id="sr-name" placeholder="Your full name">
-        </div>
-        <div class="fg">
-          <label>Phone (optional)</label>
-          <input class="fi" type="tel" id="sr-phone" placeholder="+91 98765 43210">
-        </div>
+        <div class="fg"><label>Full Name *</label><input class="fi" type="text" id="sr-name" placeholder="Your full name"></div>
+        <div class="fg"><label>Phone (optional)</label><input class="fi" type="tel" id="sr-phone" placeholder="+91 98765 43210"></div>
       </div>
-      <div class="fg">
-        <label>Email *</label>
-        <input class="fi" type="email" id="sr-email" placeholder="your@email.com">
-      </div>
-      <div class="fg">
-        <label>Password *</label>
-        <input class="fi" type="password" id="sr-pass" placeholder="min 6 characters">
-      </div>
+      <div class="fg"><label>Email *</label><input class="fi" type="email" id="sr-email" placeholder="your@email.com"></div>
+      <div class="fg"><label>Password *</label><input class="fi" type="password" id="sr-pass" placeholder="min 6 characters"></div>
       <div class="form-row">
         <div class="fg">
           <label>Class *</label>
           <select class="fi" id="sr-class">
             <option value="">Select class</option>
             <option>Class 6</option><option>Class 7</option><option>Class 8</option>
-            <option>Class 9</option><option>Class 10</option>
-            <option>Class 11</option><option>Class 12</option>
+            <option>Class 9</option><option>Class 10</option><option>Class 11</option><option>Class 12</option>
           </select>
         </div>
         <div class="fg">
           <label>Board *</label>
           <select class="fi" id="sr-board">
             <option value="">Select board</option>
-            <option>CBSE</option><option>ICSE</option>
-            <option>State Board</option><option>IB</option><option>IGCSE</option>
+            <option>CBSE</option><option>ICSE</option><option>State Board</option>
           </select>
         </div>
       </div>
+      <div class="fg"><label>School Name</label><input class="fi" type="text" id="sr-school" placeholder="e.g. Delhi Public School"></div>
       <div class="fg">
-        <label>School Name (optional)</label>
-        <input class="fi" type="text" id="sr-school" placeholder="e.g. Delhi Public School">
+        <label>Institution ID <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--muted)">(optional)</span></label>
+        <input class="fi" type="text" id="sr-instid" placeholder="e.g. ES-ABC123 — ask your teacher">
+        <div class="inst-id-hint">Links you to your coaching centre's attendance & fee records.</div>
       </div>
-      <div class="fg">
-        <label>Institution ID
-          <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--muted)"> — optional, links you to your coaching centre</span>
-        </label>
-        <input class="fi" type="text" id="sr-instid" placeholder="e.g. ES-ABC123-4567" style="font-family:monospace;letter-spacing:1px">
-        <div style="font-size:12px;color:var(--muted);margin-top:5px">Ask your teacher/admin for this ID. Without it, you still get full access to all study material.</div>
-      </div>
-      <button class="btn-primary" onclick="doStudentRegister()" style="margin-top:8px">Create Account →</button>
+      <button class="btn-primary" onclick="doRegister()" style="margin-top:8px">Create Account →</button>
     </div>
 
-    <div style="margin-top:16px;text-align:center">
-      <a href="index.html" style="font-size:13px;color:var(--muted);text-decoration:none">← Back to Home</a>
-    </div>
+    <a class="auth-back" href="index.html">← Back to Home</a>
   </div>
 </div>
 
-<!-- ═══ STUDENT APP ═══ -->
-<div id="s-app" style="display:none">
-
-  <!-- Mobile backdrop -->
-  <div id="s-backdrop" onclick="closeSidebar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:290;backdrop-filter:blur(2px)"></div>
-
+<!-- ══════════ STUDENT APP ══════════ -->
+<div id="s-app">
+  <div id="s-backdrop" onclick="closeSidebar()"></div>
   <div id="s-layout">
 
     <!-- SIDEBAR -->
-    <div id="s-sidebar">
+    <nav id="s-sidebar">
       <div class="s-sidebar-top">
         <div class="s-logo">
           <div class="s-logo-icon">🎓</div>
           <div class="s-logo-name">EduStack</div>
         </div>
         <div class="s-student-info">
-          <div class="s-student-avatar" id="s-avatar">S</div>
+          <div class="s-avatar" id="s-avatar">S</div>
           <div>
-            <div class="s-student-name" id="s-name-label">Student</div>
-            <div class="s-student-class" id="s-class-label">—</div>
+            <div class="s-student-name" id="s-name-lbl">Student</div>
+            <div class="s-student-class" id="s-class-lbl">—</div>
           </div>
         </div>
       </div>
 
       <div class="s-nav">
-        <button class="s-nav-item active" data-page="home" onclick="sNav('home')">
-          <span class="s-nav-icon">🏠</span><span class="s-nav-label">Home</span>
-        </button>
-        <button class="s-nav-item" data-page="payments" onclick="sNav('payments')">
-          <span class="s-nav-icon">💳</span><span class="s-nav-label">Payments</span>
-        </button>
-        <button class="s-nav-item" data-page="attendance" onclick="sNav('attendance')">
-          <span class="s-nav-icon">📝</span><span class="s-nav-label">Attendance</span>
-        </button>
-        <button class="s-nav-item" data-page="assignments" onclick="sNav('assignments')">
-          <span class="s-nav-icon">📋</span><span class="s-nav-label">Assignments</span>
-        </button>
-        <div class="s-nav-section-label">Subjects</div>
+        <button class="s-nav-item active" data-spage="home" onclick="sNav('home')"><span class="s-nav-icon">🏠</span><span>Home</span></button>
+        <button class="s-nav-item" data-spage="payments" onclick="sNav('payments')"><span class="s-nav-icon">💳</span><span>Payments</span></button>
+        <button class="s-nav-item" data-spage="attendance" onclick="sNav('attendance')"><span class="s-nav-icon">📝</span><span>Attendance</span></button>
+        <div class="s-nav-sep">Study</div>
         <div id="s-subject-nav"></div>
       </div>
 
       <div class="s-sidebar-bottom">
-        <button class="s-nav-item" onclick="doStudentLogout()">
-          <span class="s-nav-icon">🚪</span><span class="s-nav-label">Sign Out</span>
-        </button>
+        <button class="s-nav-item" onclick="doLogout()"><span class="s-nav-icon">🚪</span><span>Sign Out</span></button>
       </div>
-    </div>
+    </nav>
 
     <!-- MAIN -->
     <div class="s-main">
-
-      <!-- TOP BAR -->
       <div class="s-topbar">
-        <div style="display:flex;align-items:center;gap:10px">
-          <!-- Hamburger — always visible, always on top -->
-          <button id="s-menu-btn" onclick="toggleSSidebar()"
-            style="background:var(--surf2);border:1.5px solid var(--border2);border-radius:9px;
-                   cursor:pointer;font-size:17px;color:var(--text);padding:6px 10px;
-                   display:flex;align-items:center;justify-content:center;
-                   min-width:36px;height:36px;position:relative;z-index:400">☰</button>
-          <div id="s-page-title" class="s-page-title">Home</div>
+        <div class="s-topbar-left">
+          <button id="s-menu-btn" onclick="toggleSidebar()">☰</button>
+          <div class="s-page-title" id="s-page-title">Home</div>
         </div>
-        <button onclick="toggleTheme();updateSThemeBtn()"
-          id="s-theme-btn"
-          style="background:var(--surf2);border:1.5px solid var(--border2);border-radius:8px;
-                 width:34px;height:34px;cursor:pointer;font-size:16px;
-                 display:flex;align-items:center;justify-content:center">☀️</button>
+        <button id="s-theme-btn" onclick="toggleTheme()">☀️</button>
       </div>
 
-      <!-- PAGES -->
-      <div id="s-page-home"        class="s-page"></div>
-      <div id="s-page-attendance"  class="s-page" style="display:none"></div>
-      <div id="s-page-assignments" class="s-page" style="display:none"></div>
-      <div id="s-page-subject"     class="s-page" style="display:none"></div>
-      <div id="s-page-chapter"     class="s-page" style="display:none"></div>
-      <div id="s-page-payments" class="s-page" style="display:none"></div>
-      <div id="s-page-quiz"        class="s-page" style="display:none"></div>
+      <div class="s-content">
+        <div id="s-page-home"       class="s-page active"></div>
+        <div id="s-page-payments"   class="s-page"></div>
+        <div id="s-page-attendance" class="s-page"></div>
+        <div id="s-page-subject"    class="s-page"></div>
+        <div id="s-page-chapter"    class="s-page"></div>
+        <div id="s-page-quiz"       class="s-page"></div>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- TOAST -->
-<div class="toast" id="toast"><span id="toast-icon"></span><span id="toast-msg"></span></div>
-
-<!-- Firebase inline init — avoids module import chain issues -->
-<script type="module">
-  import { initializeApp }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import {
-    getAuth,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    signInWithPopup,
-    GoogleAuthProvider,
-    signOut,
-    onAuthStateChanged
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey:            "AIzaSyCj9x8r9tXubsm6vR8B4mIssWXBUhn13Ms",
-    authDomain:        "freeflows.firebaseapp.com",
-    projectId:         "freeflows",
-    storageBucket:     "freeflows.firebasestorage.app",
-    messagingSenderId: "331022595641",
-    appId:             "1:331022595641:web:f3d7d2e03b11234bd17fe8"
-  };
-
-  const app  = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-
-  window._fb = {
-    auth,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    signInWithPopup,
-    GoogleAuthProvider,
-    signOut,
-    projectId: firebaseConfig.projectId
-  };
-  window._firebaseReady = true;
-
-  onAuthStateChanged(auth, user => {
-    window._fbUser = user || null;
-    if (typeof window._onAuthChange === "function") window._onAuthChange(user || null);
-  });
-</script>
-
-<!-- App scripts -->
-<script src="js/data/qb_registry.js"></script>
-<script src="js/data/class9_physics.js"></script>
-<script src="js/data/class9_science.js"></script>
-<script src="js/data/class9_maths.js"></script>
-<script src="js/data/class9_sst.js"></script>
-<script src="js/utils.js"></script>
-<script src="js/storage.js"></script>
-<script src="js/student_auth.js"></script>
-<script src="js/student_payments.js"></script>
-<script src="js/student_portal.js"></script>
+<div class="toast" id="toast"><span id="t-icon"></span><span id="t-msg"></span></div>
 
 <script>
-// Student sidebar toggle (separate from admin)
-function toggleSSidebar() {
-  const sb   = document.getElementById("s-sidebar");
-  const bd   = document.getElementById("s-backdrop");
-  const open = sb.classList.contains("s-open");
-  if (open) { sb.classList.remove("s-open"); bd.style.display="none"; }
-  else       { sb.classList.add("s-open");   bd.style.display="block"; }
+'use strict';
+/* ══════════════════════════════════════
+   QUESTION BANK — built-in data
+   Add more subjects/chapters here
+══════════════════════════════════════ */
+const QB = {
+  'Class 9': {
+    subjects: [
+      {
+        id:'phy', name:'Physics', icon:'⚛️',
+        chapters:[
+          {
+            id:'motion', name:'Motion', questionCount:10,
+            theory:`
+              <div class="theory-block">
+                <div class="theory-title">📖 Motion</div>
+                <div class="theory-body">
+                  <p>Motion is the change in position of an object with respect to its surroundings over time.</p>
+                  <p><strong>Distance</strong> — total path length (scalar). <strong>Displacement</strong> — shortest path from start to end (vector).</p>
+                  <p><strong>Speed</strong> = Distance / Time. <strong>Velocity</strong> = Displacement / Time (vector).</p>
+                  <p><strong>Acceleration</strong> = Change in Velocity / Time. Uniform acceleration → constant acceleration.</p>
+                </div>
+                <ul class="key-points">
+                  <li>v = u + at</li>
+                  <li>s = ut + ½at²</li>
+                  <li>v² = u² + 2as</li>
+                  <li>Distance on a speed-time graph = area under the graph</li>
+                </ul>
+              </div>`,
+            questions:[
+              {q:'A car travels 60 km in 1 hour. What is its speed?', opts:['30 km/h','60 km/h','120 km/h','90 km/h'], ans:1, exp:'Speed = Distance / Time = 60 km / 1 h = 60 km/h.'},
+              {q:'Which of the following is a vector quantity?', opts:['Speed','Distance','Displacement','Time'], ans:2, exp:'Displacement has both magnitude and direction, making it a vector. Speed and distance are scalars.'},
+              {q:'An object moving with uniform velocity has acceleration equal to:', opts:['1 m/s²','−1 m/s²','Zero','Variable'], ans:2, exp:'Uniform velocity means no change in velocity, so acceleration = 0.'},
+              {q:'The slope of a distance-time graph gives:', opts:['Acceleration','Displacement','Speed','Force'], ans:2, exp:'The slope (rise/run) of a distance-time graph = distance/time = speed.'},
+              {q:'A ball is thrown upward. At the highest point its velocity is:', opts:['Maximum','Zero','Equal to initial','Negative'], ans:1, exp:'At the highest point the ball momentarily stops before coming back down, so velocity = 0.'},
+              {q:'Using v = u + at, if u=0, a=2 m/s², t=5s, find v:', opts:['5 m/s','10 m/s','20 m/s','2 m/s'], ans:1, exp:'v = 0 + 2×5 = 10 m/s.'},
+              {q:'The area under a speed-time graph gives:', opts:['Speed','Acceleration','Distance','Force'], ans:2, exp:'Area under speed-time graph = speed × time = distance travelled.'},
+              {q:'Which motion has a straight line on a distance-time graph?', opts:['Accelerated motion','Uniform motion','Deceleration','Oscillation'], ans:1, exp:'Uniform motion (constant speed) produces a straight line on a distance-time graph.'},
+              {q:'SI unit of acceleration is:', opts:['m/s','km/h','m/s²','m²/s'], ans:2, exp:'Acceleration = change in velocity / time = m/s ÷ s = m/s².'},
+              {q:'If displacement is zero, which is necessarily true?', opts:['Speed is zero','Distance is zero','Distance may not be zero','Acceleration is zero'], ans:2, exp:'Displacement zero means start and end are the same point, but the object may have travelled a path (distance ≠ 0).'},
+            ]
+          },
+          {
+            id:'force', name:'Force & Laws of Motion', questionCount:8,
+            theory:`
+              <div class="theory-block">
+                <div class="theory-title">📖 Force & Newton's Laws</div>
+                <div class="theory-body">
+                  <p><strong>Force</strong> is a push or pull that changes or tends to change the state of motion of an object.</p>
+                  <p><strong>Newton's 1st Law</strong>: An object at rest stays at rest, and an object in motion stays in motion, unless acted on by a net external force (Law of Inertia).</p>
+                  <p><strong>Newton's 2nd Law</strong>: F = ma. Force = mass × acceleration.</p>
+                  <p><strong>Newton's 3rd Law</strong>: Every action has an equal and opposite reaction.</p>
+                </div>
+                <ul class="key-points">
+                  <li>Momentum p = mv (kg·m/s)</li>
+                  <li>Impulse = F × t = change in momentum</li>
+                  <li>Conservation of momentum: total momentum before = total momentum after collision</li>
+                </ul>
+              </div>`,
+            questions:[
+              {q:'Newton\'s 1st Law is also called the Law of:', opts:['Gravity','Inertia','Momentum','Friction'], ans:1, exp:'Newton\'s 1st Law states objects resist changes in their state of motion — this property is called inertia.'},
+              {q:'F = ma is:', opts:['Law of Inertia','Law of Gravitation','Newton\'s 2nd Law','Conservation Law'], ans:2, exp:'F = ma is Newton\'s Second Law of Motion.'},
+              {q:'If mass = 5 kg and acceleration = 3 m/s², force = ?', opts:['8 N','2 N','15 N','1.67 N'], ans:2, exp:'F = ma = 5 × 3 = 15 N.'},
+              {q:'SI unit of force is:', opts:['kg','Pascal','Newton','Joule'], ans:2, exp:'The SI unit of force is the Newton (N), where 1 N = 1 kg·m/s².'},
+              {q:'Momentum is defined as:', opts:['mass × velocity','force × time','mass × acceleration','force × distance'], ans:0, exp:'Momentum p = mv, where m is mass and v is velocity.'},
+              {q:'Action and reaction forces act on:', opts:['Same object','Different objects','Same direction','Both a and c'], ans:1, exp:'Newton\'s 3rd Law: action and reaction are equal, opposite, and act on different objects.'},
+              {q:'A rocket works on the principle of:', opts:['Newton\'s 1st Law','Gravity','Newton\'s 3rd Law','Friction'], ans:2, exp:'Exhaust gases pushed backward (action) propel the rocket forward (reaction) — Newton\'s 3rd Law.'},
+              {q:'Which has more inertia: a 2 kg ball or a 5 kg ball?', opts:['2 kg ball','5 kg ball','Both equal','Depends on speed'], ans:1, exp:'Inertia is directly proportional to mass. The 5 kg ball has greater inertia.'},
+            ]
+          },
+        ]
+      },
+      {
+        id:'maths', name:'Mathematics', icon:'📐',
+        chapters:[
+          {
+            id:'polynomials', name:'Polynomials', questionCount:8,
+            theory:`
+              <div class="theory-block">
+                <div class="theory-title">📖 Polynomials</div>
+                <div class="theory-body">
+                  <p>A <strong>polynomial</strong> is an expression of the form aₙxⁿ + aₙ₋₁xⁿ⁻¹ + … + a₁x + a₀.</p>
+                  <p><strong>Degree</strong>: highest power of the variable. Linear (1), Quadratic (2), Cubic (3).</p>
+                  <p><strong>Zero of a polynomial</strong>: value of x for which p(x) = 0.</p>
+                  <p><strong>Factor Theorem</strong>: (x−a) is a factor of p(x) iff p(a) = 0.</p>
+                </div>
+                <ul class="key-points">
+                  <li>(a+b)² = a² + 2ab + b²</li>
+                  <li>(a−b)² = a² − 2ab + b²</li>
+                  <li>(a+b)(a−b) = a² − b²</li>
+                  <li>(a+b)³ = a³ + 3a²b + 3ab² + b³</li>
+                  <li>a³ + b³ + c³ − 3abc = (a+b+c)(a²+b²+c²−ab−bc−ca)</li>
+                </ul>
+              </div>`,
+            questions:[
+              {q:'The degree of the polynomial 3x³ − 5x + 2 is:', opts:['1','2','3','0'], ans:2, exp:'The highest power of x is 3, so the degree is 3.'},
+              {q:'A zero of p(x) = x − 3 is:', opts:['−3','0','3','1'], ans:2, exp:'x − 3 = 0 gives x = 3.'},
+              {q:'(a + b)² equals:', opts:['a² + b²','a² + 2ab + b²','a² − 2ab + b²','2a + 2b'], ans:1, exp:'(a+b)² = a² + 2ab + b² by the square of a binomial identity.'},
+              {q:'Factor of x² − 9:', opts:['(x+3)(x+3)','(x−3)(x−3)','(x+3)(x−3)','(x−9)(x+1)'], ans:2, exp:'x² − 9 = x² − 3² = (x+3)(x−3), a difference of squares.'},
+              {q:'If p(x) = x² − 5x + 6, then p(2) = ?', opts:['0','2','4','6'], ans:0, exp:'p(2) = 4 − 10 + 6 = 0. So (x−2) is a factor.'},
+              {q:'The number of zeros of a cubic polynomial is at most:', opts:['1','2','3','4'], ans:2, exp:'A polynomial of degree n has at most n zeros.'},
+              {q:'Which is NOT a polynomial?', opts:['x² + 1','√x + 1','x³ − 1','2x + 5'], ans:1, exp:'√x = x^(1/2) has a fractional exponent, so it is not a polynomial.'},
+              {q:'Remainder when x³ + 1 is divided by x + 1:', opts:['0','1','2','−1'], ans:0, exp:'By remainder theorem: p(−1) = (−1)³ + 1 = −1 + 1 = 0.'},
+            ]
+          },
+          {
+            id:'triangles', name:'Triangles', questionCount:6,
+            theory:`
+              <div class="theory-block">
+                <div class="theory-title">📖 Triangles</div>
+                <div class="theory-body">
+                  <p><strong>Congruence</strong>: Two triangles are congruent if they have the same shape and size (SSS, SAS, ASA, AAS, RHS).</p>
+                  <p><strong>Similarity</strong>: Triangles are similar if corresponding angles are equal and sides are proportional (AA, SSS, SAS).</p>
+                  <p><strong>Pythagoras Theorem</strong>: In a right triangle, c² = a² + b², where c is the hypotenuse.</p>
+                </div>
+                <ul class="key-points">
+                  <li>Sum of angles of a triangle = 180°</li>
+                  <li>Exterior angle = sum of two non-adjacent interior angles</li>
+                  <li>Area = ½ × base × height</li>
+                  <li>Heron's formula: A = √[s(s−a)(s−b)(s−c)], s = (a+b+c)/2</li>
+                </ul>
+              </div>`,
+            questions:[
+              {q:'Sum of angles in a triangle is:', opts:['90°','180°','270°','360°'], ans:1, exp:'The angle sum property of a triangle states that all three angles add up to 180°.'},
+              {q:'In a right triangle with legs 3 and 4, the hypotenuse is:', opts:['5','7','6','√7'], ans:0, exp:'By Pythagoras: c² = 3² + 4² = 9 + 16 = 25, so c = 5.'},
+              {q:'SSS congruence means:', opts:['Two sides equal','All three sides equal','Two angles equal','One side and angle equal'], ans:1, exp:'SSS (Side-Side-Side): if all three pairs of corresponding sides are equal, triangles are congruent.'},
+              {q:'An isosceles triangle has:', opts:['All sides equal','Two equal sides','No equal sides','All angles equal'], ans:1, exp:'An isosceles triangle has exactly two equal sides (and the angles opposite those sides are also equal).'},
+              {q:'An exterior angle of a triangle equals:', opts:['One interior angle','90°','Sum of two non-adjacent interior angles','180°'], ans:2, exp:'Exterior angle theorem: an exterior angle equals the sum of the two non-adjacent (remote) interior angles.'},
+              {q:'Two triangles are similar if:', opts:['They have equal area','Corresponding angles are equal','They are congruent','Their sides are equal'], ans:1, exp:'Similarity requires corresponding angles to be equal and corresponding sides to be proportional.'},
+            ]
+          }
+        ]
+      },
+    ]
+  }
+};
+
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+let _user     = null;  // { name, klass, board, school, email }
+let _curSubj  = null;
+let _curChap  = null;
+let _quizQs   = [];
+let _quizIdx  = 0;
+let _quizScore= 0;
+let _quizMode = 'practice';
+let _quizTimer= null;
+let _timeLeft = 30;
+let _answered = false;
+
+/* ══════════════════════════════════════
+   THEME
+══════════════════════════════════════ */
+function loadTheme() {
+  const t = localStorage.getItem('es_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  const btn = document.getElementById('s-theme-btn');
+  if (btn) btn.textContent = t==='dark' ? '☀️' : '🌙';
+}
+function toggleTheme() {
+  const cur  = document.documentElement.getAttribute('data-theme') || 'dark';
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('es_theme', next);
+  const btn = document.getElementById('s-theme-btn');
+  if (btn) btn.textContent = next === 'dark' ? '☀️' : '🌙';
+}
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+let _tt;
+function toast(msg, type='green', icon='') {
+  const el = document.getElementById('toast');
+  el.className = `toast ${type} show`;
+  document.getElementById('t-icon').textContent = icon||(type==='green'?'✅':type==='red'?'❌':'⚠️');
+  document.getElementById('t-msg').textContent  = msg;
+  clearTimeout(_tt);
+  _tt = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+/* ══════════════════════════════════════
+   AUTH
+══════════════════════════════════════ */
+function switchSTab(tab, btn) {
+  document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('s-login-form').style.display    = tab==='login'    ? 'block':'none';
+  document.getElementById('s-register-form').style.display = tab==='register' ? 'block':'none';
+}
+
+function doLogin() {
+  const email = document.getElementById('sl-email').value.trim();
+  const pass  = document.getElementById('sl-pass').value;
+  if (!email || !pass) { toast('Enter email and password', 'yellow'); return; }
+  // Demo: load saved profile or create one from email
+  const saved = localStorage.getItem('es_student_profile');
+  if (saved) {
+    _user = JSON.parse(saved);
+  } else {
+    _user = { name: email.split('@')[0], klass:'Class 9', board:'CBSE', email };
+  }
+  startApp();
+}
+
+function demoLogin() {
+  _user = { name:'Demo Student', klass:'Class 9', board:'CBSE', email:'demo@edustack.app', school:'EduStack Demo' };
+  startApp();
+  toast('Welcome to demo mode!', 'green', '🎓');
+}
+
+function doRegister() {
+  const name  = document.getElementById('sr-name').value.trim();
+  const email = document.getElementById('sr-email').value.trim();
+  const pass  = document.getElementById('sr-pass').value;
+  const klass = document.getElementById('sr-class').value;
+  const board = document.getElementById('sr-board').value;
+  if (!name||!email||!pass||!klass||!board) { toast('Fill all required fields', 'yellow'); return; }
+  _user = {
+    name, email, klass, board,
+    school  : document.getElementById('sr-school').value.trim(),
+    instId  : document.getElementById('sr-instid').value.trim(),
+    createdAt: Date.now()
+  };
+  localStorage.setItem('es_student_profile', JSON.stringify(_user));
+  startApp();
+  toast(`Welcome, ${name}!`, 'green', '🎓');
+}
+
+function doLogout() {
+  _user = null;
+  document.getElementById('s-app').style.display  = 'none';
+  document.getElementById('s-auth').style.display = 'flex';
+}
+
+function startApp() {
+  document.getElementById('s-auth').style.display = 'none';
+  document.getElementById('s-app').style.display  = 'block';
+  // Update header
+  document.getElementById('s-name-lbl').textContent  = _user.name;
+  document.getElementById('s-class-lbl').textContent = `${_user.klass} · ${_user.board}`;
+  document.getElementById('s-avatar').textContent    = _user.name[0].toUpperCase();
+  buildSubjectNav();
+  renderHome();
+}
+
+/* ══════════════════════════════════════
+   SIDEBAR / NAV
+══════════════════════════════════════ */
+function toggleSidebar() {
+  document.getElementById('s-sidebar').classList.toggle('open');
+  document.getElementById('s-backdrop').classList.toggle('open');
 }
 function closeSidebar() {
-  document.getElementById("s-sidebar")?.classList.remove("s-open");
-  const bd = document.getElementById("s-backdrop");
-  if (bd) bd.style.display="none";
+  document.getElementById('s-sidebar').classList.remove('open');
+  document.getElementById('s-backdrop').classList.remove('open');
 }
-function updateSThemeBtn() {
-  const t = document.documentElement.getAttribute("data-theme")||"dark";
-  const btn = document.getElementById("s-theme-btn");
-  if (btn) btn.textContent = t==="dark"?"☀️":"🌙";
+
+const PAGE_TITLES = { home:'Home', payments:'Payments', attendance:'Attendance', subject:'Subjects', chapter:'Chapter', quiz:'Quiz' };
+function sNav(page) {
+  document.querySelectorAll('.s-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.s-nav-item').forEach(n => n.classList.remove('active'));
+  const pg = document.getElementById(`s-page-${page}`);
+  const nv = document.querySelector(`[data-spage="${page}"]`);
+  if (pg) pg.classList.add('active');
+  if (nv) nv.classList.add('active');
+  document.getElementById('s-page-title').textContent = PAGE_TITLES[page] || page;
+  closeSidebar();
+  if (page==='home')       renderHome();
+  if (page==='payments')   renderStudentPayments();
+  if (page==='attendance') renderStudentAttendance();
 }
-document.addEventListener("DOMContentLoaded", ()=>{
+
+function buildSubjectNav() {
+  const classData = QB[_user.klass];
+  const el = document.getElementById('s-subject-nav');
+  if (!classData) { el.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 12px">No subjects for this class yet</div>'; return; }
+  el.innerHTML = classData.subjects.map(s => `
+    <button class="s-nav-item" data-spage="subject" onclick="openSubject('${s.id}')">
+      <span class="s-nav-icon">${s.icon}</span><span>${s.name}</span>
+    </button>`).join('');
+}
+
+/* ══════════════════════════════════════
+   HOME PAGE
+══════════════════════════════════════ */
+function renderHome() {
+  const classData = QB[_user.klass];
+  const subjects  = classData ? classData.subjects : [];
+  const totalQ    = subjects.reduce((t,s) => t+s.chapters.reduce((ct,c) => ct+c.questionCount, 0), 0);
+  const progress  = JSON.parse(localStorage.getItem('es_student_progress') || '{}');
+  const answered  = Object.keys(progress).length;
+
+  document.getElementById('s-page-home').innerHTML = `
+    <div style="margin-bottom:22px">
+      <div style="font-family:var(--font-d);font-size:22px;font-weight:800;margin-bottom:4px">Welcome back, ${_user.name}! 👋</div>
+      <div style="font-size:14px;color:var(--muted)">${_user.klass} · ${_user.board}${_user.school?' · '+_user.school:''}</div>
+    </div>
+    <div class="info-grid">
+      <div class="info-card"><div class="info-label">Questions Available</div><div class="info-val">${totalQ}</div><div class="info-sub">across all subjects</div></div>
+      <div class="info-card"><div class="info-label">Questions Attempted</div><div class="info-val yellow">${answered}</div><div class="info-sub">keep going!</div></div>
+    </div>
+    <div style="font-family:var(--font-d);font-size:15px;font-weight:700;margin-bottom:14px">📚 Your Subjects</div>
+    <div class="subject-grid">
+      ${subjects.map(s => `
+        <div class="subject-card" onclick="openSubject('${s.id}')">
+          <div class="subj-icon">${s.icon}</div>
+          <div class="subj-name">${s.name}</div>
+          <div class="subj-chapters">${s.chapters.length} chapter${s.chapters.length!==1?'s':''}</div>
+        </div>`).join('')}
+      ${!subjects.length ? '<div style="color:var(--muted);font-size:13px">No subjects available for your class yet.</div>' : ''}
+    </div>`;
+}
+
+/* ══════════════════════════════════════
+   SUBJECT PAGE
+══════════════════════════════════════ */
+function openSubject(subjId) {
+  const classData = QB[_user.klass];
+  if (!classData) return;
+  _curSubj = classData.subjects.find(s => s.id === subjId);
+  if (!_curSubj) return;
+
+  sNav('subject');
+  document.getElementById('s-page-title').textContent = _curSubj.name;
+  document.getElementById('s-page-subject').innerHTML = `
+    <button class="back-btn" onclick="sNav('home')">← Back to Home</button>
+    <div style="font-family:var(--font-d);font-size:18px;font-weight:800;margin-bottom:4px">${_curSubj.icon} ${_curSubj.name}</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px">${_curSubj.chapters.length} chapters available</div>
+    <div class="chapter-list">
+      ${_curSubj.chapters.map(c => `
+        <div class="chapter-item" onclick="openChapter('${c.id}')">
+          <div>
+            <div class="chap-name">${c.name}</div>
+            <div class="chap-meta">${c.questionCount} questions · Theory + MCQ Quiz</div>
+          </div>
+          <span class="chap-arrow">›</span>
+        </div>`).join('')}
+    </div>`;
+}
+
+/* ══════════════════════════════════════
+   CHAPTER PAGE
+══════════════════════════════════════ */
+function openChapter(chapId) {
+  if (!_curSubj) return;
+  _curChap = _curSubj.chapters.find(c => c.id === chapId);
+  if (!_curChap) return;
+
+  document.querySelectorAll('.s-page').forEach(p => p.classList.remove('active'));
+  document.getElementById('s-page-chapter').classList.add('active');
+  document.getElementById('s-page-title').textContent = _curChap.name;
+
+  document.getElementById('s-page-chapter').innerHTML = `
+    <button class="back-btn" onclick="openSubject('${_curSubj.id}')">← Back to ${_curSubj.name}</button>
+    <div style="font-family:var(--font-d);font-size:18px;font-weight:800;margin-bottom:20px">${_curChap.name}</div>
+    ${_curChap.theory}
+    <div style="font-family:var(--font-d);font-size:15px;font-weight:700;margin:20px 0 12px">🧪 Practice Modes</div>
+    <div class="quiz-modes">
+      <div class="quiz-mode-btn" onclick="startQuiz('practice')">
+        <div class="qm-icon">📝</div>
+        <div class="qm-name">Practice Mode</div>
+        <div class="qm-desc">See answers after each question. No time limit.</div>
+      </div>
+      <div class="quiz-mode-btn" onclick="startQuiz('timed')">
+        <div class="qm-icon">⏱️</div>
+        <div class="qm-name">Timed Quiz</div>
+        <div class="qm-desc">30 seconds per question. Test your speed!</div>
+      </div>
+    </div>`;
+}
+
+/* ══════════════════════════════════════
+   QUIZ ENGINE
+══════════════════════════════════════ */
+function startQuiz(mode) {
+  if (!_curChap) return;
+  _quizMode  = mode;
+  _quizQs    = [..._curChap.questions].sort(() => Math.random() - .5);
+  _quizIdx   = 0;
+  _quizScore = 0;
+  clearInterval(_quizTimer);
+  document.querySelectorAll('.s-page').forEach(p => p.classList.remove('active'));
+  document.getElementById('s-page-quiz').classList.add('active');
+  document.getElementById('s-page-title').textContent = _curChap.name + ' Quiz';
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const el = document.getElementById('s-page-quiz');
+  if (_quizIdx >= _quizQs.length) { showScore(); return; }
+  _answered = false;
+  const q   = _quizQs[_quizIdx];
+  const pct = Math.round((_quizIdx/_quizQs.length)*100);
+
+  el.innerHTML = `
+    <button class="back-btn" onclick="endQuiz()">✕ End Quiz</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="font-size:12px;color:var(--muted);font-weight:700">Question ${_quizIdx+1} of ${_quizQs.length}</div>
+      ${_quizMode==='timed' ? `<div class="quiz-timer" id="quiz-timer">⏱ 30s</div>` : `<div style="font-size:12px;color:var(--muted)">Score: ${_quizScore}/${_quizIdx}</div>`}
+    </div>
+    <div class="quiz-progress"><div class="quiz-progress-bar" style="width:${pct}%"></div></div>
+    <div class="quiz-q-wrap">
+      <div class="quiz-q-text">${q.q}</div>
+      <div class="quiz-options">
+        ${q.opts.map((o,i) => `
+          <button class="quiz-opt" id="opt-${i}" onclick="selectAnswer(${i})">
+            <span style="font-weight:700;margin-right:8px;color:var(--muted)">${String.fromCharCode(65+i)}.</span>${o}
+          </button>`).join('')}
+      </div>
+      <div id="quiz-explain" style="display:none"></div>
+    </div>
+    <div class="quiz-controls">
+      <div></div>
+      <button class="btn-quiz secondary" id="next-btn" onclick="nextQuestion()" style="display:none">
+        ${_quizIdx+1<_quizQs.length ? 'Next →' : 'See Results'}
+      </button>
+    </div>`;
+
+  if (_quizMode === 'timed') startTimer();
+}
+
+function startTimer() {
+  _timeLeft = 30;
+  clearInterval(_quizTimer);
+  _quizTimer = setInterval(() => {
+    _timeLeft--;
+    const el = document.getElementById('quiz-timer');
+    if (el) {
+      el.textContent = `⏱ ${_timeLeft}s`;
+      if (_timeLeft <= 10) el.classList.add('danger');
+    }
+    if (_timeLeft <= 0) { clearInterval(_quizTimer); autoSkip(); }
+  }, 1000);
+}
+
+function autoSkip() {
+  if (_answered) return;
+  _answered = true;
+  const q = _quizQs[_quizIdx];
+  // Mark correct
+  const correctEl = document.getElementById(`opt-${q.ans}`);
+  if (correctEl) { correctEl.classList.add('correct'); correctEl.disabled = true; }
+  document.querySelectorAll('.quiz-opt').forEach(b => b.disabled = true);
+  const expEl = document.getElementById('quiz-explain');
+  if (expEl) { expEl.innerHTML = `<div class="quiz-explain">⏰ Time's up! ${q.exp}</div>`; expEl.style.display='block'; }
+  const nb = document.getElementById('next-btn');
+  if (nb) nb.style.display = 'block';
+}
+
+function selectAnswer(idx) {
+  if (_answered) return;
+  _answered = true;
+  clearInterval(_quizTimer);
+  const q = _quizQs[_quizIdx];
+  const correct = idx === q.ans;
+  if (correct) _quizScore++;
+
+  document.querySelectorAll('.quiz-opt').forEach((b,i) => {
+    b.disabled = true;
+    if (i === q.ans) b.classList.add('correct');
+    else if (i === idx && !correct) b.classList.add('wrong');
+  });
+
+  // Show explanation in practice mode; always show on wrong
+  if (_quizMode === 'practice' || !correct) {
+    const expEl = document.getElementById('quiz-explain');
+    if (expEl) {
+      expEl.innerHTML = `<div class="quiz-explain">${correct ? '✅' : '❌'} ${q.exp}</div>`;
+      expEl.style.display = 'block';
+    }
+  }
+
+  // Save progress
+  const prog = JSON.parse(localStorage.getItem('es_student_progress') || '{}');
+  prog[`${_curSubj.id}_${_curChap.id}_${_quizIdx}`] = correct;
+  localStorage.setItem('es_student_progress', JSON.stringify(prog));
+
+  // Auto-advance in timed mode after 1.5s
+  if (_quizMode === 'timed') {
+    setTimeout(() => nextQuestion(), 1500);
+  } else {
+    const nb = document.getElementById('next-btn');
+    if (nb) nb.style.display = 'block';
+  }
+}
+
+function nextQuestion() {
+  clearInterval(_quizTimer);
+  _quizIdx++;
+  renderQuestion();
+}
+
+function showScore() {
+  clearInterval(_quizTimer);
+  const total = _quizQs.length;
+  const pct   = Math.round((_quizScore/total)*100);
+  const emoji = pct >= 80 ? '🏆' : pct >= 60 ? '👍' : pct >= 40 ? '📚' : '💪';
+  const msg   = pct >= 80 ? 'Excellent!' : pct >= 60 ? 'Good job!' : pct >= 40 ? 'Keep practising!' : 'Keep going — practice makes perfect!';
+
+  document.getElementById('s-page-quiz').innerHTML = `
+    <div class="quiz-score-card">
+      <div class="qs-emoji">${emoji}</div>
+      <div class="qs-score" style="color:${pct>=80?'var(--green)':pct>=60?'var(--accent)':'var(--yellow)'}">${_quizScore}/${total}</div>
+      <div class="qs-label">${msg} (${pct}%)</div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="btn-quiz primary" onclick="startQuiz('${_quizMode}')">Try Again</button>
+        <button class="btn-quiz secondary" onclick="openChapter('${_curChap.id}')">Back to Chapter</button>
+      </div>
+    </div>`;
+}
+
+function endQuiz() {
+  clearInterval(_quizTimer);
+  if (_curChap) openChapter(_curChap.id);
+  else if (_curSubj) openSubject(_curSubj.id);
+  else sNav('home');
+}
+
+/* ══════════════════════════════════════
+   STUDENT PAYMENTS PAGE
+   Reads from admin's localStorage data
+══════════════════════════════════════ */
+function renderStudentPayments() {
+  const el = document.getElementById('s-page-payments');
+  // Try to find this student in admin's data
+  let students = [];
+  try { students = JSON.parse(localStorage.getItem('es_students') || '[]'); } catch(e){}
+
+  const match = students.find(s =>
+    s.name.toLowerCase() === _user.name.toLowerCase() ||
+    (s.phone && _user.phone && s.phone === _user.phone)
+  );
+
+  if (!match) {
+    el.innerHTML = `
+      <div style="font-family:var(--font-d);font-size:18px;font-weight:800;margin-bottom:20px">💳 My Payments</div>
+      <div class="panel">
+        <div class="panel-body">
+          <div class="empty-state">
+            <div class="empty-icon">💳</div>
+            <p>No payment records found</p>
+            <small>Your admin needs to add you to the system. Share your name exactly as registered.</small>
+          </div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const jd = match.joiningDate || match.date;
+  const mode = match.feeCycleMode || 'include';
+  const start = mode==='skip'
+    ? new Date(new Date(jd).getFullYear(), new Date(jd).getMonth()+1, 1)
+    : new Date(new Date(jd).getFullYear(), new Date(jd).getMonth(), 1);
+  const today = new Date();
+  const months = [];
+  let cur = new Date(start.getFullYear(), start.getMonth(), 1);
+  while (cur <= today) {
+    const key  = `${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}`;
+    const due  = Number(match.monthlyFee || match.fee || 0);
+    const paid = (match.monthPayments && match.monthPayments[key]) || 0;
+    const stat = paid >= due ? 'paid' : paid > 0 ? 'partial' : 'due';
+    months.push({ key, label:`${MN[cur.getMonth()]} ${cur.getFullYear()}`, due, paid, stat });
+    cur = new Date(cur.getFullYear(), cur.getMonth()+1, 1);
+  }
+  const totalDue  = months.reduce((t,m) => t+m.due, 0);
+  const totalPaid = months.reduce((t,m) => t+m.paid, 0);
+
+  el.innerHTML = `
+    <div style="font-family:var(--font-d);font-size:18px;font-weight:800;margin-bottom:16px">💳 My Payments</div>
+    <div class="info-grid" style="margin-bottom:18px">
+      <div class="info-card"><div class="info-label">Total Paid</div><div class="info-val green">₹${totalPaid.toLocaleString('en-IN')}</div></div>
+      <div class="info-card"><div class="info-label">Outstanding</div><div class="info-val red">₹${Math.max(0,totalDue-totalPaid).toLocaleString('en-IN')}</div></div>
+    </div>
+    <div class="pay-log">
+      ${months.map(m => `
+        <div class="pay-log-row">
+          <div>
+            <div class="pay-month">${m.label}</div>
+            <div class="pay-sub">₹${m.paid.toLocaleString('en-IN')} paid of ₹${m.due.toLocaleString('en-IN')}</div>
+          </div>
+          <span class="mpill ${m.stat}">${m.stat==='paid'?'✓ Paid':m.stat==='partial'?'◑ Partial':'✗ Due'}</span>
+        </div>`).join('')}
+      ${!months.length ? '<div class="empty-state"><div class="empty-icon">📆</div><p>No months recorded yet</p></div>' : ''}
+    </div>`;
+}
+
+/* ══════════════════════════════════════
+   STUDENT ATTENDANCE PAGE
+   Reads from admin's localStorage data
+══════════════════════════════════════ */
+function renderStudentAttendance() {
+  const el = document.getElementById('s-page-attendance');
+  let attendance = {};
+  let students   = [];
+  try {
+    attendance = JSON.parse(localStorage.getItem('es_attendance') || '{}');
+    students   = JSON.parse(localStorage.getItem('es_students')   || '[]');
+  } catch(e) {}
+
+  const match = students.find(s => s.name.toLowerCase() === _user.name.toLowerCase());
+
+  if (!match) {
+    el.innerHTML = `
+      <div style="font-family:var(--font-d);font-size:18px;font-weight:800;margin-bottom:20px">📝 My Attendance</div>
+      <div class="panel"><div class="panel-body">
+        <div class="empty-state"><div class="empty-icon">📝</div><p>No attendance records found</p><small>Your admin needs to add you to the system first.</small></div>
+      </div></div>`;
+    return;
+  }
+
+  const log = [];
+  Object.entries(attendance).forEach(([date, rec]) => {
+    if (rec[match.id]) log.push({ date, status: rec[match.id] });
+  });
+  log.sort((a,b) => b.date.localeCompare(a.date));
+  const pres = log.filter(l => l.status==='present').length;
+  const abs  = log.filter(l => l.status==='absent').length;
+  const pct  = log.length > 0 ? Math.round(pres/log.length*100) : 0;
+
+  el.innerHTML = `
+    <div style="font-family:var(--font-d);font-size:18px;font-weight:800;margin-bottom:16px">📝 My Attendance</div>
+    <div class="att-summary-chips">
+      <div class="att-chip p">✓ Present: ${pres}</div>
+      <div class="att-chip a">✗ Absent: ${abs}</div>
+      <div class="att-chip pct">📊 ${pct}% attendance</div>
+    </div>
+    <div class="att-log">
+      ${log.map(l => `
+        <div class="att-log-row">
+          <span style="font-weight:600;font-size:13px">${l.date}</span>
+          <span class="att-status ${l.status[0]}">${l.status==='present'?'✓ Present':'✗ Absent'}</span>
+        </div>`).join('')}
+      ${!log.length ? '<div class="empty-state"><div class="empty-icon">📆</div><p>No attendance records yet</p></div>' : ''}
+    </div>`;
+}
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
   loadTheme();
-  updateSThemeBtn();
+  // Restore session
+  const saved = localStorage.getItem('es_student_profile');
+  if (saved) {
+    try {
+      _user = JSON.parse(saved);
+      // Don't auto-login — always show auth for security
+    } catch(e) {}
+  }
 });
 </script>
 </body>
